@@ -1,0 +1,12 @@
+.ruff_cache/
+.venv/
+__pycache__/
+*.db
+data.ms/
+dumps/
+logs/
+node_modules/
+.pdm-build/
+
+.direnv/
+.env

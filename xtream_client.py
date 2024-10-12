@@ -45,7 +45,9 @@ class XtreamClient:
     def _setup_meilisearch_client(self) -> meilisearch.Client:
         """Set up the MeiliSearch Client Connection."""
         client = meilisearch.Client("http://127.0.0.1:7700")
-        assert client.is_healthy()
+        if not client.is_healthy():
+            self.logger.error("MeiliSearch is not healthy")
+            raise SystemExit("MeiliSearch is not healthy")
         self._setup_meilisearch_indecies(client)
         return client
 

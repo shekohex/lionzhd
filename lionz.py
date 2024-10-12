@@ -5,11 +5,11 @@ from typing import Optional
 try:
     from xtream_client import XtreamClient
     import inquirer
-    from inquirer.errors import Aborted
     import aria2p
 except ImportError as e:
     logging.error(f"Failed to import required modules: {e}")
     raise SystemExit("Please install required modules: xtream_client, inquirer, aria2p")
+
 
 def setup_logger():
     logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ def setup_logger():
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     return logger
+
 
 logger = setup_logger()
 
@@ -34,7 +35,7 @@ class XtreamConfig:
 def get_user_input(prompt: str) -> Optional[str]:
     try:
         return inquirer.text(message=prompt)
-    except Aborted:
+    except inquirer.errors.Aborted:
         logging.info("User aborted input")
         return None
 
@@ -89,7 +90,9 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         )
         selected_series = series_map[selected_series]
         series_id = selected_series["series_id"]
-        logging.info(f"Getting Series info for {selected_series.get('name')} (#{series_id})...")
+        logging.info(
+            f"Getting Series info for {selected_series.get('name')} (#{series_id})..."
+        )
         series_info = x.series_info(series_id)
         if not series_info:
             logging.info("No Series info found")
@@ -97,9 +100,7 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         seasons = series_info.get("seasons", ["1"])
         if len(seasons) == 0:
             seasons = ["1"]
-        selected_season = inquirer.list_input(
-            "Select a Season", choices=seasons
-        )
+        selected_season = inquirer.list_input("Select a Season", choices=seasons)
         episodes = series_info.get("episodes", {})
         selected_season_episodes = episodes.get(selected_season, [])
         episodes_map = {e["title"]: e for e in selected_season_episodes}

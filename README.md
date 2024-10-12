@@ -56,7 +56,7 @@ Before you begin, ensure you have met the following requirements:
 To run the Lionz IPTV Downloader:
 
 ```
-uv lionz
+uv run lionz
 ```
 
 Follow the interactive prompts to search for content, select items to download, and manage MeiliSearch indexes.

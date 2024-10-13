@@ -20,6 +20,7 @@ class XtreamClient:
         port: int,
         username: str,
         password: str,
+        logger: Optional[logging.Logger] = None,
     ) -> None:
         self.host = host
         self.port = port
@@ -28,19 +29,8 @@ class XtreamClient:
         self.base_url = f"{host}:{port}"
         self.session = requests.Session()
         self._authenticated = False
-        self.logger = logging.getLogger(__name__)
-        self._setup_logging()
+        self.logger = logger or logging.getLogger(__name__)
         self.meili_client = self._setup_meilisearch_client()
-
-    def _setup_logging(self):
-        """Set up logging for the client."""
-        self.logger.setLevel(logging.INFO)
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
 
     def _setup_meilisearch_client(self) -> meilisearch.Client:
         """Set up the MeiliSearch Client Connection."""

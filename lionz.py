@@ -60,7 +60,7 @@ def search_vods(x: XtreamClient, aria2: aria2p.API):
         confirm_download = inquirer.confirm("Do you want to download this VOD?")
         if confirm_download:
             opts = aria2.get_global_options()
-            opts.out = f"{selected_vod}.{vod_container_extension}"
+            opts.out = f"movies/{selected_vod}/{selected_vod}.{vod_container_extension}"
             uri = x.vod_download_uri(vod_id, vod_container_extension)
             [download] = aria2.add(uri=uri, options=opts)
             logging.info(
@@ -97,9 +97,10 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         if not series_info:
             logging.info("No Series info found")
             return
-        seasons = series_info.get("seasons", ["1"])
-        if len(seasons) == 0:
-            seasons = ["1"]
+        seasons_list = series_info.get("seasons", ["1"])
+        seasons = []
+        for i in range(1, len(seasons_list) + 1):
+            seasons.append(str(i))
         selected_season = inquirer.list_input("Select a Season", choices=seasons)
         episodes = series_info.get("episodes", {})
         selected_season_episodes = episodes.get(selected_season, [])
@@ -115,7 +116,8 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         if confirm:
             for e in selected_episodes:
                 opts = aria2.get_global_options()
-                opts.out = f"{selected_series.get('name')}/{e['title']}.{e['container_extension']}"
+                season = f"Season 0{selected_season}"
+                opts.out = f"shows/{selected_series.get('name')}/{season}/{e['title']}.{e['container_extension']}"
                 uri = x.series_download_uri(e["id"], e["container_extension"])
                 [download] = aria2.add(uri=uri, options=opts)
                 logging.info(
@@ -148,6 +150,7 @@ def main():
             port=config.port,
             username=config.username,
             password=config.password,
+            logger=logger.getChild("XtreamClient"),
         )
         x.authenticate()
         if not x.is_authenticated():
@@ -156,7 +159,7 @@ def main():
         logging.error(f"Failed to initialize XtreamClient: {e}")
         return
 
-    aria2 = aria2p.API(aria2p.Client(host="http://localhost", port=16800, secret=""))
+    aria2 = aria2p.API(aria2p.Client(host="http://umbrel", port=6800, secret="umbrel"))
     actions = {
         "Search VODs": search_vods,
         "Search Series": search_series,

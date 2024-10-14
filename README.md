@@ -45,10 +45,12 @@ Before you begin, ensure you have met the following requirements:
 
 2. Edit the `.env` file and fill in your Lionz IPTV service credentials:
    ```
-   XTREAM_CODES_API_HOST=your_host_here
-   XTREAM_CODES_API_PORT=your_port_here
-   XTREAM_CODES_API_USER=your_username_here
-   XTREAM_CODES_API_PASS=your_password_here
+   XTREAM_CODES_API_HOST=
+   XTREAM_CODES_API_PORT=
+   XTREAM_CODES_API_USER=
+   XTREAM_CODES_API_PASS=
+   MEILI_HTTP_URL=
+   MEILI_MASTER_KEY=
    ```
 
 ## Usage

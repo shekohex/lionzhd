@@ -20,6 +20,8 @@ class XtreamClient:
         port: int,
         username: str,
         password: str,
+        meili_url: str = "http://127.0.0.1:7700",
+        meili_api_key: str = "",
         logger: Optional[logging.Logger] = None,
     ) -> None:
         self.host = host
@@ -27,6 +29,8 @@ class XtreamClient:
         self.username = username
         self.password = password
         self.base_url = f"{host}:{port}"
+        self.meili_url = meili_url
+        self.meili_api_key = meili_api_key
         self.session = requests.Session()
         self._authenticated = False
         self.logger = logger or logging.getLogger(__name__)
@@ -34,7 +38,7 @@ class XtreamClient:
 
     def _setup_meilisearch_client(self) -> meilisearch.Client:
         """Set up the MeiliSearch Client Connection."""
-        client = meilisearch.Client("http://127.0.0.1:7700")
+        client = meilisearch.Client(self.meili_url, self.meili_api_key)
         if not client.is_healthy():
             self.logger.error("MeiliSearch is not healthy")
             raise SystemExit("MeiliSearch is not healthy")
@@ -104,7 +108,7 @@ class XtreamClient:
             series_data = response.json()
             index = self.meili_client.index(SERIES_INDEX)
             task_info = index.add_documents(series_data, primary_key="series_id")
-            task = self.meili_client.wait_for_task(task_info.task_uid)
+            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
             self.logger.debug(f"Updating MeiliSearch index {SERIES_INDEX} task: {task}")
 
         except requests.RequestException as e:
@@ -125,7 +129,7 @@ class XtreamClient:
             vods_data = response.json()
             index = self.meili_client.index(MOVIES_INDEX)
             task_info = index.add_documents(vods_data, primary_key="stream_id")
-            task = self.meili_client.wait_for_task(task_info.task_uid)
+            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
             self.logger.debug(f"Updating MeiliSearch index {MOVIES_INDEX} task: {task}")
 
         except requests.RequestException as e:

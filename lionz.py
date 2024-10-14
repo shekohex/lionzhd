@@ -30,6 +30,8 @@ class XtreamConfig:
         self.port = int(os.getenv("XTREAM_CODES_API_PORT", 8080))
         self.username = os.getenv("XTREAM_CODES_API_USER", "username")
         self.password = os.getenv("XTREAM_CODES_API_PASS", "password")
+        self.meili_url = os.getenv("MEILI_HTTP_URL", "http://umbrel:7700")
+        self.meili_api_key = os.getenv("MEILI_MASTER_KEY", "")
 
 
 def get_user_input(prompt: str) -> Optional[str]:
@@ -151,6 +153,8 @@ def main():
             username=config.username,
             password=config.password,
             logger=logger.getChild("XtreamClient"),
+            meili_url=config.meili_url,
+            meili_api_key=config.meili_api_key,
         )
         x.authenticate()
         if not x.is_authenticated():

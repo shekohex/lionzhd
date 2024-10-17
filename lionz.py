@@ -103,6 +103,10 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         seasons = []
         for i in range(1, len(seasons_list) + 1):
             seasons.append(str(i))
+        if len(seasons) == 0:
+            # No seasons? Just assume there is only one season.
+            logging.warning("No Seasons found, assuming only one season")
+            seasons = ["1"]
         selected_season = inquirer.list_input("Select a Season", choices=seasons)
         episodes = series_info.get("episodes", {})
         selected_season_episodes = episodes.get(selected_season, [])

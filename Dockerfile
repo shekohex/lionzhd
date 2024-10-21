@@ -28,13 +28,15 @@ RUN python manage.py collectstatic --noinput
 # Run database migrations
 RUN python manage.py migrate
 
-ENV XTREAM_CODES_API_HOST=xtream-codes.com
+ENV XTREAM_CODES_API_HOST=lionzhd.com
 ENV XTREAM_CODES_API_PORT=8080
 ENV XTREAM_CODES_API_USER=alice
 ENV XTREAM_CODES_API_PASS=secret
-ENV MEILI_HTTP_URL=http://meili:7700
+ENV MEILI_HTTP_URL=http://umbrel:7700
 ENV MEILI_MASTER_KEY=master_key
 ENV DEBUG=False
+ENV DJANGO_ALLOWED_HOSTS=*
+ENV DJANGO_SECRET_KEY=secret_key
 
 # Expose the port the app runs on
 EXPOSE 8000

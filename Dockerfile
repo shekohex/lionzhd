@@ -41,5 +41,8 @@ ENV DJANGO_SECRET_KEY=secret_key
 # Expose the port the app runs on
 EXPOSE 8000
 
+# Add VOLUME to allow saving data outside the container
+VOLUME /app/data
+
 # Start the ASGI server
 CMD ["uvicorn", "web.asgi:application", "--host", "0.0.0.0", "--port", "8000"]

@@ -4,6 +4,7 @@ __pycache__/
 *.db
 *.sqlite3
 data.ms/
+data/
 dumps/
 logs/
 node_modules/

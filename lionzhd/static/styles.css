@@ -1,0 +1,317 @@
+:root {
+    --background-color: #f4f4f4;
+    --text-color: #333;
+    --header-footer-bg: #333;
+    --header-footer-text: #fff;
+    --button-bg: #333;
+    --button-text: #fff;
+    --highlight-color: #ff9800;
+}
+
+[data-theme="dark"] {
+    --background-color: #121212;
+    --text-color: #e0e0e0;
+    --header-footer-bg: #1f1f1f;
+    --header-footer-text: #e0e0e0;
+    --button-bg: #444;
+    --button-text: #e0e0e0;
+    --highlight-color: #ff9800;
+}
+
+html {
+    box-sizing: border-box;
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    background-color: var(--header-footer-bg);
+    color: var(--header-footer-text);
+    padding: 10px 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: var(--header-footer-text);
+    margin: 0 10px;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: var(--highlight-color);
+}
+
+#theme-toggle {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    margin-left: 20px;
+}
+
+#theme-toggle:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+.hamburger-menu {
+    display: none;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 24px;
+    margin-left: 20px;
+}
+
+.hamburger-menu:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+.dropdown-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: var(--header-footer-bg);
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+    color: var(--header-footer-text);
+    padding: 10px 20px;
+    text-decoration: none;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+.dropdown-menu.show {
+    display: flex;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    animation: fadeIn 1s ease-in-out;
+}
+
+footer {
+    background-color: var(--header-footer-bg);
+    color: var(--header-footer-text);
+    text-align: center;
+    padding: 10px 0;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.search-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.search-input {
+    width: 50%;
+    padding: 10px;
+    font-size: 18px;
+    border: 1px solid var(--text-color);
+    border-radius: 5px;
+    transition: border-color 0.3s;
+}
+
+.search-input:focus {
+    border-color: var(--highlight-color);
+}
+
+.search-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.search-button:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+.results-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    animation: fadeIn 1s ease-in-out;
+}
+
+.result-item {
+    position: relative;
+    width: 200px;
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.result-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.result-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px 10px 0 0;
+}
+
+.result-item .overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 5px;
+    font-size: 12px;
+    border-radius: 5px;
+}
+
+.result-item h3 {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+.result-item .info-button {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.result-item .info-button:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+.download-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+}
+
+.download-button:hover {
+    background-color: var(--highlight-color);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    nav {
+        display: none;
+    }
+
+    #theme-toggle {
+        display: none;
+    }
+
+    .hamburger-menu {
+        display: block;
+    }
+
+    .search-input {
+        width: 80%;
+    }
+
+    .result-item {
+        width: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-input {
+        width: 90%;
+    }
+
+    .result-item {
+        width: 100%;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+
+    .search-button {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Update Indexes{% endblock %}
+
+{% block content %}
+    <h1>Update MeiliSearch Indexes</h1>
+    <form id="update-form" method="post">
+        {% csrf_token %}
+        <button class="info-button" type="submit">Update Indexes</button>
+    </form>
+    <div id="loading-spinner" style="display: none;">
+        <p>Updating indexes, please wait...</p>
+        <img width="64" height="64" src="{% static 'spinner.webp' %}" alt="Loading...">
+    </div>
+    <div id="result-message"></div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.getElementById('update-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            document.getElementById('loading-spinner').style.display = 'block';
+            document.getElementById('result-message').innerHTML = '';
+
+            fetch("{% url 'update_indexes' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading-spinner').style.display = 'none';
+                if (data.status === 'success') {
+                    document.getElementById('result-message').innerHTML = '<p style="color: green;">' + data.message + '</p>';
+                } else {
+                    document.getElementById('result-message').innerHTML = '<p style="color: red;">' + data.message + '</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('result-message').innerHTML = '<p style="color: red;">An error occurred: ' + error.message + '</p>';
+            });
+        });
+    </script>
+{% endblock %}

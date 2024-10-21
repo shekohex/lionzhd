@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+
+{% block content %}
+    <h1>Search Results for "{{ query }}"</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <div class="results-grid">
+            {% for vod in results.vods %}
+                <div class="result-item">
+                    <div class="overlay">Movie</div>
+                    <img src="{{ vod.stream_icon }}" alt="{{ vod.name }}">
+                    <h3>{{ vod.name }}</h3>
+                    <a href="{% url 'vod_info' vod.stream_id %}" class="info-button">View Info</a>
+                </div>
+            {% endfor %}
+            {% for series in results.series %}
+                <div class="result-item">
+                    <div class="overlay">Series</div>
+                    <img src="{{ series.cover }}" alt="{{ series.name }}">
+                    <h3>{{ series.name }}</h3>
+                    <a href="{% url 'series_info' series.series_id %}" class="info-button">View Info</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

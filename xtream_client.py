@@ -41,7 +41,7 @@ class XtreamClient:
         client = meilisearch.Client(self.meili_url, self.meili_api_key)
         if not client.is_healthy():
             self.logger.error("MeiliSearch is not healthy")
-            raise SystemExit("MeiliSearch is not healthy")
+            raise Exception("MeiliSearch is not healthy")
         self._setup_meilisearch_indecies(client)
         return client
 
@@ -108,7 +108,9 @@ class XtreamClient:
             series_data = response.json()
             index = self.meili_client.index(SERIES_INDEX)
             task_info = index.add_documents(series_data, primary_key="series_id")
-            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
+            task = self.meili_client.wait_for_task(
+                task_info.task_uid, timeout_in_ms=timeout
+            )
             self.logger.debug(f"Updating MeiliSearch index {SERIES_INDEX} task: {task}")
 
         except requests.RequestException as e:
@@ -129,7 +131,9 @@ class XtreamClient:
             vods_data = response.json()
             index = self.meili_client.index(MOVIES_INDEX)
             task_info = index.add_documents(vods_data, primary_key="stream_id")
-            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
+            task = self.meili_client.wait_for_task(
+                task_info.task_uid, timeout_in_ms=timeout
+            )
             self.logger.debug(f"Updating MeiliSearch index {MOVIES_INDEX} task: {task}")
 
         except requests.RequestException as e:
@@ -175,7 +179,7 @@ class XtreamClient:
             infos = response.json()
             return infos
         except requests.RequestException as e:
-            self.logger.error(f"Failed to get series info: {str(e)}")
+            self.logger.exception(f"Failed to get series info: {e.response}", exc_info=e)
             return None
 
     def vod_info(self, vod_id: int, timeout=60000) -> Optional[Dict]:

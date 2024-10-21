@@ -17,10 +17,12 @@
       {
         devShells.default = pkgs.mkShell {
           name = "lionz";
+          venvDir = "./.venv";
           nativeBuildInputs = [
             pkgs.pkg-config
           ];
           buildInputs = [
+            pythonPackages.venvShellHook
             pythonPackages.python
             pkgs.uv
           ];

@@ -2,6 +2,7 @@
 .venv/
 __pycache__/
 *.db
+*.sqlite3
 data.ms/
 dumps/
 logs/
@@ -10,3 +11,6 @@ node_modules/
 
 .direnv/
 .env
+debug.log
+web/static
+*.tar.gz

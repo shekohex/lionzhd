@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% load custom_filters %}
+
+{% block title %}{{ info.name }} | Series{% endblock %}
+
+{% block content %}
+    <h1>Series Info</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <h2>{{ info.name }}</h2>
+        <img src="{{ info.cover }}" alt="{{ info.name }}">
+        <p>{{ info.plot }}</p>
+        <p><strong>Cast:</strong> {{ info.cast }}</p>
+        <p><strong>Genre:</strong> {{ info.genre }}</p>
+        <p><strong>Release Date:</strong> {{ info.releaseDate }}</p>
+        <p><strong>Rating:</strong> {{ info.rating }}</p>
+
+        <h3>Seasons</h3>
+        <form id="download-form">
+            <ul>
+                {% for season in seasons %}
+                    <li>
+                        <h4>{{ season.name }}</h4>
+                        <label>
+                            <input type="checkbox" class="select-all" data-season="{{ season.season_number }}">
+                            Select All
+                        </label>
+                        <img src="{{ season.cover }}" alt="{{ season.name }}">
+                        <p>{{ season.overview }}</p>
+                        <p><strong>Air Date:</strong> {{ season.air_date }}</p>
+                        <p><strong>Episode Count:</strong> {{ season.episode_count }}</p>
+                        <h5>Episodes</h5>
+                        <ul>
+                            {% for episode in episodes|get_item:season.season_number %}
+                                <li>
+                                    <input type="checkbox" name="episode" value="{{ episode.id }}" data-name="{{ info.name }}" data-season="{{ season.season_number }}" data-title="{{ episode.title }}" data-extension="{{ episode.container_extension }}">
+                                    <strong>{{ episode.title }}</strong>
+                                    <p>Episode {{ episode.episode_num }}</p>
+                                    <p>Duration: {{ episode.info.duration }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+            </ul>
+            <button type="button" id="download-button" class="download-button">Download Selected Episodes</button>
+        </form>
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.querySelectorAll('.select-all').forEach(function(selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const seasonNumber = this.dataset.season;
+                const checkboxes = document.querySelectorAll(`input[name="episode"][data-season="${seasonNumber}"]`);
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = selectAllCheckbox.checked;
+                });
+            });
+        });
+
+        document.getElementById('download-button').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('input[name="episode"]:checked');
+            const items = Array.from(checkboxes).map(cb => ({
+                stream_id: cb.value,
+                kind: 'series',
+                name: cb.dataset.name,
+                season: cb.dataset.season,
+                episode_title: cb.dataset.title,
+                container_extension: cb.dataset.extension
+            }));
+
+            if (items.length === 0) {
+                alert('Please select at least one episode to download.');
+                return;
+            }
+
+            fetch("{% url 'download_streams' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(items)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log(data);
+                    alert('Download started successfully');
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('An error occurred: ' + error.message);
+            });
+        });
+    </script>
+{% endblock %}

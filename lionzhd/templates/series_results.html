@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Series Results{% endblock %}
+
+{% block content %}
+    <h1>Series Results</h1>
+    <ul>
+        {% for series in series_list %}
+            <li>
+                <a href="{% url 'series_info' series.series_id %}">{{ series.name }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

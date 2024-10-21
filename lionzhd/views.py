@@ -205,7 +205,7 @@ def vod_info(request: HttpRequest, vod_id: int):
 
 @api_view(["POST"])
 def download_streams(request: HttpRequest, format="json"):
-    serializer = DownloadItemSerializer(data=request.body, many=True)
+    serializer = DownloadItemSerializer(data=request.data, many=True)
     if serializer.is_valid():
         client = get_xtream_client()
         aria2 =  get_aria2_rpc_client()
@@ -232,7 +232,7 @@ def download_streams(request: HttpRequest, format="json"):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 [download] = aria2.add(uri=uri, options=opts)
-                downloads.append(download)
+                downloads.append({"gid": download.gid, "name": item["name"], "out": opts.out})
                 logger.info(
                     f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}"
                 )

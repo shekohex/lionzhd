@@ -1,6 +1,5 @@
-from typing import Optional
 from django.http.request import HttpRequest
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.cache import cache
 from rest_framework.decorators import api_view
@@ -18,6 +17,15 @@ logger = logging.getLogger(__name__)
 
 
 class XtreamConfig:
+    host: str
+    port: int
+    username: str
+    password: str
+    meili_url: str
+    meili_api_key: str
+    aria2_rpc_host: str
+    aria2_rpc_port: int
+    aria2_rpc_secret: str
     def __init__(self):
         config = XtreamConfigModel.objects.first()
         if config:
@@ -27,6 +35,9 @@ class XtreamConfig:
             self.password = config.password
             self.meili_url = config.meili_url
             self.meili_api_key = config.meili_api_key
+            self.aria2_rpc_host = config.aeia2_rpc_host
+            self.aria2_rpc_port = config.aria2_rpc_port
+            self.aria2_rpc_secret = config.aria2_rpc_secret
         else:
             env_config = EnvXtreamConfig()
             self.host = env_config.host
@@ -35,6 +46,9 @@ class XtreamConfig:
             self.password = env_config.password
             self.meili_url = env_config.meili_url
             self.meili_api_key = env_config.meili_api_key
+            self.aria2_rpc_host = env_config.aria2_rpc_host
+            self.aria2_rpc_port = env_config.aria2_rpc_port
+            self.aria2_rpc_secret = env_config.aria2_rpc_secret
 
 
 def get_xtream_client():
@@ -55,6 +69,20 @@ def get_xtream_client():
             raise ValueError("Authentication failed")
         cache.set("xtream_client", client, timeout=3600)
     return client
+
+def get_aria2_rpc_client():
+    aria2 = cache.get("aria2_rpc_client")
+    if not aria2:
+        config = XtreamConfig()
+        aria2 = aria2p.API(
+            aria2p.Client(
+                host=config.aria2_rpc_host,
+                port=config.aria2_rpc_port,
+                secret=config.aria2_rpc_secret,
+            )
+        )
+        cache.set("aria2_rpc_client", aria2, timeout=3600)
+    return aria2
 
 
 def index(request: HttpRequest):
@@ -180,9 +208,7 @@ def download_streams(request: HttpRequest, format="json"):
     serializer = DownloadItemSerializer(data=request.body, many=True)
     if serializer.is_valid():
         client = get_xtream_client()
-        aria2 = aria2p.API(
-            aria2p.Client(host="http://umbrel", port=6800, secret="umbrel")
-        )
+        aria2 =  get_aria2_rpc_client()
         items = serializer.data
         downloads = []
 

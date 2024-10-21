@@ -51,6 +51,9 @@ Before you begin, ensure you have met the following requirements:
    XTREAM_CODES_API_PASS=
    MEILI_HTTP_URL=
    MEILI_MASTER_KEY=
+   ARIA2_RPC_HOST=
+   ARIA2_RPC_PORT=
+   ARIA2_RPC_SECRET=
    ```
 
 ## Usage
@@ -59,6 +62,12 @@ To run the Lionz IPTV Downloader:
 
 ```
 uv run lionz
+```
+
+or run the Web UI:
+
+```
+uv run web runserver
 ```
 
 Follow the interactive prompts to search for content, select items to download, and manage MeiliSearch indexes.

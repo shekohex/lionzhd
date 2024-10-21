@@ -19,6 +19,11 @@ ENV PATH="/app/.venv/bin:$PATH"
 COPY . /app/
 # Set the working directory
 WORKDIR /app
+
+# Add VOLUME to allow saving data outside the container
+RUN mkdir -p /app/data
+VOLUME /app/data
+
 # Install Python dependencies
 RUN uv sync --frozen
 
@@ -28,7 +33,7 @@ RUN python manage.py collectstatic --noinput
 # Run database migrations
 RUN python manage.py migrate
 
-ENV XTREAM_CODES_API_HOST=lionzhd.com
+ENV XTREAM_CODES_API_HOST=http://lionzhd.com
 ENV XTREAM_CODES_API_PORT=8080
 ENV XTREAM_CODES_API_USER=alice
 ENV XTREAM_CODES_API_PASS=secret
@@ -40,10 +45,6 @@ ENV DJANGO_SECRET_KEY=secret_key
 
 # Expose the port the app runs on
 EXPOSE 8000
-
-# Add VOLUME to allow saving data outside the container
-RUN mkdir -p /app/data
-VOLUME /app/data
 
 # Start the ASGI server
 CMD ["uvicorn", "web.asgi:application", "--host", "0.0.0.0", "--port", "8000"]

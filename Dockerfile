@@ -42,6 +42,7 @@ ENV DJANGO_SECRET_KEY=secret_key
 EXPOSE 8000
 
 # Add VOLUME to allow saving data outside the container
+RUN mkdir -p /app/data
 VOLUME /app/data
 
 # Start the ASGI server

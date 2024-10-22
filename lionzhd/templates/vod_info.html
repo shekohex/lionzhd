@@ -7,27 +7,29 @@
     {% if error %}
         <p style="color: red;">{{ error }}</p>
     {% else %}
-        <h2>{{ movie_data.name }}</h2>
-        <img src="{{ info.movie_image }}" alt="{{ movie_data.name }}">
-        <p>{{ info.plot }}</p>
-        <p><strong>Genre:</strong> {{ info.genre }}</p>
-        <p><strong>Release Date:</strong> {{ info.releasedate }}</p>
-        <p><strong>Rating:</strong> {{ info.rating }}</p>
-        <p><strong>Duration:</strong> {{ info.duration }}</p>
-        <p><strong>Director:</strong> {{ info.director }}</p>
-        <p><strong>Cast:</strong> {{ info.cast }}</p>
+        <div class="vod-container">
+            <h2>{{ movie_data.name }}</h2>
+            <img src="{{ info.movie_image }}" alt="{{ movie_data.name }}" class="vod-image">
+            <p>{{ info.plot }}</p>
+            <p><strong>Genre:</strong> {{ info.genre }}</p>
+            <p><strong>Release Date:</strong> {{ info.releasedate }}</p>
+            <p><strong>Rating:</strong> {{ info.rating }}</p>
+            <p><strong>Duration:</strong> {{ info.duration }}</p>
+            <p><strong>Director:</strong> {{ info.director }}</p>
+            <p><strong>Cast:</strong> {{ info.cast }}</p>
 
-        <h3>Video Info</h3>
-        <p><strong>Codec:</strong> {{ info.video.codec_long_name }}</p>
-        <p><strong>Resolution:</strong> {{ info.video.width }}x{{ info.video.height }}</p>
-        <p><strong>Frame Rate:</strong> {{ info.video.r_frame_rate }}</p>
+            <h3>Video Info</h3>
+            <p><strong>Codec:</strong> {{ info.video.codec_long_name }}</p>
+            <p><strong>Resolution:</strong> {{ info.video.width }}x{{ info.video.height }}</p>
+            <p><strong>Frame Rate:</strong> {{ info.video.r_frame_rate }}</p>
 
-        <h3>Audio Info</h3>
-        <p><strong>Codec:</strong> {{ info.audio.codec_long_name }}</p>
-        <p><strong>Channels:</strong> {{ info.audio.channels }}</p>
-        <p><strong>Sample Rate:</strong> {{ info.audio.sample_rate }}</p>
+            <h3>Audio Info</h3>
+            <p><strong>Codec:</strong> {{ info.audio.codec_long_name }}</p>
+            <p><strong>Channels:</strong> {{ info.audio.channels }}</p>
+            <p><strong>Sample Rate:</strong> {{ info.audio.sample_rate }}</p>
 
-        <button id="download-button" class="download-button">Download</button>
+            <button id="download-button" class="download-button">Download</button>
+        </div>
     {% endif %}
 {% endblock %}
 

@@ -10,6 +10,7 @@ class XtreamConfig:
     meili_api_key: str
     aria2_rpc_host: str
     aria2_rpc_port: int
+
     def __init__(self):
         self.host = os.getenv("XTREAM_CODES_API_HOST", "http://xtream-codes.com")
         self.port = int(os.getenv("XTREAM_CODES_API_PORT", 8080))

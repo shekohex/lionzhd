@@ -24,33 +24,46 @@
 
         <h3>Seasons</h3>
         <form id="download-form">
-            <ul>
-                {% for season in seasons %}
-                    <li>
-                        <h4>{{ season.name }}</h4>
-                        <label>
-                            <input type="checkbox" class="select-all" data-season="{{ season.season_number }}">
-                            Select All
-                        </label>
-                        <img src="{{ season.cover }}" alt="{{ season.name }}">
-                        <p>{{ season.overview }}</p>
-                        <p><strong>Air Date:</strong> {{ season.air_date }}</p>
-                        <p><strong>Episode Count:</strong> {{ season.episode_count }}</p>
-                        <h5>Episodes</h5>
-                        <ul>
-                            {% for episode in episodes|get_item:season.season_number %}
-                                <p>
-                                    <input type="checkbox" name="episode" value="{{ episode.id }}" data-name="{{ info.name }}" data-season="{{ season.season_number }}" data-title="{{ episode.title }}" data-extension="{{ episode.container_extension }}">
-                                    <strong>{{ episode.title }}</strong>
-                                    <p>Episode {{ episode.episode_num }}</p>
-                                    <p>Duration: {{ episode.info.duration }}</p>
-                                    <p>Added: {{ episode.added }}</p>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
+            {% for season in seasons %}
+                <div class="season-container">
+                    <h4>{{ season.name }}</h4>
+                    <label>
+                        <input type="checkbox" class="select-all" data-season="{{ season.season_number }}">
+                        Select All
+                    </label>
+                    <img src="{{ season.cover }}" alt="{{ season.name }}">
+                    <p>{{ season.overview }}</p>
+                    <p><strong>Air Date:</strong> {{ season.air_date }}</p>
+                    <p><strong>Episode Count:</strong> {{ season.episode_count }}</p>
+                    <button type="button" class="toggle-episodes" data-season="{{ season.season_number }}">Toggle Episodes</button>
+                    <div class="episodes-table" id="season-{{ season.season_number }}" style="display: none;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Select</th>
+                                    <th>Title</th>
+                                    <th>Episode Number</th>
+                                    <th>Duration</th>
+                                    <th>Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for episode in episodes|get_item:season.season_number %}
+                                    <tr>
+                                        <td data-label="Select">
+                                            <input type="checkbox" name="episode" value="{{ episode.id }}" data-name="{{ info.name }}" data-season="{{ season.season_number }}" data-title="{{ episode.title }}" data-extension="{{ episode.container_extension }}">
+                                        </td>
+                                        <td data-label="Title"><strong>{{ episode.title }}</strong></td>
+                                        <td data-label="Episode Number">Episode {{ episode.episode_num }}</td>
+                                        <td data-label="Duration">{{ episode.info.duration }}</td>
+                                        <td data-label="Added">{{ episode.added }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
             <button type="button" id="download-button" class="download-button">Download Selected Episodes</button>
         </form>
     {% endif %}
@@ -65,6 +78,18 @@
                 checkboxes.forEach(function(checkbox) {
                     checkbox.checked = selectAllCheckbox.checked;
                 });
+            });
+        });
+
+        document.querySelectorAll('.toggle-episodes').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const seasonNumber = this.dataset.season;
+                const episodesTable = document.getElementById(`season-${seasonNumber}`);
+                if (episodesTable.style.display === 'none') {
+                    episodesTable.style.display = 'block';
+                } else {
+                    episodesTable.style.display = 'none';
+                }
             });
         });
 
@@ -95,7 +120,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    console.log(data);
                     alert('Download started successfully');
                 } else {
                     alert('Error: ' + data.message);

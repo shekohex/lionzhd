@@ -28,6 +28,7 @@ class XtreamConfig:
     aria2_rpc_host: str
     aria2_rpc_port: int
     aria2_rpc_secret: str
+
     def __init__(self):
         config = XtreamConfigModel.objects.first()
         if config:
@@ -72,6 +73,7 @@ def get_xtream_client():
         cache.set("xtream_client", client, timeout=3600)
     return client
 
+
 def get_aria2_rpc_client():
     aria2 = cache.get("aria2_rpc_client")
     if not aria2:
@@ -91,6 +93,7 @@ def index(request: HttpRequest):
     form = SearchForm()
     return render(request, "index.html", {"form": form})
 
+
 def search_results(request: HttpRequest):
     query = request.GET.get("query", "")
     if not query:
@@ -100,9 +103,12 @@ def search_results(request: HttpRequest):
         vods = client.search_vods(query)
         series = client.search_series(query)
         results = {"vods": vods, "series": series}
-        return render(request, "search_results.html", {"results": results, "query": query})
+        return render(
+            request, "search_results.html", {"results": results, "query": query}
+        )
     except Exception as e:
         return render(request, "search_results.html", {"error": str(e), "query": query})
+
 
 def update_indexes(request: HttpRequest):
     if request.method == "POST":
@@ -181,13 +187,18 @@ def series_info(request: HttpRequest, series_id: int):
                 name = f"Season {i + 1}"
                 episode_count = len(episodes.get(str(i + 1), []))
                 season_number = i + 1
-                seasons.append({"name": name, "episode_count": episode_count, "season_number": season_number})
+                seasons.append(
+                    {
+                        "name": name,
+                        "episode_count": episode_count,
+                        "season_number": season_number,
+                    }
+                )
         context = {
             "info": info,
             "seasons": seasons,
             "episodes": episodes,
         }
-        print(json.dumps(context, indent=4))
         return render(request, "series_info.html", context)
     except Exception as e:
         return render(request, "series_info.html", {"error": str(e)})
@@ -219,7 +230,7 @@ def download_streams(request: HttpRequest, format="json"):
     serializer = DownloadItemSerializer(data=request.data, many=True)
     if serializer.is_valid():
         client = get_xtream_client()
-        aria2 =  get_aria2_rpc_client()
+        aria2 = get_aria2_rpc_client()
         items = serializer.data
         downloads = []
 
@@ -243,7 +254,9 @@ def download_streams(request: HttpRequest, format="json"):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 [download] = aria2.add(uri=uri, options=opts)
-                downloads.append({"gid": download.gid, "name": item["name"], "out": opts.out})
+                downloads.append(
+                    {"gid": download.gid, "name": item["name"], "out": opts.out}
+                )
                 logger.info(
                     f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}"
                 )

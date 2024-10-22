@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class XtreamConfig(models.Model):
     host = models.CharField(max_length=255, default="http://xtream-codes.com")

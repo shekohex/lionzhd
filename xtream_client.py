@@ -179,7 +179,9 @@ class XtreamClient:
             infos = response.json()
             return infos
         except requests.RequestException as e:
-            self.logger.exception(f"Failed to get series info: {e.response}", exc_info=e)
+            self.logger.exception(
+                f"Failed to get series info: {e.response}", exc_info=e
+            )
             return None
 
     def vod_info(self, vod_id: int, timeout=60000) -> Optional[Dict]:

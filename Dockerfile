@@ -20,18 +20,15 @@ COPY . /app/
 # Set the working directory
 WORKDIR /app
 
-# Add VOLUME to allow saving data outside the container
 RUN mkdir -p /app/data
-VOLUME /app/data
 
 # Install Python dependencies
 RUN uv sync --frozen
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
-# Run database migrations
-RUN python manage.py migrate
+# copy entrypoint.sh
+COPY ./entrypoint.sh .
+RUN sed -i 's/\r$//g' /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 ENV XTREAM_CODES_API_HOST=http://lionzhd.com
 ENV XTREAM_CODES_API_PORT=8080
@@ -42,9 +39,16 @@ ENV MEILI_MASTER_KEY=master_key
 ENV DEBUG=False
 ENV DJANGO_ALLOWED_HOSTS=*
 ENV DJANGO_SECRET_KEY=secret_key
+ENV DJANGO_SUPERUSER_USERNAME=umbrel
+ENV DJANGO_SUPERUSER_PASSWORD=umbrel
+ENV DJANGO_SUPERUSER_EMAIL=umbrel@localhost
 
 # Expose the port the app runs on
-EXPOSE 8000
+ENV PORT=8000
+EXPOSE ${PORT}
+# Add VOLUME to allow saving data outside the container
+VOLUME /app/data
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 # Start the ASGI server
-CMD ["uvicorn", "web.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+CMD uvicorn web.asgi:application --host 0.0.0.0 --port ${PORT}

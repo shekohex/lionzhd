@@ -15,7 +15,12 @@
         <p><strong>Cast:</strong> {{ info.cast }}</p>
         <p><strong>Genre:</strong> {{ info.genre }}</p>
         <p><strong>Release Date:</strong> {{ info.releaseDate }}</p>
-        <p><strong>Rating:</strong> {{ info.rating }}</p>
+        <p><strong>Rating:</strong> {{ info.rating_5based }} / 5</p>
+        <p><strong>Episode Runtime:</strong> {{ info.episode_run_time }} min</p>
+        <!-- Youtube trailer if any -->
+        {% if info.youtube_trailer %}
+            <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ info.youtube_trailer }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        {% endif %}
 
         <h3>Seasons</h3>
         <form id="download-form">
@@ -34,11 +39,12 @@
                         <h5>Episodes</h5>
                         <ul>
                             {% for episode in episodes|get_item:season.season_number %}
-                                <li>
+                                <p>
                                     <input type="checkbox" name="episode" value="{{ episode.id }}" data-name="{{ info.name }}" data-season="{{ season.season_number }}" data-title="{{ episode.title }}" data-extension="{{ episode.container_extension }}">
                                     <strong>{{ episode.title }}</strong>
                                     <p>Episode {{ episode.episode_num }}</p>
                                     <p>Duration: {{ episode.info.duration }}</p>
+                                    <p>Added: {{ episode.added }}</p>
                                 </li>
                             {% endfor %}
                         </ul>

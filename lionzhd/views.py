@@ -1,3 +1,5 @@
+import json
+from django.forms.widgets import datetime
 from django.http.request import HttpRequest
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -164,19 +166,28 @@ def series_info(request: HttpRequest, series_id: int):
         info = series_info.get("info", {})
         seasons = series_info.get("seasons", [])
         episodes = series_info.get("episodes", {})
+        # For each episode, convert the added from unix timestamp
+        # in secs to unix timestamp in ms
+        for i in range(1, len(episodes) + 1):
+            for j in range(len(episodes[str(i)])):
+                episodes[str(i)][j]["added"] = datetime.datetime.fromtimestamp(
+                    int(episodes[str(i)][j]["added"])
+                ).strftime("%d %b, %Y %I:%M %p")
+
         if len(seasons) == 0:
             # No Seasons? add a default season
             seasons_len = len(episodes)
             for i in range(seasons_len):
                 name = f"Season {i + 1}"
-                eposides_count = len(episodes.get(i, []))
+                episode_count = len(episodes.get(str(i + 1), []))
                 season_number = i + 1
-                seasons.append({"name": name, "eposide_count": eposides_count, "season_number": season_number})
+                seasons.append({"name": name, "episode_count": episode_count, "season_number": season_number})
         context = {
             "info": info,
             "seasons": seasons,
             "episodes": episodes,
         }
+        print(json.dumps(context, indent=4))
         return render(request, "series_info.html", context)
     except Exception as e:
         return render(request, "series_info.html", {"error": str(e)})

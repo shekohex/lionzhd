@@ -11,4 +11,11 @@ urlpatterns = [
     path("configurations/", views.configurations, name="configurations"),
     path("download_streams/", views.download_streams, name="download_streams"),
     path("search_results/", views.search_results, name="search_results"),
+    path("favorites/", views.favorites_list, name="favorites_list"),
+    path("favorites/toggle/", views.toggle_favorite, name="toggle_favorite"),
+    path(
+        "favorites/check/<str:kind>/<int:stream_id>/",
+        views.check_favorite,
+        name="check_favorite",
+    ),
 ]

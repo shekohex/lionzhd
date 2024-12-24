@@ -10,6 +10,7 @@ from rest_framework import status
 from .serializers import DownloadItemSerializer
 from .forms import SearchForm, SeriesForm, VODForm
 from .models import XtreamConfig as XtreamConfigModel
+from .models import FavoriteItem
 from xtream_client import XtreamClient
 from config import XtreamConfig as EnvXtreamConfig
 import aria2p
@@ -195,6 +196,7 @@ def series_info(request: HttpRequest, series_id: int):
                     }
                 )
         context = {
+            "series_id": series_id,
             "info": info,
             "seasons": seasons,
             "episodes": episodes,
@@ -291,3 +293,38 @@ def configurations(request):
             "meili_api_key": config.meili_api_key,
         }
     )
+
+
+def favorites_list(request):
+    favorites = FavoriteItem.objects.all()
+    return render(request, "favorites.html", {"favorites": favorites})
+
+
+def toggle_favorite(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        kind = data.get("kind")
+        stream_id = data.get("stream_id")
+        name = data.get("name")
+        image = data.get("image")
+
+        try:
+            favorite = FavoriteItem.objects.filter(
+                kind=kind, stream_id=stream_id
+            ).first()
+            if favorite:
+                favorite.delete()
+                return JsonResponse({"status": "removed"})
+            else:
+                FavoriteItem.objects.create(
+                    kind=kind, stream_id=stream_id, name=name, image=image
+                )
+                return JsonResponse({"status": "added"})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request"}, status=400)
+
+
+def check_favorite(request, kind, stream_id):
+    is_favorite = FavoriteItem.objects.filter(kind=kind, stream_id=stream_id).exists()
+    return JsonResponse({"is_favorite": is_favorite})

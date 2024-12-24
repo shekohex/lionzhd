@@ -1,30 +1,91 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% block title %}Search Results{% endblock %} {% block content %}
+<h1>Search Results for "{{ query }}"</h1>
+{% if error %}
+<p style="color: red">{{ error }}</p>
+{% else %}
+<div class="results-grid">
+    {% for vod in results.vods %}
+    <div class="result-item">
+        <div class="overlay">Movie</div>
+        <img class="cover" src="{{ vod.stream_icon }}" alt="{{ vod.name }}" />
+        <h3>{{ vod.name }}</h3>
+        <i
+            class="favorite-icon ti ti-carambola"
+            data-kind="vod"
+            data-stream-id="{{ vod.stream_id }}"
+            data-name="{{ vod.name }}"
+            data-image="{{ vod.stream_icon }}"
+            alt="Favorite"
+        ></i>
+        <a href="{% url 'vod_info' vod.stream_id %}" class="info-button">View Info</a>
+    </div>
+    {% endfor %} {% for series in results.series %}
+    <div class="result-item">
+        <div class="overlay">Series</div>
+        <img class="cover" src="{{ series.cover }}" alt="{{ series.name }}" />
+        <h3>{{ series.name }}</h3>
+        <i
+            class="favorite-icon ti ti-carambola"
+            data-kind="series"
+            data-stream-id="{{ series.series_id }}"
+            data-name="{{ series.name }}"
+            data-image="{{ series.cover }}"
+            alt="Favorite"
+        ></i>
+        <a href="{% url 'series_info' series.series_id %}" class="info-button">View Info</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %} {% endblock %} {% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const icons = document.querySelectorAll(".favorite-icon");
 
-{% block title %}Search Results{% endblock %}
+        icons.forEach((icon) => {
+            const kind = icon.dataset.kind;
+            const streamId = icon.dataset.streamId;
 
+            // Check initial favorite status
+            fetch(`/favorites/check/${kind}/${streamId}/`)
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.is_favorite) {
+                        icon.classList.add("active");
+                    }
+                });
 
-{% block content %}
-    <h1>Search Results for "{{ query }}"</h1>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% else %}
-        <div class="results-grid">
-            {% for vod in results.vods %}
-                <div class="result-item">
-                    <div class="overlay">Movie</div>
-                    <img src="{{ vod.stream_icon }}" alt="{{ vod.name }}">
-                    <h3>{{ vod.name }}</h3>
-                    <a href="{% url 'vod_info' vod.stream_id %}" class="info-button">View Info</a>
-                </div>
-            {% endfor %}
-            {% for series in results.series %}
-                <div class="result-item">
-                    <div class="overlay">Series</div>
-                    <img src="{{ series.cover }}" alt="{{ series.name }}">
-                    <h3>{{ series.name }}</h3>
-                    <a href="{% url 'series_info' series.series_id %}" class="info-button">View Info</a>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            icon.addEventListener("click", function () {
+                const name = this.dataset.name;
+                const image = this.dataset.image;
+
+                fetch("/favorites/toggle/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({
+                        kind: kind,
+                        stream_id: streamId,
+                        name: name,
+                        image: image,
+                    }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.status === "added") {
+                            this.classList.add("active");
+                            this.classList.remove("ti-carambola");
+                            this.classList.add("ti-carambola-filled");
+                        } else {
+                            this.classList.remove("active");
+                            this.classList.remove("ti-carambola-filled");
+                            this.classList.add("ti-carambola");
+                        }
+                    })
+                    .catch((error) => console.error("Error:", error));
+            });
+        });
+    });
+</script>
 {% endblock %}

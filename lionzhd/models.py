@@ -1,7 +1,6 @@
 from django.db import models
 
 
-# Create your models here.
 class XtreamConfig(models.Model):
     host = models.CharField(max_length=255, default="http://xtream-codes.com")
     port = models.IntegerField(default=8080)
@@ -15,3 +14,21 @@ class XtreamConfig(models.Model):
 
     def __str__(self):
         return f"XtreamConfig ({self.host}:{self.port})"
+
+
+class FavoriteItem(models.Model):
+    KIND_CHOICES = [
+        ("series", "Series"),
+        ("vod", "VOD"),
+    ]
+    kind = models.CharField(max_length=10, choices=KIND_CHOICES)
+    stream_id = models.IntegerField()
+    name = models.CharField(max_length=255)
+    image = models.URLField()
+    added = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-added"]
+
+    def __str__(self):
+        return f"{self.kind}: {self.name}"

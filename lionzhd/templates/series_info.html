@@ -1,133 +1,200 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% load custom_filters %} {% block title %}{{ info.name }} | Series{%endblock %} {% block content %}
+<h1>Series Info</h1>
+{% if error %}
+<p style="color: red">{{ error }}</p>
+{% else %}
+<div class="title-container">
+    <h2>{{ info.name }}</h2>
+    <i
+        src="{% static 'star.svg' %}"
+        class="favorite-icon ti ti-carambola"
+        data-kind="series"
+        data-stream-id="{{ series_id }}"
+        data-name="{{ info.name }}"
+        data-image="{{ info.cover }}"
+        alt="Favorite"
+    ></i>
+</div>
+<img src="{{ info.cover }}" alt="{{ info.name }}" />
+<p>{{ info.plot }}</p>
+<p><strong>Cast:</strong> {{ info.cast }}</p>
+<p><strong>Genre:</strong> {{ info.genre }}</p>
+<p><strong>Release Date:</strong> {{ info.releaseDate }}</p>
+<p><strong>Rating:</strong> {{ info.rating_5based }} / 5</p>
+<p><strong>Episode Runtime:</strong> {{ info.episode_run_time }} min</p>
+<!-- Youtube trailer if any -->
+{% if info.youtube_trailer %}
+<iframe
+    width="560"
+    height="315"
+    src="https://www.youtube.com/embed/{{ info.youtube_trailer }}"
+    frameborder="0"
+    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+></iframe>
+{% endif %}
 
-{% load custom_filters %}
-
-{% block title %}{{ info.name }} | Series{% endblock %}
-
-{% block content %}
-    <h1>Series Info</h1>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% else %}
-        <h2>{{ info.name }}</h2>
-        <img src="{{ info.cover }}" alt="{{ info.name }}">
-        <p>{{ info.plot }}</p>
-        <p><strong>Cast:</strong> {{ info.cast }}</p>
-        <p><strong>Genre:</strong> {{ info.genre }}</p>
-        <p><strong>Release Date:</strong> {{ info.releaseDate }}</p>
-        <p><strong>Rating:</strong> {{ info.rating_5based }} / 5</p>
-        <p><strong>Episode Runtime:</strong> {{ info.episode_run_time }} min</p>
-        <!-- Youtube trailer if any -->
-        {% if info.youtube_trailer %}
-            <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ info.youtube_trailer }}" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        {% endif %}
-
-        <h3>Seasons</h3>
-        <form id="download-form">
-            {% for season in seasons %}
-                <div class="season-container">
-                    <h4>{{ season.name }}</h4>
-                    <label>
-                        <input type="checkbox" class="select-all" data-season="{{ season.season_number }}">
-                        Select All
-                    </label>
-                    <img src="{{ season.cover }}" alt="{{ season.name }}">
-                    <p>{{ season.overview }}</p>
-                    <p><strong>Air Date:</strong> {{ season.air_date }}</p>
-                    <p><strong>Episode Count:</strong> {{ season.episode_count }}</p>
-                    <button type="button" class="toggle-episodes" data-season="{{ season.season_number }}">Toggle Episodes</button>
-                    <div class="episodes-table" id="season-{{ season.season_number }}" style="display: none;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Select</th>
-                                    <th>Title</th>
-                                    <th>Episode Number</th>
-                                    <th>Duration</th>
-                                    <th>Added</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for episode in episodes|get_item:season.season_number %}
-                                    <tr>
-                                        <td data-label="Select">
-                                            <input type="checkbox" name="episode" value="{{ episode.id }}" data-name="{{ info.name }}" data-season="{{ season.season_number }}" data-title="{{ episode.title }}" data-extension="{{ episode.container_extension }}">
-                                        </td>
-                                        <td data-label="Title"><strong>{{ episode.title }}</strong></td>
-                                        <td data-label="Episode Number">Episode {{ episode.episode_num }}</td>
-                                        <td data-label="Duration">{{ episode.info.duration }}</td>
-                                        <td data-label="Added">{{ episode.added }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            {% endfor %}
-            <button type="button" id="download-button" class="download-button">Download Selected Episodes</button>
-        </form>
-    {% endif %}
-{% endblock %}
-
-{% block extra_js %}
-    <script>
-        document.querySelectorAll('.select-all').forEach(function(selectAllCheckbox) {
-            selectAllCheckbox.addEventListener('change', function() {
+<h3>Seasons</h3>
+<form id="download-form">
+    {% for season in seasons %}
+    <div class="season-container">
+        <h4>{{ season.name }}</h4>
+        <label>
+            <input type="checkbox" class="select-all" data-season="{{ season.season_number }}" />
+            Select All
+        </label>
+        <img src="{{ season.cover }}" alt="{{ season.name }}" />
+        <p>{{ season.overview }}</p>
+        <p><strong>Air Date:</strong> {{ season.air_date }}</p>
+        <p><strong>Episode Count:</strong> {{ season.episode_count }}</p>
+        <button type="button" class="toggle-episodes" data-season="{{ season.season_number }}">Toggle Episodes</button>
+        <div class="episodes-table" id="season-{{ season.season_number }}" style="display: none">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Title</th>
+                        <th>Episode Number</th>
+                        <th>Duration</th>
+                        <th>Added</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for episode in episodes|get_item:season.season_number %}
+                    <tr>
+                        <td data-label="Select">
+                            <input
+                                type="checkbox"
+                                name="episode"
+                                value="{{ episode.id }}"
+                                data-name="{{ info.name }}"
+                                data-season="{{ season.season_number }}"
+                                data-title="{{ episode.title }}"
+                                data-extension="{{ episode.container_extension }}"
+                            />
+                        </td>
+                        <td data-label="Title"><strong>{{ episode.title }}</strong></td>
+                        <td data-label="Episode Number">Episode {{ episode.episode_num }}</td>
+                        <td data-label="Duration">{{ episode.info.duration }}</td>
+                        <td data-label="Added">{{ episode.added }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    <button type="button" id="download-button" class="download-button">Download Selected Episodes</button>
+</form>
+{% endif %} {% endblock %} {% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Existing episode selection and download functionality
+        document.querySelectorAll(".select-all").forEach(function (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener("change", function () {
                 const seasonNumber = this.dataset.season;
                 const checkboxes = document.querySelectorAll(`input[name="episode"][data-season="${seasonNumber}"]`);
-                checkboxes.forEach(function(checkbox) {
+                checkboxes.forEach(function (checkbox) {
                     checkbox.checked = selectAllCheckbox.checked;
                 });
             });
         });
 
-        document.querySelectorAll('.toggle-episodes').forEach(function(button) {
-            button.addEventListener('click', function() {
+        document.querySelectorAll(".toggle-episodes").forEach(function (button) {
+            button.addEventListener("click", function () {
                 const seasonNumber = this.dataset.season;
                 const episodesTable = document.getElementById(`season-${seasonNumber}`);
-                if (episodesTable.style.display === 'none') {
-                    episodesTable.style.display = 'block';
+                if (episodesTable.style.display === "none") {
+                    episodesTable.style.display = "block";
                 } else {
-                    episodesTable.style.display = 'none';
+                    episodesTable.style.display = "none";
                 }
             });
         });
 
-        document.getElementById('download-button').addEventListener('click', function() {
+        document.getElementById("download-button").addEventListener("click", function () {
             const checkboxes = document.querySelectorAll('input[name="episode"]:checked');
-            const items = Array.from(checkboxes).map(cb => ({
+            const items = Array.from(checkboxes).map((cb) => ({
                 stream_id: cb.value,
-                kind: 'series',
+                kind: "series",
                 name: cb.dataset.name,
                 season: cb.dataset.season,
                 episode_title: cb.dataset.title,
-                container_extension: cb.dataset.extension
+                container_extension: cb.dataset.extension,
             }));
 
             if (items.length === 0) {
-                alert('Please select at least one episode to download.');
+                alert("Please select at least one episode to download.");
                 return;
             }
 
             fetch("{% url 'download_streams' %}", {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify(items)
+                body: JSON.stringify(items),
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Download started successfully');
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => {
-                alert('An error occurred: ' + error.message);
-            });
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === "success") {
+                        alert("Download started successfully");
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch((error) => {
+                    alert("An error occurred: " + error.message);
+                });
         });
-    </script>
+
+        // New favorite icon functionality
+        const favoriteIcon = document.querySelector(".favorite-icon");
+        const kind = favoriteIcon.dataset.kind;
+        const streamId = favoriteIcon.dataset.streamId;
+
+        // Check initial favorite status
+        fetch(`/favorites/check/${kind}/${streamId}/`)
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.is_favorite) {
+                    favoriteIcon.classList.add("active");
+                    favoriteIcon.classList.add("ti-carambola-filled");
+                }
+            });
+
+        favoriteIcon.addEventListener("click", function () {
+            const name = this.dataset.name;
+            const image = this.dataset.image;
+
+            fetch("/favorites/toggle/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}",
+                },
+                body: JSON.stringify({
+                    kind: kind,
+                    stream_id: streamId,
+                    name: name,
+                    image: image,
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.status === "added") {
+                        this.classList.add("active");
+                        this.classList.remove("ti-carambola");
+                        this.classList.add("ti-carambola-filled");
+                    } else {
+                        this.classList.remove("active");
+                        this.classList.remove("ti-carambola-filled");
+                        this.classList.add("ti-carambola");
+                    }
+                })
+                .catch((error) => console.error("Error:", error));
+        });
+    });
+</script>
 {% endblock %}

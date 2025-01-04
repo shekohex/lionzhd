@@ -11,6 +11,10 @@ class XtreamConfig(models.Model):
     aeia2_rpc_host = models.CharField(max_length=255, default="umbrel")
     aria2_rpc_port = models.IntegerField(default=6800)
     aria2_rpc_secret = models.CharField(max_length=255, default="")
+    user_agent = models.CharField(
+        max_length=1024,
+        default="Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
+    )
 
     def __str__(self):
         return f"XtreamConfig ({self.host}:{self.port})"

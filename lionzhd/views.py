@@ -29,6 +29,7 @@ class XtreamConfig:
     aria2_rpc_host: str
     aria2_rpc_port: int
     aria2_rpc_secret: str
+    user_agent: str
 
     def __init__(self):
         config = XtreamConfigModel.objects.first()
@@ -42,6 +43,7 @@ class XtreamConfig:
             self.aria2_rpc_host = config.aeia2_rpc_host
             self.aria2_rpc_port = config.aria2_rpc_port
             self.aria2_rpc_secret = config.aria2_rpc_secret
+            self.user_agent = config.user_agent
         else:
             env_config = EnvXtreamConfig()
             self.host = env_config.host
@@ -53,6 +55,7 @@ class XtreamConfig:
             self.aria2_rpc_host = env_config.aria2_rpc_host
             self.aria2_rpc_port = env_config.aria2_rpc_port
             self.aria2_rpc_secret = env_config.aria2_rpc_secret
+            self.user_agent = env_config.user_agent
 
 
 def get_xtream_client():
@@ -67,6 +70,7 @@ def get_xtream_client():
             logger=logger.getChild("XtreamClient"),
             meili_url=config.meili_url,
             meili_api_key=config.meili_api_key,
+            user_agent=config.user_agent,
         )
         client.authenticate()
         if not client.is_authenticated():
@@ -104,9 +108,7 @@ def search_results(request: HttpRequest):
         vods = client.search_vods(query)
         series = client.search_series(query)
         results = {"vods": vods, "series": series}
-        return render(
-            request, "search_results.html", {"results": results, "query": query}
-        )
+        return render(request, "search_results.html", {"results": results, "query": query})
     except Exception as e:
         return render(request, "search_results.html", {"error": str(e), "query": query})
 
@@ -116,9 +118,7 @@ def update_indexes(request: HttpRequest):
         client = get_xtream_client()
         try:
             client.update()
-            return JsonResponse(
-                {"status": "success", "message": "Indexes updated successfully"}
-            )
+            return JsonResponse({"status": "success", "message": "Indexes updated successfully"})
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)})
     return render(request, "update_indexes.html")
@@ -134,9 +134,7 @@ def search_vods(request: HttpRequest):
                 vods = client.search_vods(query)
                 return render(request, "vod_results.html", {"vods": vods})
             except Exception as e:
-                return render(
-                    request, "search_vods.html", {"form": form, "error": str(e)}
-                )
+                return render(request, "search_vods.html", {"form": form, "error": str(e)})
     else:
         form = VODForm()
     return render(request, "search_vods.html", {"form": form})
@@ -150,13 +148,9 @@ def search_series(request: HttpRequest):
             client = get_xtream_client()
             try:
                 series_list = client.search_series(query)
-                return render(
-                    request, "series_results.html", {"series_list": series_list}
-                )
+                return render(request, "series_results.html", {"series_list": series_list})
             except Exception as e:
-                return render(
-                    request, "search_series.html", {"form": form, "error": str(e)}
-                )
+                return render(request, "search_series.html", {"form": form, "error": str(e)})
     else:
         form = SeriesForm()
     return render(request, "search_series.html", {"form": form})
@@ -177,9 +171,7 @@ def series_info(request: HttpRequest, series_id: int):
         # in secs to unix timestamp in ms
         for i in range(1, len(episodes) + 1):
             for j in range(len(episodes[str(i)])):
-                episodes[str(i)][j]["added"] = datetime.datetime.fromtimestamp(
-                    int(episodes[str(i)][j]["added"])
-                ).strftime("%d %b, %Y %I:%M %p")
+                episodes[str(i)][j]["added"] = datetime.datetime.fromtimestamp(int(episodes[str(i)][j]["added"])).strftime("%d %b, %Y %I:%M %p")
 
         if len(seasons) == 0:
             # No Seasons? add a default season
@@ -239,28 +231,25 @@ def download_streams(request: HttpRequest, format="json"):
         try:
             for item in items:
                 if item["kind"] == "vod":
-                    uri = client.vod_download_uri(
-                        item["stream_id"], item["container_extension"]
-                    )
+                    uri = client.vod_download_uri(item["stream_id"], item["container_extension"])
                     opts = aria2.get_global_options()
-                    opts.out = f"movies/{item['name']}/{item['name']}.{item['container_extension']}"
+                    opts.out = f"movies/{item['name']}/{item['name']
+                                                        }.{item['container_extension']}"
                 elif item["kind"] == "series":
-                    uri = client.series_download_uri(
-                        item["stream_id"], item["container_extension"]
-                    )
+                    uri = client.series_download_uri(item["stream_id"], item["container_extension"])
                     opts = aria2.get_global_options()
-                    opts.out = f"shows/{item['name']}/Season 0{item['season']}/{item['episode_title']}.{item['container_extension']}"
+                    opts.out = f"shows/{item['name']}/Season 0{item['season']}/{
+                        item['episode_title']}.{item['container_extension']}"
                 else:
                     return Response(
                         {"status": "error", "message": "Invalid kind"},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
                 [download] = aria2.add(uri=uri, options=opts)
-                downloads.append(
-                    {"gid": download.gid, "name": item["name"], "out": opts.out}
-                )
+                downloads.append({"gid": download.gid, "name": item["name"], "out": opts.out})
                 logger.info(
-                    f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}"
+                    f"Downloading {download.name} (gid: {download.gid}) to {
+                        download.dir}/{download.options.out}"
                 )
 
             return Response(
@@ -309,16 +298,12 @@ def toggle_favorite(request):
         image = data.get("image")
 
         try:
-            favorite = FavoriteItem.objects.filter(
-                kind=kind, stream_id=stream_id
-            ).first()
+            favorite = FavoriteItem.objects.filter(kind=kind, stream_id=stream_id).first()
             if favorite:
                 favorite.delete()
                 return JsonResponse({"status": "removed"})
             else:
-                FavoriteItem.objects.create(
-                    kind=kind, stream_id=stream_id, name=name, image=image
-                )
+                FavoriteItem.objects.create(kind=kind, stream_id=stream_id, name=name, image=image)
                 return JsonResponse({"status": "added"})
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)

@@ -22,6 +22,7 @@ class XtreamClient:
         password: str,
         meili_url: str = "http://127.0.0.1:7700",
         meili_api_key: str = "",
+        user_agent: str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
         logger: Optional[logging.Logger] = None,
     ) -> None:
         self.host = host
@@ -32,6 +33,12 @@ class XtreamClient:
         self.meili_url = meili_url
         self.meili_api_key = meili_api_key
         self.session = requests.Session()
+        self.session.headers.update(
+            {
+                "User-Agent": user_agent,
+                "Accept": "application/json",
+            }
+        )
         self._authenticated = False
         self.logger = logger or logging.getLogger(__name__)
         self.meili_client = self._setup_meilisearch_client()
@@ -64,11 +71,14 @@ class XtreamClient:
         """Authenticate with the Xtream Codes API."""
         url = f"{self.base_url}/player_api.php"
         params = {"username": self.username, "password": self.password}
+        self.logger.debug(f"Authenticating with Xtream Codes API: {url} {params}")
         try:
             response = self.session.get(url, params=params)
+            self.logger.debug(f"Authentication response: {response.text}")
             response.raise_for_status()
             self.logger.debug(
-                f"Authentication response: {json.dumps(response.json(), indent=2)}"
+                f"Authentication response: {
+                    json.dumps(response.json(), indent=2)}"
             )
             self.logger.info("Authentication successful")
             self._authenticated = True
@@ -108,10 +118,9 @@ class XtreamClient:
             series_data = response.json()
             index = self.meili_client.index(SERIES_INDEX)
             task_info = index.add_documents(series_data, primary_key="series_id")
-            task = self.meili_client.wait_for_task(
-                task_info.task_uid, timeout_in_ms=timeout
-            )
-            self.logger.debug(f"Updating MeiliSearch index {SERIES_INDEX} task: {task}")
+            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
+            self.logger.debug(f"Updating MeiliSearch index {
+                              SERIES_INDEX} task: {task}")
 
         except requests.RequestException as e:
             self.logger.error(f"Failed to update series: {str(e)}")
@@ -131,10 +140,9 @@ class XtreamClient:
             vods_data = response.json()
             index = self.meili_client.index(MOVIES_INDEX)
             task_info = index.add_documents(vods_data, primary_key="stream_id")
-            task = self.meili_client.wait_for_task(
-                task_info.task_uid, timeout_in_ms=timeout
-            )
-            self.logger.debug(f"Updating MeiliSearch index {MOVIES_INDEX} task: {task}")
+            task = self.meili_client.wait_for_task(task_info.task_uid, timeout_in_ms=timeout)
+            self.logger.debug(f"Updating MeiliSearch index {
+                              MOVIES_INDEX} task: {task}")
 
         except requests.RequestException as e:
             self.logger.error(f"Failed to update VODs: {str(e)}")
@@ -179,9 +187,7 @@ class XtreamClient:
             infos = response.json()
             return infos
         except requests.RequestException as e:
-            self.logger.exception(
-                f"Failed to get series info: {e.response}", exc_info=e
-            )
+            self.logger.exception(f"Failed to get series info: {e.response}", exc_info=e)
             return None
 
     def vod_info(self, vod_id: int, timeout=60000) -> Optional[Dict]:
@@ -203,14 +209,10 @@ class XtreamClient:
             self.logger.error(f"Failed to get VOD info: {str(e)}")
             return None
 
-    def vod_download_uri(
-        self, vod_id: int, container_extension: str, timeout=60000
-    ) -> str:
+    def vod_download_uri(self, vod_id: int, container_extension: str, timeout=60000) -> str:
         """Get VOD download URI by id."""
         return f"{self.base_url}/movie/{self.username}/{self.password}/{vod_id}.{container_extension}"
 
-    def series_download_uri(
-        self, series_id: int, container_extension: str, timeout=60000
-    ) -> str:
+    def series_download_uri(self, series_id: int, container_extension: str, timeout=60000) -> str:
         """Get series download URI by id."""
         return f"{self.base_url}/series/{self.username}/{self.password}/{series_id}.{container_extension}"

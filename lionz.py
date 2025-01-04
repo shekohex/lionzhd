@@ -56,9 +56,7 @@ def search_vods(x: XtreamClient, aria2: aria2p.API):
             opts.out = f"movies/{selected_vod}/{selected_vod}.{vod_container_extension}"
             uri = x.vod_download_uri(vod_id, vod_container_extension)
             [download] = aria2.add(uri=uri, options=opts)
-            logging.info(
-                f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}"
-            )
+            logging.info(f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}")
         else:
             return
         # Add code here to fetch and display VOD info
@@ -78,14 +76,10 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
             return
 
         series_map = {s["name"]: s for s in series_list}
-        selected_series = inquirer.list_input(
-            "Select a Series", choices=list(series_map.keys())
-        )
+        selected_series = inquirer.list_input("Select a Series", choices=list(series_map.keys()))
         selected_series = series_map[selected_series]
         series_id = selected_series["series_id"]
-        logging.info(
-            f"Getting Series info for {selected_series.get('name')} (#{series_id})..."
-        )
+        logging.info(f"Getting Series info for {selected_series.get('name')} (#{series_id})...")
         series_info = x.series_info(series_id)
         if not series_info:
             logging.info("No Series info found")
@@ -102,9 +96,7 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
         episodes = series_info.get("episodes", {})
         selected_season_episodes = episodes.get(selected_season, [])
         episodes_map = {e["title"]: e for e in selected_season_episodes}
-        selected_episodes = inquirer.checkbox(
-            "Select Episodes", choices=[e["title"] for e in selected_season_episodes]
-        )
+        selected_episodes = inquirer.checkbox("Select Episodes", choices=[e["title"] for e in selected_season_episodes])
         selected_episodes = [episodes_map[ep] for ep in selected_episodes]
         if not selected_episodes:
             logging.info("No Episodes selected")
@@ -117,9 +109,7 @@ def search_series(x: XtreamClient, aria2: aria2p.API):
                 opts.out = f"shows/{selected_series.get('name')}/{season}/{e['title']}.{e['container_extension']}"
                 uri = x.series_download_uri(e["id"], e["container_extension"])
                 [download] = aria2.add(uri=uri, options=opts)
-                logging.info(
-                    f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}"
-                )
+                logging.info(f"Downloading {download.name} (gid: {download.gid}) to {download.dir}/{download.options.out}")
     except Exception as e:
         logging.error(f"Error occurred while searching Series: {e}")
 
@@ -166,9 +156,7 @@ def main():
     }
 
     while True:
-        action = inquirer.list_input(
-            "What do you want to do?", choices=list(actions.keys()) + ["Exit"]
-        )
+        action = inquirer.list_input("What do you want to do?", choices=list(actions.keys()) + ["Exit"])
 
         if action == "Exit":
             break

@@ -10,6 +10,7 @@ class XtreamConfig:
     meili_api_key: str
     aria2_rpc_host: str
     aria2_rpc_port: int
+    user_agent: str
 
     def __init__(self):
         self.host = os.getenv("XTREAM_CODES_API_HOST", "http://xtream-codes.com")
@@ -21,3 +22,7 @@ class XtreamConfig:
         self.aria2_rpc_host = os.getenv("ARIA2_RPC_HOST", "umbrel")
         self.aria2_rpc_port = int(os.getenv("ARIA2_RPC_PORT", 6800))
         self.aria2_rpc_secret = os.getenv("ARIA2_RPC_SECRET", "")
+        self.user_agent = os.getenv(
+            "USER_AGENT",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0",
+        )

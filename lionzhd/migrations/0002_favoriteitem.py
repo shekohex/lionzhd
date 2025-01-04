@@ -23,9 +23,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "kind",
-                    models.CharField(
-                        choices=[("series", "Series"), ("vod", "VOD")], max_length=10
-                    ),
+                    models.CharField(choices=[("series", "Series"), ("vod", "VOD")], max_length=10),
                 ),
                 ("stream_id", models.IntegerField()),
                 ("name", models.CharField(max_length=255)),

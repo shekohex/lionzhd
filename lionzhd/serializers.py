@@ -14,7 +14,5 @@ class DownloadItemSerializer(serializers.Serializer):
             if "season" not in attrs:
                 raise serializers.ValidationError("Season is required for series.")
             if "episode_title" not in attrs:
-                raise serializers.ValidationError(
-                    "Episode title is required for series."
-                )
+                raise serializers.ValidationError("Episode title is required for series.")
         return attrs

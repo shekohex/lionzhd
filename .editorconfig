@@ -11,6 +11,9 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
+[*.php]
+php_remove_redundant_closing_tag = autofix
+
 [*.{yml,yaml}]
 indent_size = 2
 

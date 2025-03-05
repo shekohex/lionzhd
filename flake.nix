@@ -5,7 +5,12 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
@@ -72,7 +77,6 @@
             php
             frankenphp
             php.packages.composer
-            php.packages.php-cs-fixer
             php.packages.phpstan
             pkgs.blade-formatter
             pkgs.phpactor

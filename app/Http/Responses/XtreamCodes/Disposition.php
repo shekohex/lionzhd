@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Responses\XtreamCodes;
 
 final readonly class Disposition
@@ -8,17 +10,20 @@ final readonly class Disposition
         public int $default,
         public int $dub,
         public int $original,
-        public readonly int $comment,
-        public readonly int $lyrics,
-        public readonly int $karaoke,
-        public readonly int $forced,
-        public readonly int $hearingImpaired,
-        public readonly int $visualImpaired,
-        public readonly int $cleanEffects,
-        public readonly int $attachedPic,
-        public readonly int $timedThumbnails
+        public int $comment,
+        public int $lyrics,
+        public int $karaoke,
+        public int $forced,
+        public int $hearingImpaired,
+        public int $visualImpaired,
+        public int $cleanEffects,
+        public int $attachedPic,
+        public int $timedThumbnails
     ) {}
 
+    /**
+     * @param  array<string,mixed>  $data
+     */
     public static function fromJson(array $data): self
     {
         return new self(

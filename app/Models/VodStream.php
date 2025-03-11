@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 
-class VodStream extends Model
+/**
+ * @mixin IdeHelperVodStream
+ */
+final class VodStream extends Model
 {
     use Searchable;
 
@@ -27,7 +32,7 @@ class VodStream extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var list<string>
      */
     protected $fillable = [
         'num',
@@ -46,23 +51,28 @@ class VodStream extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * @return array<string,string>
      */
-    protected $casts = [
-        'num' => 'integer',
-        'stream_id' => 'integer',
-        'rating_5based' => 'decimal:1',
-        'is_adult' => 'boolean',
-        'added' => 'datetime',
-    ];
-
     public function toSearchableArray(): array
     {
         return [
             'name' => $this->name,
-            'description' => $this->description,
+        ];
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'num' => 'integer',
+            'stream_id' => 'integer',
+            'rating_5based' => 'decimal:1',
+            'is_adult' => 'boolean',
+            'added' => 'immutable_datetime',
         ];
     }
 }

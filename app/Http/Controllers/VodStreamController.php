@@ -1,65 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Client\XtreamCodesClient;
 use App\Models\VodStream;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
-class VodStreamController extends Controller
+final class VodStreamController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        //
-    }
+        $movies = VodStream::query()
+            ->orderByDesc('added')
+            ->paginate(20);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return Inertia::render('movies/index', [
+            'movies' => $movies,
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(VodStream $vodStream)
+    public function show(XtreamCodesClient $client, VodStream $model): Response
     {
-        //
-    }
+        $vod = $client->vodInfo($model->stream_id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(VodStream $vodStream)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, VodStream $vodStream)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(VodStream $vodStream)
-    {
-        //
+        return Inertia::render('movies/show', [
+            'movie' => $vod,
+        ]);
     }
 }

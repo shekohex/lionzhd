@@ -1,19 +1,33 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Scout\Searchable;
 
-class Series extends Model
+/**
+ * @mixin IdeHelperSeries
+ */
+final class Series extends Model
 {
     use Searchable;
 
     /**
      * Indicates if the model's ID is auto-incrementing.
+     *
+     * @var bool
      */
     public $incrementing = false;
+
+    /**
+     * Indicates if all mass assignment is enabled.
+     *
+     * @var bool
+     */
+    protected static $unguarded = true;
 
     /**
      * The table associated with the model.
@@ -28,7 +42,7 @@ class Series extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<string>
+     * @var list<string>
      */
     protected $fillable = [
         'num',
@@ -49,19 +63,6 @@ class Series extends Model
         'category_id',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'num' => 'integer',
-        'series_id' => 'integer',
-        'rating_5based' => 'decimal:1',
-        'backdrop_path' => AsArrayObject::class,
-        'releaseDate' => 'date',
-    ];
-
     public function toSearchableArray(): array
     {
         return [
@@ -70,6 +71,22 @@ class Series extends Model
             'cast' => $this->cast,
             'director' => $this->director,
             'genre' => $this->genre,
+        ];
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string|class-string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'num' => 'integer',
+            'series_id' => 'integer',
+            'rating_5based' => 'decimal:1',
+            'backdrop_path' => AsArrayObject::class,
+            'last_modified' => 'immutable_datetime',
         ];
     }
 }

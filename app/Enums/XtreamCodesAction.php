@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Enums;
 
 /**
@@ -15,6 +17,7 @@ enum XtreamCodesAction: string
      * Get Series from Xtream Codes API
      */
     case GetSeries = 'get_series';
+
     /**
      * Get VOD Streams from Xtream Codes API
      */

@@ -1,0 +1,254 @@
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
+import useAxios from '@/hooks/use-axios';
+import { useDebounce } from '@/hooks/use-debounce';
+import { SearchRequest, SearchResult } from '@/types/search';
+import { Page } from '@inertiajs/core';
+import { useForm } from '@inertiajs/react';
+import { FilmIcon, SearchIcon, TvIcon, XIcon } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
+interface SearchInputProps {
+    placeholder?: string;
+    className?: string;
+    initialQuery?: string;
+    onSubmit?: (query: SearchRequest) => void;
+    autoFocus?: boolean;
+    onClear?: () => void;
+    showSearchIcon?: boolean;
+    fullWidth?: boolean;
+    submitOnInitialQuery?: boolean;
+}
+
+export function SearchInput({
+    placeholder = 'Search...',
+    initialQuery = '',
+    className = '',
+    onSubmit,
+    autoFocus = false,
+    onClear,
+    showSearchIcon = true,
+    fullWidth = false,
+    submitOnInitialQuery = false,
+}: SearchInputProps) {
+    // Using Inertia form hook for better integration with Laravel
+    const { data, setData, processing, get } = useForm<SearchRequest>({
+        q: initialQuery,
+    });
+
+    const shouldSubmitOnInitialQuery = useRef(submitOnInitialQuery);
+    const {
+        data: autocompleteData,
+        loading,
+        execute,
+    } = useAxios<Page<SearchResult<'lightweight'>>>(
+        {
+            url: route('search.lightweight'),
+            method: 'GET',
+        },
+        false,
+    );
+
+    const [isFocused, setIsFocused] = useState(false);
+    const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+    const searchContainerRef = useRef<HTMLDivElement>(null);
+
+    // Debounce search query
+    const debouncedQuery = useDebounce(data.q || '', 300);
+
+    // Handle autocomplete call
+    useEffect(() => {
+        if (!debouncedQuery || debouncedQuery.length < 2) {
+            setIsAutocompleteOpen(false);
+            return;
+        }
+
+        async function fetchSuggestions() {
+            await execute({ params: { q: debouncedQuery } });
+            setIsAutocompleteOpen(true);
+        }
+
+        fetchSuggestions();
+    }, [debouncedQuery, execute]);
+
+    // Handle click outside to close autocomplete
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+                setIsAutocompleteOpen(false);
+                setIsFocused(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Handle form submission
+    const handleSubmit = useCallback(
+        (e?: FormEvent) => {
+            e?.preventDefault();
+
+            if (data.q && data.q.trim().length > 2) {
+                if (onSubmit) {
+                    onSubmit(data);
+                } else {
+                    // Default behavior: navigate to search page with query using Inertia
+                    get(route('search'), {
+                        preserveState: true,
+                        replace: true,
+                    });
+                }
+            }
+
+            setIsAutocompleteOpen(false);
+        },
+        [data, onSubmit, get],
+    );
+
+    // Handle initial query submission
+    useEffect(() => {
+        if (shouldSubmitOnInitialQuery.current && initialQuery && initialQuery.length >= 2) {
+            shouldSubmitOnInitialQuery.current = false;
+            handleSubmit();
+        }
+    }, [initialQuery, handleSubmit]);
+
+    // Handle keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Cmd+K or Ctrl+K to focus search
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    const totalResults = useMemo(
+        () => (autocompleteData?.props?.movies?.total ?? 0) + (autocompleteData?.props?.series?.total ?? 0),
+        [autocompleteData],
+    );
+
+    // Handle suggestion selection
+    const handleSuggestionSelect = useCallback(
+        (suggestionText: string) => {
+            setData('q', suggestionText);
+            // Use a small timeout to ensure the query state is updated
+            setTimeout(() => {
+                handleSubmit();
+            }, 0);
+        },
+        [handleSubmit, setData],
+    );
+
+    return (
+        <div ref={searchContainerRef} className={`relative ${fullWidth ? 'w-full' : 'w-auto'}`}>
+            <form ref={formRef} onSubmit={handleSubmit} className="relative">
+                <div
+                    className={`relative flex items-center ${isFocused ? 'ring-primary/20 border-primary ring-2' : ''}`}
+                >
+                    {showSearchIcon && (
+                        <SearchIcon className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2" />
+                    )}
+
+                    <Input
+                        ref={inputRef}
+                        type="search"
+                        placeholder={placeholder}
+                        className={`${showSearchIcon ? 'pl-10' : 'pl-4'} py-6 pr-12 text-lg ${className}`}
+                        value={data.q || ''}
+                        onChange={(e) => setData('q', e.target.value)}
+                        onFocus={() => {
+                            setIsFocused(true);
+                            // Show autocomplete if query is long enough
+                            if (data.q && data.q.length >= 2) {
+                                setIsAutocompleteOpen(true);
+                            }
+                        }}
+                        autoFocus={autoFocus}
+                        disabled={processing}
+                    />
+
+                    {data.q && (
+                        <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground absolute top-1/2 right-10 -translate-y-1/2"
+                            onClick={() => {
+                                setData('q', '');
+                                onClear?.();
+                                inputRef.current?.focus();
+                                setIsAutocompleteOpen(false);
+                            }}
+                        >
+                            <XIcon className="h-4 w-4" />
+                            <span className="sr-only">Clear search</span>
+                        </button>
+                    )}
+
+                    <div className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2">
+                        <kbd className="border-border text-muted-foreground/70 inline-flex h-5 items-center rounded border px-1 font-mono text-[0.625rem] font-medium">
+                            ⌘K
+                        </kbd>
+                    </div>
+                </div>
+
+                {/* Autocomplete dropdown */}
+                {isAutocompleteOpen && (
+                    <div className="bg-popover absolute top-full right-0 left-0 z-30 mt-1 max-h-[300px] overflow-hidden rounded-lg border shadow-lg">
+                        <Command>
+                            <CommandList>
+                                {loading ? (
+                                    <div className="flex items-center justify-center py-6">
+                                        <div className="border-primary h-5 w-5 animate-spin rounded-full border-b-2"></div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <CommandEmpty>No results found</CommandEmpty>
+                                        <CommandGroup heading="Suggestions">
+                                            {autocompleteData?.props?.movies?.data?.map((result) => (
+                                                <CommandItem
+                                                    key={result.id}
+                                                    onSelect={() => handleSuggestionSelect(result.name)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <FilmIcon className="h-4 w-4" />
+                                                        <span>{result.name}</span>
+                                                    </div>
+                                                </CommandItem>
+                                            ))}
+                                            {autocompleteData?.props?.series?.data?.map((result) => (
+                                                <CommandItem
+                                                    key={result.id}
+                                                    onSelect={() => handleSuggestionSelect(result.name)}
+                                                    className="cursor-pointer"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <TvIcon className="h-4 w-4" />
+                                                        <span>{result.name}</span>
+                                                    </div>
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </>
+                                )}
+
+                                {!totalResults && data.q && data.q.length >= 2 && !loading && (
+                                    <div className="text-muted-foreground px-2 py-3 text-center text-sm">
+                                        Press Enter to search for "{data.q}"
+                                    </div>
+                                )}
+                            </CommandList>
+                        </Command>
+                    </div>
+                )}
+            </form>
+        </div>
+    );
+}

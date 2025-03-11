@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
 
     /*
@@ -64,6 +66,7 @@ return [
         'port' => env('XTREAM_CODES_API_PORT', 80),
         'username' => env('XTREAM_CODES_API_USER', 'example'),
         'password' => env('XTREAM_CODES_API_PASS', 'password'),
+        'user_agent' => env('HTTP_CLIENT_USER_AGENT', '"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0"'),
     ],
 
 ];

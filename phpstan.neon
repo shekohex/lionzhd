@@ -1,0 +1,12 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+parameters:
+    level: 5
+    noEnvCallsOutsideOfConfig: false
+    checkOctaneCompatibility: true
+    paths:
+        - app
+        - database
+        - routes
+        - vendor/_ide_helper/models.php

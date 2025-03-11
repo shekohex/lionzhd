@@ -58,6 +58,8 @@
             #xdebug.start_with_request=yes
             #xdebug.start_upon_error=yes
             #xdebug.idekey=VSCODE
+            # Incresing memory limit
+            memory_limit = 1G
           '';
         };
         frankenphp = pkgs.frankenphp.override {
@@ -80,6 +82,7 @@
             php.packages.phpstan
             pkgs.blade-formatter
             pkgs.phpactor
+            pkgs.meilisearch
           ];
           packages = [ ];
 

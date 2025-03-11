@@ -1,15 +1,43 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Tests\Feature\Jobs;
 
+use App\Client\XtreamCodesClient;
 use App\Jobs\RefreshMediaContents;
 use App\Models\HttpClientConfig;
-use App\Models\XtreamCodeConfig;
+use App\Models\XtreamCodesConfig;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class RefreshMediaContentsTest extends TestCase
+final class RefreshMediaContentsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Bind mock configs to the container
+        $this->app->bind(XtreamCodesConfig::class, static fn () => new XtreamCodesConfig(
+            [
+                'host' => 'http://test.api',
+                'port' => 80,
+                'username' => 'test_user',
+                'password' => 'test_pass',
+            ]
+        ));
+
+        $this->app->bind(HttpClientConfig::class, static fn () => new HttpClientConfig(
+            [
+                'user_agent' => 'TestUserAgent',
+                'timeout' => 30,
+                'connect_timeout' => 30,
+                'verify_ssl' => false,
+                'default_headers' => ['X-Custom-Header' => 'value'],
+            ]
+        ));
+    }
+
     /**
      * A basic feature test example.
      */
@@ -21,37 +49,9 @@ class RefreshMediaContentsTest extends TestCase
             'http://test.api/player_api.php*' => Http::response($expectedResponse, 200),
         ]);
         $job = $this->app->make(RefreshMediaContents::class);
+        $client = $this->app->make(XtreamCodesClient::class);
         $job->withFakeQueueInteractions()
             ->assertNotFailed()
-            ->handle();
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Bind mock configs to the container
-        $this->app->bind(XtreamCodeConfig::class, function () {
-            return new XtreamCodeConfig(
-                [
-                    'host' => 'http://test.api',
-                    'port' => 80,
-                    'username' => 'test_user',
-                    'password' => 'test_pass',
-                ]
-            );
-        });
-
-        $this->app->bind(HttpClientConfig::class, function () {
-            return new HttpClientConfig(
-                [
-                    'user_agent' => 'TestUserAgent',
-                    'timeout' => 30,
-                    'connect_timeout' => 30,
-                    'verify_ssl' => false,
-                    'default_headers' => ['X-Custom-Header' => 'value'],
-                ]
-            );
-        });
+            ->handle($client);
     }
 }

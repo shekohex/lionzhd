@@ -1,21 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Models\Aria2Config;
 use App\Models\HttpClientConfig;
-use App\Models\MeilisearchConfig;
-use App\Models\XtreamCodeConfig;
+use App\Models\XtreamCodesConfig;
 use Illuminate\Console\Command;
 
-class InitializeConfigurations extends Command
+final class InitializeConfigurations extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'lionz:initialize-configurations';
+    protected $signature = 'lionz:configure';
 
     /**
      * The console command description.
@@ -29,70 +30,56 @@ class InitializeConfigurations extends Command
      */
     public function handle(): int
     {
-        $this->initializeMeilisearch();
         $this->initializeAria2();
         $this->initializeHttpClient();
-        $this->initializeXtreamCode();
+        $this->initializeXtreamCodes();
         $this->info('All configurations initialized successfully!');
 
         return Command::SUCCESS;
     }
 
     /**
-     * Initialize Meilisearch configuration.
-     */
-    protected function initializeMeilisearch(): void
-    {
-        $model = MeilisearchConfig::firstOrNew();
-        if ($model->save() === true) {
-            $this->info('Meilisearch configuration initialized successfully.');
-        } else {
-            $this->line('Meilisearch configuration already exists.');
-        }
-    }
-
-    /**
      * Initialize Aria2 configuration.
      */
-    protected function initializeAria2(): void
+    private function initializeAria2(): void
     {
-
-        $model = Aria2Config::firstOrNew();
-
-        if ($model->save() === true) {
+        $model = Aria2Config::firstOrFromEnv();
+        if ($model->exists) {
+            $this->comment('Aria2 configuration already exists.');
+        } elseif ($model->save()) {
             $this->info('Aria2 configuration initialized successfully.');
         } else {
-            $this->line('Aria2 configuration already exists.');
+            $this->error('Failed to initialize Aria2 configuration.');
         }
     }
 
     /**
      * Initialize HTTP client configuration.
      */
-    protected function initializeHttpClient(): void
+    private function initializeHttpClient(): void
     {
-
-        $model = HttpClientConfig::firstOrNew();
-
-        if ($model->save() === true) {
+        $model = HttpClientConfig::firstOrFromEnv();
+        if ($model->exists) {
+            $this->comment('HTTP client configuration already exists.');
+        } elseif ($model->save()) {
             $this->info('HTTP client configuration initialized successfully.');
         } else {
-            $this->line('HTTP client configuration already exists.');
+            $this->error('Failed to initialize HTTP client configuration.');
         }
     }
 
     /**
-     * Initialize Xtream-Code configuration.
+     * Initialize Xtream-Codes configuration.
      */
-    protected function initializeXtreamCode(): void
+    private function initializeXtreamCodes(): void
     {
-
-        $model = XtreamCodeConfig::firstOrNew();
-
-        if ($model->save() === true) {
-            $this->info('Xtream-Code configuration initialized successfully.');
+        $model = XtreamCodesConfig::firstOrFromEnv();
+        if ($model->exists) {
+            $this->comment('Xtream-Codes configuration already exists.');
+        } elseif ($model->save()) {
+            $this->info('Xtream-Codes configuration initialized successfully.');
         } else {
-            $this->line('Xtream-Code configuration already exists.');
+            $this->error('Failed to initialize Xtream-Codes configuration.');
         }
     }
 }

@@ -1,65 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
+use App\Client\XtreamCodesClient;
 use App\Models\Series;
-use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
-class SeriesController extends Controller
+final class SeriesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): Response
     {
-        //
-    }
+        $series = Series::query()
+            ->orderByDesc('last_modified')
+            ->paginate(20);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return Inertia::render('series/index', [
+            'series' => $series,
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Series $series)
+    public function show(XtreamCodesClient $client, Series $model): Response
     {
-        //
-    }
+        $series = $client->seriesInfo($model->series_id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Series $series)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Series $series)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Series $series)
-    {
-        //
+        return Inertia::render('series/show', [
+            'series' => $series,
+        ]);
     }
 }

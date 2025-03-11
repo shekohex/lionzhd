@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Contracts\Models\EnvConfigurable;
+use App\Models\Concerns\LoadsFromEnv;
 use Illuminate\Database\Eloquent\Model;
 
-class Aria2Config extends Model
+/**
+ * @mixin IdeHelperAria2Config
+ */
+final class Aria2Config extends Model implements EnvConfigurable
 {
-    /** @use HasFactory<\Database\Factories\Aria2ConfigFactory> */
-    use HasFactory;
+    use LoadsFromEnv;
 
     protected $fillable = [
         'host',
@@ -17,9 +22,8 @@ class Aria2Config extends Model
         'use_ssl',
     ];
 
-    protected $casts = [
-        'port' => 'integer',
-        'use_ssl' => 'boolean',
+    protected $hidden = [
+        'secret',
     ];
 
     /**
@@ -27,13 +31,23 @@ class Aria2Config extends Model
      */
     public static function first(): ?self
     {
-        return static::query()->first();
+        return self::query()->first();
+    }
+
+    /**
+     * Get Aria2 configuration based on environment variables.
+     */
+    public static function fromEnv(): self
+    {
+        return new self(
+            self::envAttributes()
+        );
     }
 
     /**
      * Get configuration as array for client initialization.
      *
-     * @return array<string,mixed>
+     * @return array{endpoint: string, secret: string}
      */
     public function toClientConfig(): array
     {
@@ -51,5 +65,34 @@ class Aria2Config extends Model
         $protocol = $this->use_ssl ? 'https' : 'http';
 
         return "{$protocol}://{$this->host}:{$this->port}/jsonrpc";
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'use_ssl' => 'boolean',
+            'port' => 'integer',
+            'secret' => 'encrypted',
+        ];
+    }
+
+    /**
+     * Get the attributes that should be retrieved from the environment.
+     *
+     * @return array<string,mixed>
+     */
+    private static function envAttributes(): array
+    {
+        return [
+            'host' => config('services.aria2.host'),
+            'port' => config('services.aria2.port'),
+            'secret' => config('services.aria2.secret'),
+            'use_ssl' => false,
+        ];
     }
 }

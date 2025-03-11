@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vod_streams', function (Blueprint $table) {
+        Schema::create('vod_streams', static function (Blueprint $table): void {
             $table->unsignedInteger('num')->primary();
             $table->string('name');
             $table->string('stream_type');
@@ -21,7 +23,7 @@ return new class extends Migration
             $table->decimal('rating_5based', 3, 1)->default(0);
             $table->string('added');
             $table->boolean('is_adult')->default(false);
-            $table->string('category_id');
+            $table->string('category_id')->nullable();
             $table->string('container_extension');
             $table->string('custom_sid')->nullable();
             $table->string('direct_source')->nullable();

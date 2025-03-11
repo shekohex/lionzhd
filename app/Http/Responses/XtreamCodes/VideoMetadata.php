@@ -1,46 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Responses\XtreamCodes;
 
 final readonly class VideoMetadata
 {
-    /**
-     * @param  array<string,string>  $tags
-     */
+    /** @param array<string,string> $tags */
     public function __construct(
-        public readonly int $index,
-        public readonly string $codecName,
-        public readonly string $codecLongName,
-        public readonly string $profile,
-        public readonly string $codecType,
-        public readonly string $codecTimeBase,
-        public readonly string $codecTagString,
-        public readonly string $codecTag,
-        public readonly int $width,
-        public readonly int $height,
-        public readonly int $codedWidth,
-        public readonly int $codedHeight,
-        public readonly int $hasBFrames,
-        public readonly string $pixFmt,
-        public readonly int $level,
-        public readonly string $chromaLocation,
-        public readonly int $refs,
-        public readonly string $isAvc,
-        public readonly string $nalLengthSize,
-        public readonly string $rFrameRate,
-        public readonly string $avgFrameRate,
-        public readonly string $timeBase,
-        public readonly int $startPts,
-        public readonly string $startTime,
-        public readonly int $durationTs,
-        public readonly string $duration,
-        public readonly string $bitRate,
-        public readonly string $bitsPerRawSample,
-        public readonly string $nbFrames,
-        public readonly Disposition $disposition,
-        public readonly array $tags
+        public int $index,
+        public string $codecName,
+        public string $codecLongName,
+        public string $profile,
+        public string $codecType,
+        public string $codecTimeBase,
+        public string $codecTagString,
+        public string $codecTag,
+        public int $width,
+        public int $height,
+        public int $codedWidth,
+        public int $codedHeight,
+        public int $hasBFrames,
+        public string $pixFmt,
+        public int $level,
+        public string $chromaLocation,
+        public int $refs,
+        public string $isAvc,
+        public string $nalLengthSize,
+        public string $rFrameRate,
+        public string $avgFrameRate,
+        public string $timeBase,
+        public int $startPts,
+        public string $startTime,
+        public int $durationTs,
+        public string $duration,
+        public string $bitRate,
+        public string $bitsPerRawSample,
+        public string $nbFrames,
+        public Disposition $disposition,
+        public array $tags
     ) {}
 
+    /**
+     * @param  array<string,mixed>  $data
+     */
     public static function fromJson(array $data): self
     {
         return new self(
@@ -61,18 +64,18 @@ final readonly class VideoMetadata
             $data['level'],
             $data['chroma_location'],
             $data['refs'],
-            $data['is_avc'],
-            $data['nal_length_size'],
+            $data['is_avc'] ?? '0',
+            $data['nal_length_size'] ?? '0',
             $data['r_frame_rate'],
             $data['avg_frame_rate'],
             $data['time_base'],
             $data['start_pts'],
             $data['start_time'],
-            $data['duration_ts'],
-            $data['duration'],
-            $data['bit_rate'],
-            $data['bits_per_raw_sample'],
-            $data['nb_frames'],
+            $data['duration_ts'] ?? 0,
+            $data['duration'] ?? '0:00:00.000',
+            $data['bit_rate'] ?? '5000000', // 5 Mbps is a reasonable bitrate for H264 HD content
+            $data['bits_per_raw_sample'] ?? '8', // 8-bit color depth is standard for most H264 content
+            $data['nb_frames'] ?? '144000', // ~1h30m movie at 24fps
             Disposition::fromJson($data['disposition']),
             $data['tags']
         );

@@ -23,7 +23,6 @@ export interface NavItem {
 
 export interface SharedData {
     name: string;
-    quote: { message: string; author: string };
     auth: Auth;
     [key: string]: unknown;
 }
@@ -38,3 +37,7 @@ export interface User {
     updated_at: string;
     [key: string]: unknown; // This allows for additional properties...
 }
+
+export type PrimitiveType = string | number | boolean | null | undefined;
+// Update array type to allow mixed arrays (string, number, boolean)
+export type ArrayType = (string | number | boolean)[] | string[] | number[] | boolean[];

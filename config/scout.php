@@ -1,5 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
+use App\Models\Series;
+use App\Models\VodStream;
+
 return [
 
     /*
@@ -42,10 +47,7 @@ return [
     |
     */
 
-    'queue' => [
-        'connection' => env('SCOUT_QUEUE', false),
-        'queue' => env('SCOUT_QUEUE_NAME', 'scout'),
-    ],
+    'queue' => env('SCOUT_QUEUE', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -58,7 +60,7 @@ return [
     |
     */
 
-    'after_commit' => false,
+    'after_commit' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -72,8 +74,8 @@ return [
     */
 
     'chunk' => [
-        'searchable' => 500,
-        'unsearchable' => 500,
+        'searchable' => 1000,
+        'unsearchable' => 1000,
     ],
 
     /*
@@ -143,9 +145,16 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
-            // 'users' => [
-            //     'filterableAttributes'=> ['id', 'name', 'email'],
-            // ],
+            Series::class => [
+                'sortableAttributes' => ['created_at', 'last_modified', 'releaseDate', 'rating', 'rating_5based'],
+                'filterableAttributes' => ['genre', 'category_id'],
+            ],
+
+            VodStream::class => [
+                'sortableAttributes' => ['created_at', 'added', 'rating', 'rating_5based'],
+                'filterableAttributes' => ['category_id'],
+            ],
+
         ],
     ],
 

@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Contracts\Models\EnvConfigurable;
+use App\Models\Concerns\LoadsFromEnv;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 
-class HttpClientConfig extends Model
+/**
+ * @mixin IdeHelperHttpClientConfig
+ */
+final class HttpClientConfig extends Model implements EnvConfigurable
 {
-    /** @use HasFactory<\Database\Factories\HttpClientConfigFactory> */
-    use HasFactory;
+    use LoadsFromEnv;
 
     protected $fillable = [
         'user_agent',
@@ -20,19 +25,22 @@ class HttpClientConfig extends Model
         'default_headers',
     ];
 
-    protected $casts = [
-        'timeout' => 'integer',
-        'connect_timeout' => 'integer',
-        'verify_ssl' => 'boolean',
-        'default_headers' => 'array',
-    ];
-
     /**
      * Get HTTP client configuration.
      */
     public static function first(): ?self
     {
-        return static::query()->first();
+        return self::query()->first();
+    }
+
+    /**
+     * Get HTTP client configuration based on environment variables.
+     */
+    public static function fromEnv(): self
+    {
+        return new self(
+            self::envAttributes()
+        );
     }
 
     /**
@@ -50,7 +58,7 @@ class HttpClientConfig extends Model
             $client->withoutVerifying();
         }
 
-        if ($this->default_headers) {
+        if (! empty($this->default_headers)) {
             $client->withHeaders($this->default_headers);
         }
 
@@ -70,6 +78,36 @@ class HttpClientConfig extends Model
             'connect_timeout' => $this->connect_timeout,
             'verify_ssl' => $this->verify_ssl,
             'default_headers' => $this->default_headers ?? [],
+        ];
+    }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'timeout' => 'integer',
+            'connect_timeout' => 'integer',
+            'verify_ssl' => 'boolean',
+            'default_headers' => 'array',
+        ];
+    }
+
+    /**
+     * Get the attributes that should be retrieved from the environment.
+     *
+     * @return array<string,mixed>
+     */
+    private static function envAttributes(): array
+    {
+        return [
+            'user_agent' => env('HTTP_CLIENT_USER_AGENT', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:133.0) Gecko/20100101 Firefox/133.0'),
+            'timeout' => 120,
+            'connect_timeout' => 30,
+            'verify_ssl' => true,
         ];
     }
 }

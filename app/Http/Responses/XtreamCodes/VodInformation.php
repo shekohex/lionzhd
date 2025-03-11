@@ -1,9 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Responses\XtreamCodes;
 
 final readonly class VodInformation
 {
+    /**
+     * @param  list<string>  $backdropPath
+     */
     public function __construct(
         public int $vodId,
         public string $movieImage,
@@ -25,6 +30,9 @@ final readonly class VodInformation
         public Movie $movie
     ) {}
 
+    /**
+     * @param  array<string,mixed>  $data
+     */
     public static function fromJson(int $vodId, array $data): self
     {
         $info = $data['info'];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Exception;
@@ -7,7 +9,7 @@ use Illuminate\Contracts\Debug\ShouldntReport;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class UnauthorizedAccessException extends Exception implements ShouldntReport
+final class UnauthorizedAccessException extends Exception implements ShouldntReport
 {
     public function __construct(string $body, int $code = 401, ?Throwable $previous = null)
     {

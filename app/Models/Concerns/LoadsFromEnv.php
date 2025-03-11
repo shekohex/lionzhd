@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
+use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
 /*
@@ -11,15 +12,17 @@ use Throwable;
  */
 trait LoadsFromEnv
 {
+    abstract public static function fromEnv(): self;
+
+    abstract public static function query(): Builder;
+
     /**
      * Get the first model or create a new one from the environment variables.
      */
     public static function firstOrFromEnv(): self
     {
         try {
-            $query = static::query();
-
-            return $query->firstOrFail();
+            return static::query()->firstOrFail();
         } catch (Throwable) {
             return static::fromEnv();
         }

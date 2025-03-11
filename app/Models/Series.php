@@ -63,6 +63,9 @@ final class Series extends Model
         'category_id',
     ];
 
+    /**
+     * @return array<string,mixed>
+     */
     public function toSearchableArray(): array
     {
         return [

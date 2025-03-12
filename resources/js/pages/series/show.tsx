@@ -92,6 +92,8 @@ export default function SeriesInformation() {
                 <div className="relative w-full">
                     {/* Hero Section with fallback image handling */}
                     <MediaHeroSection
+                        mediaId={series.seriesId}
+                        mediaType="series"
                         title={series.name}
                         description={series.plot}
                         releaseYear={releaseYear ?? ''}

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
 
 /**
@@ -75,6 +76,16 @@ final class Series extends Model
             'director' => $this->director,
             'genre' => $this->genre,
         ];
+    }
+
+    /**
+     * Get all watchlist entries for this series.
+     *
+     * @return MorphMany<Watchlist,$this>
+     */
+    public function watchlists(): MorphMany
+    {
+        return $this->morphMany(Watchlist::class, 'watchable');
     }
 
     /**

@@ -2,19 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Concerns;
+namespace App\Concerns;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 /*
  * Trait that loads the configuration from environment variables.
+ * @mixin \Illuminate\Database\Eloquent\Model
  */
 trait LoadsFromEnv
 {
     abstract public static function fromEnv(): self;
-
-    abstract public static function query(): Builder;
 
     /**
      * Get the first model or create a new one from the environment variables.
@@ -22,7 +21,10 @@ trait LoadsFromEnv
     public static function firstOrFromEnv(): self
     {
         try {
-            return static::query()->firstOrFail();
+            /** @var Model $model */
+            $model = static::class;
+
+            return $model::query()->firstOrFail();
         } catch (Throwable) {
             return static::fromEnv();
         }

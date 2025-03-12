@@ -156,4 +156,5 @@ export interface MoviesPageProps extends SharedData {
 
 export interface MovieInformationPageProps extends SharedData {
     movie: VodStreamInformation;
+    in_watchlist: boolean;
 }

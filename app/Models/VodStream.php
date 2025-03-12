@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
 
 /**
@@ -58,6 +59,16 @@ final class VodStream extends Model
         return [
             'name' => $this->name,
         ];
+    }
+
+    /**
+     * Get all watchlist entries for this VOD.
+     *
+     * @return MorphMany<Watchlist,$this>
+     */
+    public function watchlists(): MorphMany
+    {
+        return $this->morphMany(Watchlist::class, 'watchable');
     }
 
     /**

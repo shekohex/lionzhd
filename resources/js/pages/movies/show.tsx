@@ -139,6 +139,8 @@ export default function MovieInformation() {
                 <div className="relative w-full">
                     {/* Hero Section with fallback image handling */}
                     <MediaHeroSection
+                        mediaId={movie.vodId}
+                        mediaType="movie"
                         title={movie.movie.name}
                         description={movie.plot}
                         releaseYear={releaseYear ?? '20??'}

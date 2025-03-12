@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Film, Folder, Search, Telescope, Tv } from 'lucide-react';
+import { Bookmark, BookOpen, Film, Folder, Search, Telescope, Tv } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -36,12 +36,17 @@ const mainNavItems: NavItem[] = [
         url: '/series',
         icon: Tv,
     },
+    {
+        title: 'Watchlist',
+        url: '/watchlist',
+        icon: Bookmark,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
-        url: 'https://github.com/laravel/react-starter-kit',
+        url: 'https://github.com/shekohex/lionzhd',
         icon: Folder,
     },
     {

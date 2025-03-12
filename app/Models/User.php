@@ -6,6 +6,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -44,6 +45,29 @@ final class User extends Authenticatable
     public static function canSignUp(): bool
     {
         return self::query()->count() < 1;
+    }
+
+    /**
+     * Get the watchlist items for the user.
+     *
+     * @return HasMany<Watchlist,$this>
+     */
+    public function watchlists(): HasMany
+    {
+        return $this->hasMany(Watchlist::class);
+    }
+
+    /**
+     * Check if the media item, by the given ID and type, is in the user's watchlist.
+     *
+     * @param  class-string<VodStream>|class-string<Series>  $mediaType
+     */
+    public function inMyWatchlist(int $mediaId, string $mediaType): bool
+    {
+        return $this->watchlists()
+            ->where('watchable_type', $mediaType)
+            ->where('watchable_id', $mediaId)
+            ->exists();
     }
 
     /**

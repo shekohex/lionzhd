@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Concerns\LoadsFromEnv;
 use App\Contracts\Models\EnvConfigurable;
-use App\Models\Concerns\LoadsFromEnv;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\SeriesController;
 use App\Http\Controllers\VodStreamController;
+use App\Http\Controllers\WatchlistController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,13 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
     Route::controller(SeriesController::class)->group(static function (): void {
         Route::get('series', 'index')->name('series');
         Route::get('series/{model}', 'show')->whereNumber('model')->name('series.show');
+    });
+
+    Route::controller(WatchlistController::class)->group(static function (): void {
+        Route::get('watchlist', 'index')->name('watchlist');
+        Route::get('watchlist/check', 'check')->name('watchlist.check');
+        Route::post('watchlist', 'store');
+        Route::delete('watchlist/{id}', 'destroy')->whereNumber('id');
     });
 });
 

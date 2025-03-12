@@ -3,12 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { BookmarkIcon, HeartIcon, InfoIcon, PlayIcon, PlusIcon } from 'lucide-react';
-import React, { useCallback, useState } from 'react';
+import { InfoIcon, PlayIcon } from 'lucide-react';
+import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import MediaBackdrop from './media-backdrop';
+import WatchlistButton from './watchlist-button';
 
 export interface MediaHeroSectionProps {
+    mediaId: number;
+    mediaType: 'movie' | 'series';
+    inMyWatchlist?: boolean;
     // Media information
     title: string;
     description?: string;
@@ -25,8 +29,6 @@ export interface MediaHeroSectionProps {
     // Actions
     onPlay?: () => void;
     onTrailerPlay?: () => void;
-    onAddToList?: () => void;
-    onFavorite?: () => void;
     onMoreInfo?: () => void;
     // UI Customization
     className?: string;
@@ -36,6 +38,8 @@ export interface MediaHeroSectionProps {
 }
 
 const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
+    mediaId,
+    mediaType,
     title,
     description,
     releaseYear,
@@ -46,10 +50,9 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     posterUrl,
     additionalBackdrops,
     trailerUrl,
+    inMyWatchlist,
     onPlay,
     onTrailerPlay,
-    onAddToList,
-    onFavorite,
     onMoreInfo,
     className,
     showActions = true,
@@ -57,23 +60,10 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     maxDescriptionLength = 200,
 }) => {
     // State for UI interactions
-    const [isFavorite, setIsFavorite] = useState(false);
-    const [inMyList, setInMyList] = useState(false);
     const [showFullDescription, setShowFullDescription] = useState(false);
 
     // Process genre data
     const genreList = Array.isArray(genres) ? genres : genres?.split(',').map((g) => g.trim()) || [];
-
-    // Handle user actions
-    const handleFavoriteClick = useCallback(() => {
-        setIsFavorite((prev) => !prev);
-        onFavorite?.();
-    }, [onFavorite]);
-
-    const handleMyListClick = useCallback(() => {
-        setInMyList((prev) => !prev);
-        onAddToList?.();
-    }, [onAddToList]);
 
     // Handle description truncation
     const truncatedDescription =
@@ -210,49 +200,11 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                     )}
 
                                     {/* My List button with tooltip */}
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    onClick={handleMyListClick}
-                                                    className="h-10 w-10"
-                                                >
-                                                    {inMyList ? <BookmarkIcon size={18} /> : <PlusIcon size={18} />}
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>{inMyList ? 'Remove from My List' : 'Add to My List'}</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-
-                                    {/* Favorite button with tooltip */}
-                                    <TooltipProvider>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                                <Button
-                                                    size="icon"
-                                                    variant="secondary"
-                                                    onClick={handleFavoriteClick}
-                                                    className="h-10 w-10"
-                                                >
-                                                    <HeartIcon
-                                                        size={18}
-                                                        className={cn(
-                                                            'transition-colors',
-                                                            isFavorite ? 'fill-red-500 text-red-500' : '',
-                                                        )}
-                                                    />
-                                                </Button>
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p>{isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}</p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-
+                                    <WatchlistButton
+                                        mediaId={mediaId}
+                                        mediaType={mediaType}
+                                        isInWatchlist={inMyWatchlist}
+                                    />
                                     {/* More Info button */}
                                     {onMoreInfo && (
                                         <TooltipProvider>

@@ -21,6 +21,8 @@ declare module 'ziggy-js' {
             "binding": "num"
         }
     ],
+    "watchlist": [],
+    "watchlist.check": [],
     "profile.edit": [],
     "profile.update": [],
     "profile.destroy": [],

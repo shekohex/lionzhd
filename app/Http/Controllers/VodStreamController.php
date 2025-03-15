@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Client\XtreamCodesClient;
+use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
+use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\User;
 use App\Models\VodStream;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Attributes\CurrentUser;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,11 +31,9 @@ final class VodStreamController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(XtreamCodesClient $client, VodStream $model): Response
+    public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
     {
-        $vod = $client->vodInfo($model->stream_id);
-        /** @var User $user */
-        $user = Auth::user();
+        $vod = $client->send(new GetVodInfoRequest($model->stream_id))->dtoOrFail();
         $inWatchlist = $user->inMyWatchlist($model->num, VodStream::class);
 
         return Inertia::render('movies/show', [

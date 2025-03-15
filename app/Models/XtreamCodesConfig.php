@@ -6,7 +6,6 @@ namespace App\Models;
 
 use App\Concerns\LoadsFromEnv;
 use App\Contracts\Models\EnvConfigurable;
-use App\Enums\XtreamCodesAction;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -56,16 +55,6 @@ final class XtreamCodesConfig extends Model implements EnvConfigurable
     public function baseUrl(): string
     {
         return "{$this->host}:{$this->port}";
-    }
-
-    /**
-     * Get credentials with action as array.
-     *
-     * @return array{action: XtreamCodesAction, username: string, password: string}
-     */
-    public function credentialsWithAction(XtreamCodesAction $action): array
-    {
-        return array_merge($this->credentials(), ['action' => $action]);
     }
 
     /**

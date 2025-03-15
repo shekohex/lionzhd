@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Aria2Config;
-use App\Models\HttpClientConfig;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Console\Command;
 
@@ -28,11 +27,12 @@ final class InitializeConfigurations extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
-    {
-        $this->initializeAria2();
-        $this->initializeHttpClient();
-        $this->initializeXtreamCodes();
+    public function handle(
+        Aria2Config $aria2Config,
+        XtreamCodesConfig $xtreamCodesConfig
+    ): int {
+        $this->initializeAria2($aria2Config);
+        $this->initializeXtreamCodes($xtreamCodesConfig);
         $this->info('All configurations initialized successfully!');
 
         return Command::SUCCESS;
@@ -41,9 +41,8 @@ final class InitializeConfigurations extends Command
     /**
      * Initialize Aria2 configuration.
      */
-    private function initializeAria2(): void
+    private function initializeAria2(Aria2Config $model): void
     {
-        $model = Aria2Config::firstOrFromEnv();
         if ($model->exists) {
             $this->comment('Aria2 configuration already exists.');
         } elseif ($model->save()) {
@@ -54,26 +53,10 @@ final class InitializeConfigurations extends Command
     }
 
     /**
-     * Initialize HTTP client configuration.
-     */
-    private function initializeHttpClient(): void
-    {
-        $model = HttpClientConfig::firstOrFromEnv();
-        if ($model->exists) {
-            $this->comment('HTTP client configuration already exists.');
-        } elseif ($model->save()) {
-            $this->info('HTTP client configuration initialized successfully.');
-        } else {
-            $this->error('Failed to initialize HTTP client configuration.');
-        }
-    }
-
-    /**
      * Initialize Xtream-Codes configuration.
      */
-    private function initializeXtreamCodes(): void
+    private function initializeXtreamCodes(XtreamCodesConfig $model): void
     {
-        $model = XtreamCodesConfig::firstOrFromEnv();
         if ($model->exists) {
             $this->comment('Xtream-Codes configuration already exists.');
         } elseif ($model->save()) {

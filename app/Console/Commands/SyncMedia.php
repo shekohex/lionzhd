@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Client\XtreamCodesClient;
-use App\Jobs\RefreshMediaContents;
+use App\Actions\SyncMedia as SyncMediaAction;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -29,14 +28,14 @@ final class SyncMedia extends Command
     /**
      * Execute the console command.
      */
-    public function handle(RefreshMediaContents $job, XtreamCodesClient $client): int
+    public function handle(SyncMediaAction $syncMedia): int
     {
         $this->info('Starting media synchronization...');
 
         try {
-            // Dispatch the job and wait for it to finish
-            $this->info('Running RefreshMediaContents job...');
-            $job->work($client);
+            // Execute the sync media action
+            $this->info('Running SyncMedia action...');
+            $syncMedia->run();
             $this->info('Media synchronization completed successfully!');
 
             return Command::SUCCESS;

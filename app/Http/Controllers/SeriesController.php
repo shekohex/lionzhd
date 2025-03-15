@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Client\XtreamCodesClient;
+use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
+use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\Series;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Container\Attributes\CurrentUser;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,11 +31,9 @@ final class SeriesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(XtreamCodesClient $client, Series $model): Response
+    public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, Series $model): Response
     {
-        $series = $client->seriesInfo($model->series_id);
-        /** @var User $user */
-        $user = Auth::user();
+        $series = $client->send(new GetSeriesInfoRequest($model->series_id))->dtoOrFail();
         $inWatchlist = $user->inMyWatchlist($model->num, Series::class);
 
         return Inertia::render('series/show', [

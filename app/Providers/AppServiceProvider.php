@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\Aria2Config;
-use App\Models\HttpClientConfig;
 use App\Models\XtreamCodesConfig;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +22,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(XtreamCodesConfig::class, static fn () => XtreamCodesConfig::firstOrFromEnv());
-        $this->app->bind(HttpClientConfig::class, static fn () => HttpClientConfig::firstOrFromEnv());
         $this->app->bind(Aria2Config::class, static fn () => Aria2Config::firstOrFromEnv());
     }
 

@@ -24,7 +24,7 @@ trait LoadsFromEnv
             /** @var Model $model */
             $model = static::class;
 
-            return $model::query()->firstOrFail();
+            return $model::query()->sole();
         } catch (Throwable) {
             return static::fromEnv();
         }

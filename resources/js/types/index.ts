@@ -1,4 +1,5 @@
 import { LucideIcon } from 'lucide-react';
+import type { Config } from 'ziggy-js';
 
 export interface Auth {
     user: User;
@@ -24,6 +25,7 @@ export interface NavItem {
 export interface SharedData {
     name: string;
     auth: Auth;
+    ziggy: Config & { location: string };
     [key: string]: unknown;
 }
 

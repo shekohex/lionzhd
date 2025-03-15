@@ -2,9 +2,9 @@
 declare module 'ziggy-js' {
   interface RouteList {
     "home": [],
+    "home.search": [],
     "discover": [],
-    "search": [],
-    "search.lightweight": [],
+    "search.full": [],
     "movies": [],
     "movies.show": [
         {

@@ -10,7 +10,11 @@ import { ChevronRight, PlayCircle, SearchIcon, Star } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function Welcome() {
-    const { auth, name, movies, series } = usePage<WelcomePageProps>().props;
+    const {
+        auth,
+        name,
+        featured: { series, movies },
+    } = usePage<WelcomePageProps>().props;
     const isAuthenticated = auth.user !== null;
     const [activeBg, setActiveBg] = useState(0);
     const [isTrigger, setIsTrigger] = useState(false);
@@ -227,6 +231,7 @@ function AuthenticatedContent() {
             >
                 <h2 className="text-primary mb-6 text-3xl font-bold">Search Our Entire Library</h2>
                 <SearchInput
+                    searchRoute="home.search"
                     placeholder="Search movies, TV series..."
                     fullWidth
                     className="shadow-primary/5 shadow-lg"

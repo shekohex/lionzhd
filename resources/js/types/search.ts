@@ -7,7 +7,7 @@ export type MediaType = 'movie' | 'series';
 export type SortBy = 'popular' | 'rating' | 'latest';
 
 export interface LightweightMedia<K extends MediaType = MediaType> {
-    id: number;
+    num: number;
     name: string;
     type: K;
     poster?: string;

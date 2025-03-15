@@ -1,54 +1,40 @@
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
-import useAxios from '@/hooks/use-axios';
 import { useDebounce } from '@/hooks/use-debounce';
 import { SearchRequest, SearchResult } from '@/types/search';
-import { Page } from '@inertiajs/core';
-import { useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { FilmIcon, SearchIcon, TvIcon, XIcon } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ValidRouteName } from 'ziggy-js';
 
 interface SearchInputProps {
+    searchRoute: ValidRouteName;
     placeholder?: string;
     className?: string;
-    initialQuery?: string;
     onSubmit?: (query: SearchRequest) => void;
     autoFocus?: boolean;
     onClear?: () => void;
     showSearchIcon?: boolean;
     fullWidth?: boolean;
-    submitOnInitialQuery?: boolean;
 }
 
 export function SearchInput({
     placeholder = 'Search...',
-    initialQuery = '',
     className = '',
+    searchRoute,
     onSubmit,
     autoFocus = false,
     onClear,
     showSearchIcon = true,
     fullWidth = false,
-    submitOnInitialQuery = false,
 }: SearchInputProps) {
+    const { props: autocompleteData } = usePage<SearchResult<'lightweight'>>();
     // Using Inertia form hook for better integration with Laravel
-    const { data, setData, processing, get } = useForm<SearchRequest>({
-        q: initialQuery,
+    const { data, setData, processing, post, get } = useForm<SearchRequest>({
+        q: autocompleteData.filters?.q ?? '',
     });
 
-    const shouldSubmitOnInitialQuery = useRef(submitOnInitialQuery);
-    const {
-        data: autocompleteData,
-        loading,
-        execute,
-    } = useAxios<Page<SearchResult<'lightweight'>>>(
-        {
-            url: route('search.lightweight'),
-            method: 'GET',
-        },
-        false,
-    );
-
+    const isFullSearch = useMemo(() => searchRoute === 'search.full', [searchRoute]);
     const [isFocused, setIsFocused] = useState(false);
     const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +42,7 @@ export function SearchInput({
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
     // Debounce search query
-    const debouncedQuery = useDebounce(data.q || '', 300);
+    const debouncedQuery = useDebounce(data.q || '', 500);
 
     // Handle autocomplete call
     useEffect(() => {
@@ -66,12 +52,23 @@ export function SearchInput({
         }
 
         async function fetchSuggestions() {
-            await execute({ params: { q: debouncedQuery } });
-            setIsAutocompleteOpen(true);
+            const callMethod = isFullSearch ? get : post;
+            callMethod(route(searchRoute), {
+                preserveScroll: true,
+                preserveState: true,
+                preserveUrl: !isFullSearch,
+                only: !isFullSearch ? ['movies', 'series', 'filters'] : [],
+                onFinish: () => {
+                    setIsAutocompleteOpen(!isFullSearch);
+                },
+            });
         }
-
-        fetchSuggestions();
-    }, [debouncedQuery, execute]);
+        if (isFullSearch) {
+            setTimeout(fetchSuggestions, 0);
+        } else {
+            fetchSuggestions();
+        }
+    }, [debouncedQuery, post, get, isFullSearch, searchRoute]);
 
     // Handle click outside to close autocomplete
     useEffect(() => {
@@ -96,7 +93,9 @@ export function SearchInput({
                     onSubmit(data);
                 } else {
                     // Default behavior: navigate to search page with query using Inertia
-                    get(route('search'), {
+                    router.visit(route('search.full'), {
+                        method: 'get',
+                        data: { q: data.q },
                         preserveState: true,
                         replace: true,
                     });
@@ -105,16 +104,8 @@ export function SearchInput({
 
             setIsAutocompleteOpen(false);
         },
-        [data, onSubmit, get],
+        [data, onSubmit],
     );
-
-    // Handle initial query submission
-    useEffect(() => {
-        if (shouldSubmitOnInitialQuery.current && initialQuery && initialQuery.length >= 2) {
-            shouldSubmitOnInitialQuery.current = false;
-            handleSubmit();
-        }
-    }, [initialQuery, handleSubmit]);
 
     // Handle keyboard shortcuts
     useEffect(() => {
@@ -131,7 +122,7 @@ export function SearchInput({
     }, []);
 
     const totalResults = useMemo(
-        () => (autocompleteData?.props?.movies?.total ?? 0) + (autocompleteData?.props?.series?.total ?? 0),
+        () => (autocompleteData?.movies?.total ?? 0) + (autocompleteData?.series?.total ?? 0),
         [autocompleteData],
     );
 
@@ -172,7 +163,6 @@ export function SearchInput({
                             }
                         }}
                         autoFocus={autoFocus}
-                        disabled={processing}
                     />
 
                     {data.q && (
@@ -203,7 +193,7 @@ export function SearchInput({
                     <div className="bg-popover absolute top-full right-0 left-0 z-30 mt-1 max-h-[300px] overflow-hidden rounded-lg border shadow-lg">
                         <Command>
                             <CommandList>
-                                {loading ? (
+                                {processing ? (
                                     <div className="flex items-center justify-center py-6">
                                         <div className="border-primary h-5 w-5 animate-spin rounded-full border-b-2"></div>
                                     </div>
@@ -211,9 +201,9 @@ export function SearchInput({
                                     <>
                                         <CommandEmpty>No results found</CommandEmpty>
                                         <CommandGroup heading="Suggestions">
-                                            {autocompleteData?.props?.movies?.data?.map((result) => (
+                                            {autocompleteData?.movies?.data?.map((result) => (
                                                 <CommandItem
-                                                    key={result.id}
+                                                    key={result.num}
                                                     onSelect={() => handleSuggestionSelect(result.name)}
                                                     className="cursor-pointer"
                                                 >
@@ -223,9 +213,9 @@ export function SearchInput({
                                                     </div>
                                                 </CommandItem>
                                             ))}
-                                            {autocompleteData?.props?.series?.data?.map((result) => (
+                                            {autocompleteData?.series?.data?.map((result) => (
                                                 <CommandItem
-                                                    key={result.id}
+                                                    key={result.num}
                                                     onSelect={() => handleSuggestionSelect(result.name)}
                                                     className="cursor-pointer"
                                                 >
@@ -239,7 +229,7 @@ export function SearchInput({
                                     </>
                                 )}
 
-                                {!totalResults && data.q && data.q.length >= 2 && !loading && (
+                                {!totalResults && data.q && data.q.length >= 2 && !processing && (
                                     <div className="text-muted-foreground px-2 py-3 text-center text-sm">
                                         Press Enter to search for "{data.q}"
                                     </div>

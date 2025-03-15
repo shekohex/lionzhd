@@ -92,7 +92,7 @@ export default function Search() {
             const defaultOptions = { preserveState: true, preserveScroll: true };
             const searchOptions = { ...defaultOptions, ...options };
 
-            get(route('search'), searchOptions);
+            get(route('search.full'), searchOptions);
         },
         [get],
     );
@@ -152,9 +152,8 @@ export default function Search() {
                             {/* Using the updated search input component with Inertia form handling */}
                             <SearchInput
                                 placeholder="Search movies, TV series..."
-                                initialQuery={data.q}
+                                searchRoute="search.full"
                                 onSubmit={handleSearch}
-                                submitOnInitialQuery
                                 fullWidth
                                 autoFocus
                             />
@@ -318,7 +317,7 @@ export default function Search() {
                                             <p className="text-muted-foreground text-sm">
                                                 Found {total} results for "
                                                 <span className="text-foreground font-medium">
-                                                    {parsedQuery.baseQuery || data.q}
+                                                    {props.filters?.q || data.q}
                                                 </span>
                                                 "
                                             </p>

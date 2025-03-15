@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Jobs;
 
-use App\Client\XtreamCodesClient;
 use App\Jobs\RefreshMediaContents;
-use App\Models\HttpClientConfig;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -26,16 +24,6 @@ final class RefreshMediaContentsTest extends TestCase
                 'password' => 'test_pass',
             ]
         ));
-
-        $this->app->bind(HttpClientConfig::class, static fn () => new HttpClientConfig(
-            [
-                'user_agent' => 'TestUserAgent',
-                'timeout' => 30,
-                'connect_timeout' => 30,
-                'verify_ssl' => false,
-                'default_headers' => ['X-Custom-Header' => 'value'],
-            ]
-        ));
     }
 
     /**
@@ -49,9 +37,7 @@ final class RefreshMediaContentsTest extends TestCase
             'http://test.api/player_api.php*' => Http::response($expectedResponse, 200),
         ]);
         $job = $this->app->make(RefreshMediaContents::class);
-        $client = $this->app->make(XtreamCodesClient::class);
         $job->withFakeQueueInteractions()
-            ->assertNotFailed()
-            ->handle($client);
+            ->assertNotFailed()->handle();
     }
 }

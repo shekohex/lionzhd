@@ -10,13 +10,16 @@ use App\Http\Controllers\WatchlistController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [WelcomeController::class, 'index'])->name('home');
+Route::controller(WelcomeController::class)->prefix('/')->group(static function (): void {
+    Route::get('/', 'index')->name('home');
+    Route::post('/search', 'search')->name('home.search');
+});
 
 Route::middleware(['auth', 'verified'])->group(static function (): void {
     Route::get('discover', [DiscoverController::class, 'index'])->name('discover');
-    Route::controller(SearchController::class)->group(static function (): void {
-        Route::get('search', 'full')->name('search');
-        Route::get('search/lightweight', 'lightweight')->name('search.lightweight');
+
+    Route::controller(SearchController::class)->prefix('search')->group(static function (): void {
+        Route::get('/', 'full')->name('search.full');
     });
 
     Route::controller(VodStreamController::class)->group(static function (): void {

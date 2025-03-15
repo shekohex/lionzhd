@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\Config\RectorConfig;
+use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
 use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
 use RectorLaravel\Set\LaravelLevelSetList;
@@ -12,11 +13,15 @@ use RectorLaravel\Set\LaravelSetList;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/app',
-        __DIR__.'/bootstrap',
-        __DIR__.'/routes',
+        __DIR__.'/bootstrap/app.php',
+        __DIR__.'/config',
+        __DIR__.'/database',
+        __DIR__.'/public',
+        __DIR__.'/tests',
     ])
     ->withSkip([
         __DIR__.'/bootstrap/cache',
+        AddOverrideAttributeToOverriddenMethodsRector::class,
         EncapsedStringsToSprintfRector::class,
         AddArrowFunctionReturnTypeRector::class,
     ])
@@ -45,4 +50,5 @@ return RectorConfig::configure()
         privatization: true,
         typeDeclarations: true,
         rectorPreset: true,
+        earlyReturn: true,
     );

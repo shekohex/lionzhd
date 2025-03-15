@@ -5,8 +5,11 @@ parameters:
     level: 5
     noEnvCallsOutsideOfConfig: false
     checkOctaneCompatibility: true
+    checkModelProperties: true
+    treatPhpDocTypesAsCertain: false
     paths:
         - app
         - database
         - routes
+        - database/factories
         - vendor/_ide_helper/models.php

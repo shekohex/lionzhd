@@ -16,6 +16,9 @@
         "laravel/scout": "^10.13",
         "laravel/tinker": "^2.10.1",
         "meilisearch/meilisearch-php": "^1.13",
+        "saloonphp/cache-plugin": "^3.0",
+        "saloonphp/laravel-plugin": "^3.5",
+        "saloonphp/saloon": "^3.11",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
@@ -72,6 +75,11 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "pnpm dlx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"pnpm run dev\" --names=server,queue,logs,vite"
+        ],
+        "dev:ssr": [
+            "npm run build:ssr",
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr"
         ]
     },
     "extra": {

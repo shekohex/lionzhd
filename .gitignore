@@ -27,6 +27,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/resources/js/ziggy.js
 
 # windsurf rules
 .windsurfrules
+/.memorybank
+

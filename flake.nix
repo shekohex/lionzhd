@@ -75,6 +75,7 @@
             pkgs.nodePackages.typescript-language-server
             pkgs.nodejs_22
             pkgs.pnpm
+            pkgs.uv
 
             php
             frankenphp

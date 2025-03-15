@@ -35,6 +35,7 @@ final class JsonRpcConnector extends Connector
         if ($response->failed()) {
             return true;
         }
+
         return $response->json('error') !== null;
     }
 

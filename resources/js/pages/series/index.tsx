@@ -106,6 +106,7 @@ export default function Series() {
                                                     title={show.name}
                                                     posterUrl={show.cover}
                                                     rating={show.rating_5based}
+                                                    inWatchlist={show.in_watchlist}
                                                 />
                                             </Link>
                                         </motion.div>

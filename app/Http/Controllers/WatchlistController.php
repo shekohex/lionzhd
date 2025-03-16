@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CheckWatchlistRequest;
+use App\Actions\AddToWatchlist;
 use App\Http\Requests\ListWatchlistRequest;
 use App\Http\Requests\StoreWatchlistRequest;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;
 use App\Models\Watchlist;
+use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -64,43 +66,22 @@ final class WatchlistController extends Controller
     /**
      * Add an item to the user's watchlist.
      */
-    public function store(StoreWatchlistRequest $request): RedirectResponse
+    public function store(#[CurrentUser] User $user, StoreWatchlistRequest $request): RedirectResponse
     {
         $type = $request->string('type')->lower()->toString();
         $id = $request->integer('id');
 
-        /** @var User $user */
-        $user = Auth::user();
-
         // Determine the model type based on the type parameter
         $modelType = $type === 'movie' ? VodStream::class : Series::class;
 
-        // Check if the item exists
-        $model = $modelType::find($id);
-        if (! $model) {
-            return to_route('watchlist')->withErrors("{$type} is not found in the database");
+        $added = AddToWatchlist::run($user, $id, $modelType);
+
+        if (! $added) {
+            return to_route('watchlist')
+                ->withErrors('Failed to add the item to the watchlist');
         }
 
-        // Check if the item is already in the watchlist
-        $exists = $user->watchlists()
-            ->where('watchable_type', $modelType)
-            ->where('watchable_id', $id)
-            ->exists();
-
-        if ($exists) {
-            return to_route('watchlist')->withErrors("{$type} already in your watchlist");
-        }
-
-        // Add to watchlist
-        $item = $user->watchlists()->create([
-            'watchable_type' => $modelType,
-            'watchable_id' => $id,
-        ]);
-
-        return to_route('watchlist')
-            ->with('watchableType', $type)
-            ->with('watchableId', $id)
-            ->with('itemId', $item->id);
+        return to_route('watchlist');
     }
 
     /**
@@ -108,41 +89,19 @@ final class WatchlistController extends Controller
      */
     public function destroy(int $id): RedirectResponse
     {
-        /** @var User $user */
-        $user = Auth::user();
-        /** @var ?Watchlist $watchlistItem */
-        $watchlistItem = $user->watchlists()->find($id);
+        try {
+            $removed = Watchlist::query()
+                ->where('id', $id)
+                ->firstOrFail()
+                ->delete();
 
-        if (! $watchlistItem) {
-            return to_route('watchlist')->withErrors('watchlist item does not exist');
+            return to_route('watchlist')
+                ->with('message', 'Item removed from your watchlist');
+
+        } catch (ModelNotFoundException $e) {
+            return to_route('watchlist')
+                ->withErrors('Watchlist item does not exist');
         }
 
-        $deleted = $watchlistItem->delete();
-
-        if (! $deleted) {
-            return to_route('watchlist')->withErrors('Failed to remove the item from the watchlist');
-        }
-
-        return to_route('watchlist')->with('message', 'item added to your watchlist');
-    }
-
-    /**
-     * Check whether the user has added the media item to their watchlist.
-     */
-    public function check(CheckWatchlistRequest $request): Response
-    {
-        /** @var User $user */
-        $user = Auth::user();
-        $id = $request->integer('media_id');
-        $type = $request->string('media_type')->lower()->toString();
-
-        $modelType = $type === 'movie' ? VodStream::class : Series::class;
-        $exists = $user->inMyWatchlist($id, $modelType);
-
-        return Inertia::render('watchlist', [
-            'exists' => $exists,
-            'filter' => $type,
-            'items' => [],
-        ]);
     }
 }

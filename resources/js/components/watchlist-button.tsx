@@ -1,101 +1,49 @@
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import useAxios from '@/hooks/use-axios';
-import { AddToWatchlistResponse } from '@/types/watchlist';
-import { Page } from '@inertiajs/core';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface WatchlistButtonProps {
-    mediaId: number;
-    mediaType: 'movie' | 'series';
-    isInWatchlist?: boolean;
-    watchlistItemId?: number;
+    isInWatchlist?: () => boolean;
     variant?: 'default' | 'outline' | 'ghost';
     size?: 'default' | 'sm' | 'lg' | 'icon';
+    onAddToWatchlist?: () => void;
+    onRemoveFromWatchlist?: () => void;
 }
 
 export default function WatchlistButton({
-    mediaId,
-    mediaType,
-    isInWatchlist = false,
-    watchlistItemId,
+    isInWatchlist,
     variant = 'outline',
     size = 'icon',
+    onAddToWatchlist,
+    onRemoveFromWatchlist,
 }: WatchlistButtonProps) {
-    const [inWatchlist, setInWatchlist] = useState(isInWatchlist);
-    const [itemId, setItemId] = useState(watchlistItemId);
-    const {
-        data: deleteData,
-        loading: deleteLoading,
-        error: deleteError,
-        execute: removeFromWatchlist,
-    } = useAxios(
-        {
-            method: 'DELETE',
-        },
-        false,
-    );
-
-    const {
-        data: addData,
-        loading: addLoading,
-        error: addError,
-        execute: addToWatchlist,
-    } = useAxios<Page<AddToWatchlistResponse>>(
-        {
-            method: 'POST',
-        },
-        false,
-    );
-
+    const [loading, setLoading] = useState(false);
     const handleToggleWatchlist = async () => {
-        if (inWatchlist && itemId) {
+        setLoading(true);
+        if (isInWatchlist?.()) {
             // Remove from watchlist
-            await removeFromWatchlist({
-                url: route('watchlist', { id: itemId }),
-            });
-            console.log('Removed', deleteData);
-            setInWatchlist(false);
-            setItemId(undefined);
-            toast.info('Removed', {
-                description: 'The item has been removed from your watchlist.',
-                action: {
-                    label: 'Undo',
-                    onClick: () => {
-                        setItemId(itemId);
-                        return handleToggleWatchlist();
-                    },
-                },
-            });
+            if (onRemoveFromWatchlist?.()) {
+                toast.info('Removed', {
+                    description: 'The item has been removed from your watchlist.',
+                });
+            }
         } else {
             // Add to watchlist
-            await addToWatchlist({
-                url: route('watchlist'),
-                data: {
-                    type: mediaType,
-                    id: mediaId,
-                },
-            });
-            console.log('Added', addData);
-            setInWatchlist(true);
-            setItemId(addData?.props.watchable_id);
-            toast('Added to watchlist', {
-                description: 'The item has been added to your watchlist.',
-                action: {
-                    label: 'Undo',
-                    onClick: () => {
-                        return handleToggleWatchlist();
+            if (onAddToWatchlist?.()) {
+                toast('Added to watchlist', {
+                    description: 'The item has been added to your watchlist.',
+                    action: {
+                        label: 'Undo',
+                        onClick: () => {
+                            return handleToggleWatchlist();
+                        },
                     },
-                },
-            });
+                });
+            }
         }
-
-        if (addError || deleteError) {
-            console.error('Error toggling watchlist:', addError || deleteError);
-            toast.error('There was an error updating your watchlist.');
-        }
+        setLoading(false);
     };
 
     return (
@@ -106,14 +54,14 @@ export default function WatchlistButton({
                         variant={variant}
                         size={size}
                         onClick={handleToggleWatchlist}
-                        disabled={addLoading || deleteLoading}
-                        aria-label={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+                        disabled={loading}
+                        aria-label={isInWatchlist?.() ? 'Remove from watchlist' : 'Add to watchlist'}
                     >
-                        {inWatchlist ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                        {isInWatchlist?.() ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>{inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}</p>
+                    <p>{isInWatchlist?.() ? 'Remove from watchlist' : 'Add to watchlist'}</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>

@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { MovieInformationPageProps } from '@/types/movies';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -30,8 +30,10 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function MovieInformation() {
     const { props } = usePage<MovieInformationPageProps>();
-    const { movie } = props;
+    const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
+    const { movie, in_watchlist, num } = props;
 
+    const isInWatchlist = useCallback(() => in_watchlist, [in_watchlist]);
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
@@ -53,6 +55,20 @@ export default function MovieInformation() {
     const handleTrailerClick = useCallback(() => {
         setIsTrailerOpen(true);
     }, []);
+
+    const addToWatchlist = useCallback(() => {
+        addToWatchlistCall(route('movies.watchlist', { model: num }), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }, [addToWatchlistCall, num]);
+
+    const removeFromWatchlist = useCallback(() => {
+        removeFromWatchlistCall(route('movies.watchlist', { model: num }), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }, [removeFromWatchlistCall, num]);
 
     // Technical details section with video/audio information
     const renderTechnicalDetails = () => {
@@ -139,8 +155,6 @@ export default function MovieInformation() {
                 <div className="relative w-full">
                     {/* Hero Section with fallback image handling */}
                     <MediaHeroSection
-                        mediaId={movie.vodId}
-                        mediaType="movie"
                         title={movie.movie.name}
                         description={movie.plot}
                         releaseYear={releaseYear ?? '20??'}
@@ -153,6 +167,9 @@ export default function MovieInformation() {
                         trailerUrl={movie.youtubeTrailer}
                         onPlay={handlePlay}
                         onTrailerPlay={handleTrailerClick}
+                        onAddToWatchlist={addToWatchlist}
+                        onRemoveFromWatchlist={removeFromWatchlist}
+                        inMyWatchlist={isInWatchlist}
                     />
 
                     {/* Main Content Section */}

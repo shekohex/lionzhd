@@ -25,7 +25,7 @@ final readonly class SeriesInformation
         public string $releaseDate,
         public string $lastModified,
         public string $rating,
-        public int $rating_5based,
+        public float $rating_5based,
         public array $backdropPath,
         public string $youtubeTrailer,
         public string $episodeRunTime,

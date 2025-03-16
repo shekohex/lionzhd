@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { SeriesInformationPageProps } from '@/types/series';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -30,11 +30,14 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
-    const { series } = props;
+    const { series, in_watchlist, num } = props;
+
+    const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
+    const isInWatchlist = useCallback(() => in_watchlist, [in_watchlist]);
     // Get release year from full date
     const releaseYear = series.releaseDate ? new Date(series.releaseDate).getFullYear() : null;
 
@@ -72,6 +75,20 @@ export default function SeriesInformation() {
         setIsTrailerOpen(true);
     }, []);
 
+    const addToWatchlist = useCallback(() => {
+        addToWatchlistCall(route('series.watchlist', { model: num }), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }, [addToWatchlistCall, num]);
+
+    const removeFromWatchlist = useCallback(() => {
+        removeFromWatchlistCall(route('series.watchlist', { model: num }), {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    }, [removeFromWatchlistCall, num]);
+
     // Define breadcrumbs for navigation
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -92,8 +109,6 @@ export default function SeriesInformation() {
                 <div className="relative w-full">
                     {/* Hero Section with fallback image handling */}
                     <MediaHeroSection
-                        mediaId={series.seriesId}
-                        mediaType="series"
                         title={series.name}
                         description={series.plot}
                         releaseYear={releaseYear ?? ''}
@@ -106,6 +121,9 @@ export default function SeriesInformation() {
                         trailerUrl={series.youtubeTrailer}
                         onPlay={handlePlay}
                         onTrailerPlay={handleTrailerClick}
+                        onAddToWatchlist={addToWatchlist}
+                        onRemoveFromWatchlist={removeFromWatchlist}
+                        inMyWatchlist={isInWatchlist}
                     />
 
                     {/* Main Content Section */}

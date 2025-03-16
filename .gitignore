@@ -31,5 +31,7 @@ yarn-error.log
 
 # windsurf rules
 .windsurfrules
-/.memorybank
+.roomodes
+/.roo
+/memory-bank
 

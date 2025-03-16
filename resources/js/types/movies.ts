@@ -1,5 +1,6 @@
 import { SharedData } from '.';
 import Pagination from './pagination';
+import { InWatchlist } from './watchlist';
 
 export interface VodStream {
     num: number;
@@ -151,10 +152,11 @@ export interface Movie {
 }
 
 export interface MoviesPageProps extends SharedData {
-    movies: Pagination<VodStream>;
+    movies: Pagination<VodStream & InWatchlist>;
 }
 
 export interface MovieInformationPageProps extends SharedData {
+    num: number;
     movie: VodStreamInformation;
     in_watchlist: boolean;
 }

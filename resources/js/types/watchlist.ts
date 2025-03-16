@@ -1,5 +1,9 @@
 import { SharedData } from '.';
 
+export interface InWatchlist {
+    in_watchlist: boolean | undefined;
+}
+
 export interface WatchlistItem {
     id: number;
     type: 'movie' | 'series';

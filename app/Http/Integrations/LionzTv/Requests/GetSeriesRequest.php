@@ -7,7 +7,6 @@ namespace App\Http\Integrations\LionzTv\Requests;
 use DateInterval;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\LazyCollection;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
@@ -36,9 +35,9 @@ final class GetSeriesRequest extends Request implements Cacheable
     /**
      * The DTO class to be used for the response
      *
-     * @return LazyCollection<array<string, mixed>>
+     * @return Collection<array<string, mixed>>
      */
-    public function createDtoFromResponse(Response $response): LazyCollection
+    public function createDtoFromResponse(Response $response): Collection
     {
         $data = $response->json();
 
@@ -46,7 +45,6 @@ final class GetSeriesRequest extends Request implements Cacheable
         $collection = collect($data);
 
         return $collection
-            ->lazy()
             ->map(function (array $it): array {
                 $it['backdrop_path'] = json_encode($it['backdrop_path']);
 

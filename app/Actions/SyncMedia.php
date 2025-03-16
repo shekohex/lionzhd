@@ -10,9 +10,10 @@ use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\Series;
 use App\Models\VodStream;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\LazyCollection;
+use Laravel\Telescope\Telescope;
 
 /**
  * Sync media content from Xtream Codes API
@@ -28,43 +29,66 @@ final readonly class SyncMedia
      */
     public function __invoke(): void
     {
-
         // Fetch series and VOD streams
         Log::debug('Fetching series from Xtream Codes API');
-        /** @var LazyCollection<array<string, mixed>> $series */
+        /** @var Collection<array<string, mixed>> $series */
         $series = $this->connector->send(new GetSeriesRequest)->dtoOrFail();
         Log::debug('Fetching VOD streams from Xtream Codes API');
-        /** @var LazyCollection<array<string, mixed>> $vodStreams */
+        /** @var Collection<array<string, mixed>> $vodStreams */
         $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
 
         DB::transaction(function () use ($series, $vodStreams): void {
-            // Delete all existing series and VOD streams.
-            Log::debug('Deleted all existing series');
-            VodStream::query()->truncate();
+            // Remove items from search index
+            Log::debug('Removing items from search index');
             VodStream::removeAllFromSearch();
-            Log::debug('Deleted all existing VOD streams');
-            Series::query()->truncate();
             Series::removeAllFromSearch();
 
-            $chunks = $series->chunk(1000);
-            foreach ($chunks as $c) {
-                $saved = Series::query()->insert($c->all());
-                if ($saved) {
-                    Log::debug('Saved series chunk');
-                } else {
-                    Log::warning('Failed to save series chunk');
-                }
-            }
+            Telescope::withoutRecording(function () use ($series, $vodStreams): void {
 
-            $chunks = $vodStreams->chunk(1000);
-            foreach ($chunks as $c) {
-                $saved = VodStream::query()->insert($c->all());
-                if ($saved) {
-                    Log::debug('Saved VOD stream chunk');
-                } else {
-                    Log::warning('Failed to save VOD stream chunk');
-                }
-            }
+                $series->chunk(1000)->each(function ($c): void {
+                    $saved = Series::query()->upsert(
+                        $c->toArray(),
+                        ['num'],
+                        [
+                            'name', 'series_id', 'cover', 'plot', 'cast',
+                            'director', 'genre', 'releaseDate', 'last_modified',
+                            'rating', 'rating_5based', 'backdrop_path',
+                            'youtube_trailer', 'episode_run_time', 'category_id',
+                        ]
+                    );
+                    if ($saved) {
+                        Log::debug('Saved series chunk');
+                    } else {
+                        Log::warning('Failed to save series chunk');
+                    }
+                });
+
+                $vodStreams->chunk(1000)->each(function ($c): void {
+                    $saved = VodStream::query()->upsert(
+                        $c->toArray(),
+                        ['num'],
+                        [
+                            'name',
+                            'stream_type',
+                            'stream_id',
+                            'stream_icon',
+                            'rating',
+                            'rating_5based',
+                            'added',
+                            'is_adult',
+                            'category_id',
+                            'container_extension',
+                            'custom_sid',
+                            'direct_source',
+                        ]
+                    );
+                    if ($saved) {
+                        Log::debug('Saved VOD stream chunk');
+                    } else {
+                        Log::warning('Failed to save VOD stream chunk');
+                    }
+                });
+            });
 
             Log::debug('Marking series as searchable');
             Series::makeAllSearchable(3000);

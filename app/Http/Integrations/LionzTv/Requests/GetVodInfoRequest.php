@@ -24,7 +24,7 @@ final class GetVodInfoRequest extends Request implements Cacheable
      */
     protected Method $method = Method::GET;
 
-    public function __construct(private int $id) {}
+    public function __construct(private int $stream_id) {}
 
     /**
      * The endpoint for the request
@@ -38,7 +38,7 @@ final class GetVodInfoRequest extends Request implements Cacheable
     {
         $data = $response->json();
 
-        return VodInformation::fromJson($this->id, $data);
+        return VodInformation::fromJson($this->stream_id, $data);
     }
 
     public function resolveCacheDriver(): Driver
@@ -55,7 +55,7 @@ final class GetVodInfoRequest extends Request implements Cacheable
     {
         return [
             'action' => 'get_vod_info',
-            'vod_id' => $this->id,
+            'vod_id' => $this->stream_id,
         ];
     }
 }

@@ -10,9 +10,7 @@ import MediaBackdrop from './media-backdrop';
 import WatchlistButton from './watchlist-button';
 
 export interface MediaHeroSectionProps {
-    mediaId: number;
-    mediaType: 'movie' | 'series';
-    inMyWatchlist?: boolean;
+    inMyWatchlist?: () => boolean;
     // Media information
     title: string;
     description?: string;
@@ -35,11 +33,11 @@ export interface MediaHeroSectionProps {
     showActions?: boolean;
     showMetadata?: boolean;
     maxDescriptionLength?: number;
+    onAddToWatchlist?: () => void;
+    onRemoveFromWatchlist?: () => void;
 }
 
 const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
-    mediaId,
-    mediaType,
     title,
     description,
     releaseYear,
@@ -54,6 +52,8 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     onPlay,
     onTrailerPlay,
     onMoreInfo,
+    onAddToWatchlist,
+    onRemoveFromWatchlist,
     className,
     showActions = true,
     showMetadata = true,
@@ -201,8 +201,8 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
 
                                     {/* My List button with tooltip */}
                                     <WatchlistButton
-                                        mediaId={mediaId}
-                                        mediaType={mediaType}
+                                        onAddToWatchlist={onAddToWatchlist}
+                                        onRemoveFromWatchlist={onRemoveFromWatchlist}
                                         isInWatchlist={inMyWatchlist}
                                     />
                                     {/* More Info button */}

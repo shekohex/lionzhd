@@ -41,8 +41,8 @@ export default function Watchlist() {
     const renderWatchlistItem = (item: WatchlistItem) => {
         const detailUrl =
             item.type === 'movie'
-                ? route('movies.show', { model: item.watchable_id })
-                : route('series.show', { model: item.watchable_id });
+                ? route('movies.show', { model: item.watchableId })
+                : route('series.show', { model: item.watchableId });
 
         return (
             <motion.div
@@ -70,7 +70,7 @@ export default function Watchlist() {
                     </div>
                     <CardHeader className="p-4 pb-2">
                         <CardTitle className="truncate text-lg">{item.name}</CardTitle>
-                        <CardDescription className="text-xs">Added {item.added_at}</CardDescription>
+                        <CardDescription className="text-xs">Added {item.addedAt}</CardDescription>
                     </CardHeader>
                     <CardContent className="flex-grow p-4 pt-0">{/* Additional content can go here */}</CardContent>
                     <CardFooter className="flex justify-between p-4 pt-0">
@@ -82,7 +82,7 @@ export default function Watchlist() {
                             size="icon"
                             className="text-red-500 hover:bg-red-50 hover:text-red-700"
                             onClick={() => {
-                                destroy(route('watchlist', { id: item.id }));
+                                destroy(route('watchlist.destroy', { id: item.id }));
                             }}
                         >
                             <Bookmark className="h-4 w-4" />

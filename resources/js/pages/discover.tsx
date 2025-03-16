@@ -100,6 +100,7 @@ export default function Discover() {
                                                     title={movie.name}
                                                     posterUrl={movie.stream_icon}
                                                     rating={movie.rating_5based}
+                                                    inWatchlist={movie.in_watchlist}
                                                 />
                                             </Link>
                                         </motion.div>
@@ -147,6 +148,7 @@ export default function Discover() {
                                                     title={show.name}
                                                     posterUrl={show.cover}
                                                     rating={show.rating_5based}
+                                                    inWatchlist={show.in_watchlist}
                                                 />
                                             </Link>
                                         </motion.div>

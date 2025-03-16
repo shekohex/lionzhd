@@ -102,6 +102,7 @@ export default function Movies() {
                                                     title={movie.name}
                                                     posterUrl={movie.stream_icon}
                                                     rating={movie.rating_5based}
+                                                    inWatchlist={movie.in_watchlist}
                                                 />
                                             </Link>
                                         </motion.div>

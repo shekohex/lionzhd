@@ -16,27 +16,33 @@ Route::controller(WelcomeController::class)->prefix('/')->group(static function 
 });
 
 Route::middleware(['auth', 'verified'])->group(static function (): void {
-    Route::get('discover', [DiscoverController::class, 'index'])->name('discover');
+
+    Route::controller(DiscoverController::class)->prefix('discover')->group(static function (): void {
+        Route::get('/', 'index')->name('discover');
+    });
 
     Route::controller(SearchController::class)->prefix('search')->group(static function (): void {
         Route::get('/', 'full')->name('search.full');
     });
 
-    Route::controller(VodStreamController::class)->group(static function (): void {
-        Route::get('movies', 'index')->name('movies');
-        Route::get('movies/{model}', 'show')->whereNumber('model')->name('movies.show');
+    Route::controller(VodStreamController::class)->prefix('movies')->group(static function (): void {
+        Route::get('/', 'index')->name('movies');
+        Route::get('{model}', 'show')->whereNumber('model')->name('movies.show');
+        Route::post('{model}/watchlist', 'addToWatchlist')->whereNumber('model')->name('movies.watchlist');
+        Route::delete('{model}/watchlist', 'removeFromWatchlist')->whereNumber('model')->name('movies.watchlist');
     });
 
-    Route::controller(SeriesController::class)->group(static function (): void {
-        Route::get('series', 'index')->name('series');
-        Route::get('series/{model}', 'show')->whereNumber('model')->name('series.show');
+    Route::controller(SeriesController::class)->prefix('series')->group(static function (): void {
+        Route::get('/', 'index')->name('series');
+        Route::get('{model}', 'show')->whereNumber('model')->name('series.show');
+        Route::post('{model}/watchlist', 'addToWatchlist')->whereNumber('model')->name('series.watchlist');
+        Route::delete('{model}/watchlist', 'removeFromWatchlist')->whereNumber('model')->name('series.watchlist');
     });
 
-    Route::controller(WatchlistController::class)->group(static function (): void {
-        Route::get('watchlist', 'index')->name('watchlist');
-        Route::get('watchlist/check', 'check')->name('watchlist.check');
-        Route::post('watchlist', 'store');
-        Route::delete('watchlist/{id}', 'destroy')->whereNumber('id');
+    Route::controller(WatchlistController::class)->prefix('watchlist')->group(static function (): void {
+        Route::get('/', 'index')->name('watchlist');
+        Route::post('/', 'store')->name('watchlist.store');
+        Route::delete('{id}', 'destroy')->whereNumber('id')->name('watchlist.destroy');
     });
 });
 

@@ -1,17 +1,19 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { BookmarkCheck } from 'lucide-react';
 import { useState } from 'react';
 
 interface MediaCardProps {
     title: string;
     posterUrl?: string | null;
     rating?: number | string;
+    inWatchlist?: boolean;
     className?: string;
     onClick?: () => void;
 }
 
-export default function MediaCard({ title, posterUrl, rating, className, onClick }: MediaCardProps) {
+export default function MediaCard({ title, posterUrl, rating, inWatchlist, className, onClick }: MediaCardProps) {
     const [imageError, setImageError] = useState(false);
     const hasValidImage = posterUrl && posterUrl.trim() !== '';
 
@@ -48,6 +50,12 @@ export default function MediaCard({ title, posterUrl, rating, className, onClick
                     {rating && (
                         <div className="absolute top-2 right-2 rounded bg-black/70 px-2 py-1 text-xs font-bold text-white">
                             {typeof rating === 'number' ? rating.toFixed(1) : rating}
+                        </div>
+                    )}
+
+                    {inWatchlist && inWatchlist === true && (
+                        <div className="absolute top-2 left-2 rounded bg-black/70 p-2">
+                            <BookmarkCheck size={20} className="text-white" />
                         </div>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 import { SharedData } from '.';
 import Pagination from './pagination';
+import { InWatchlist } from './watchlist';
 
 export interface Series {
     num: number;
@@ -148,9 +149,11 @@ export interface AudioTags {
 }
 
 export interface SeriesPageProps extends SharedData {
-    series: Pagination<Series>;
+    series: Pagination<Series & InWatchlist>;
 }
 
 export interface SeriesInformationPageProps extends SharedData {
+    num: number;
     series: SeriesInformation;
+    in_watchlist: boolean;
 }

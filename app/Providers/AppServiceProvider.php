@@ -30,10 +30,11 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+
         // Indicate that models should prevent lazy loading, silently discarding attributes, and accessing missing attributes.
         Model::shouldBeStrict(! app()->isProduction());
 
-        // By default, Laravel uses Carbon for dates. and if we modify the date
+        // By default, Laravel uses Carbon for dates. If we modify the date
         // it will modify the original date. To avoid this, we can use
         // CarbonImmutable instead of Carbon.
         Date::use(CarbonImmutable::class);

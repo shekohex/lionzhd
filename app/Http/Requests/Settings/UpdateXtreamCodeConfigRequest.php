@@ -2,21 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Settings;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-final class StoreXtreamCodeConfigRequest extends FormRequest
+final class UpdateXtreamCodeConfigRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -25,6 +17,11 @@ final class StoreXtreamCodeConfigRequest extends FormRequest
     public function rules(): array
     {
         return [
+
+            'host' => ['required', 'string', 'max:255'],
+            'port' => ['required', 'integer', 'min:1', 'max:65535'],
+            'username' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:6'],
         ];
     }
 }

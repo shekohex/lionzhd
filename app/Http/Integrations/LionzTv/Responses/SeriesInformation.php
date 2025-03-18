@@ -58,7 +58,7 @@ final readonly class SeriesInformation
             Arr::wrap($info['backdrop_path']),
             $info['youtube_trailer'],
             $info['episode_run_time'],
-            $info['category_id'],
+            $info['category_id'] ?? '',
             collect($data['episodes'])->map(
                 static fn (array $episodes) => collect($episodes)
                     ->map(static fn (array $episode) => Episode::fromJson($episode))

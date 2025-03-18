@@ -4,23 +4,34 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
+import { HardDriveDownload, Key, MonitorPlay, SunMoon, UserPen } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
         url: '/settings/profile',
-        icon: null,
+        icon: UserPen,
     },
     {
         title: 'Password',
         url: '/settings/password',
-        icon: null,
+        icon: Key,
+    },
+    {
+        title: 'Xtream Codes',
+        url: '/settings/xtreamcodes',
+        icon: MonitorPlay,
+    },
+    {
+        title: 'Aria2',
+        url: '/settings/aria2',
+        icon: HardDriveDownload,
     },
     {
         title: 'Appearance',
         url: '/settings/appearance',
-        icon: null,
+        icon: SunMoon,
     },
 ];
 
@@ -33,7 +44,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="px-4 py-6">
-            <Heading title="Settings" description="Manage your profile and account settings" />
+            <Heading title="Settings" description="Manage your profile and system settings" />
 
             <div className="flex flex-col space-y-8 lg:flex-row lg:space-y-0 lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
@@ -49,6 +60,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 })}
                             >
                                 <Link href={item.url} prefetch>
+                                    {item.icon && <item.icon className="mr-2" />}
                                     {item.title}
                                 </Link>
                             </Button>

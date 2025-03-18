@@ -82,7 +82,10 @@ export default function Watchlist() {
                             size="icon"
                             className="text-red-500 hover:bg-red-50 hover:text-red-700"
                             onClick={() => {
-                                destroy(route('watchlist.destroy', { id: item.id }));
+                                destroy(route('watchlist.destroy', { id: item.id }), {
+                                    preserveState: false,
+                                    preserveScroll: true,
+                                });
                             }}
                         >
                             <Bookmark className="h-4 w-4" />

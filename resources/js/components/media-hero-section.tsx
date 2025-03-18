@@ -10,7 +10,7 @@ import MediaBackdrop from './media-backdrop';
 import WatchlistButton from './watchlist-button';
 
 export interface MediaHeroSectionProps {
-    inMyWatchlist?: () => boolean;
+    inMyWatchlist?: boolean;
     // Media information
     title: string;
     description?: string;

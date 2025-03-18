@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface WatchlistButtonProps {
-    isInWatchlist?: () => boolean;
+    isInWatchlist?: boolean;
     variant?: 'default' | 'outline' | 'ghost';
     size?: 'default' | 'sm' | 'lg' | 'icon';
     onAddToWatchlist?: () => void;
@@ -22,7 +22,7 @@ export default function WatchlistButton({
     const [loading, setLoading] = useState(false);
     const handleToggleWatchlist = async () => {
         setLoading(true);
-        if (isInWatchlist?.()) {
+        if (isInWatchlist && isInWatchlist === true) {
             // Remove from watchlist
             if (onRemoveFromWatchlist?.()) {
                 toast.info('Removed', {
@@ -55,13 +55,19 @@ export default function WatchlistButton({
                         size={size}
                         onClick={handleToggleWatchlist}
                         disabled={loading}
-                        aria-label={isInWatchlist?.() ? 'Remove from watchlist' : 'Add to watchlist'}
+                        aria-label={
+                            isInWatchlist && isInWatchlist === true ? 'Remove from watchlist' : 'Add to watchlist'
+                        }
                     >
-                        {isInWatchlist?.() ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+                        {isInWatchlist && isInWatchlist === true ? (
+                            <BookmarkCheck className="h-4 w-4" />
+                        ) : (
+                            <Bookmark className="h-4 w-4" />
+                        )}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                    <p>{isInWatchlist?.() ? 'Remove from watchlist' : 'Add to watchlist'}</p>
+                    <p>{isInWatchlist && isInWatchlist === true ? 'Remove from watchlist' : 'Add to watchlist'}</p>
                 </TooltipContent>
             </Tooltip>
         </TooltipProvider>

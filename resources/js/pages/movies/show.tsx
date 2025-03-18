@@ -33,7 +33,6 @@ export default function MovieInformation() {
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { movie, in_watchlist, num } = props;
 
-    const isInWatchlist = useCallback(() => in_watchlist, [in_watchlist]);
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
@@ -169,7 +168,7 @@ export default function MovieInformation() {
                         onTrailerPlay={handleTrailerClick}
                         onAddToWatchlist={addToWatchlist}
                         onRemoveFromWatchlist={removeFromWatchlist}
-                        inMyWatchlist={isInWatchlist}
+                        inMyWatchlist={in_watchlist}
                     />
 
                     {/* Main Content Section */}

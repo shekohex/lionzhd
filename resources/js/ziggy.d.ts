@@ -37,12 +37,6 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
-    "series.watchlist.destroy": [
-        {
-            "name": "model",
-            "required": true
-        }
-    ],
     "watchlist": [],
     "watchlist.store": [],
     "watchlist.destroy": [
@@ -56,6 +50,10 @@ declare module 'ziggy-js' {
     "profile.destroy": [],
     "password.edit": [],
     "password.update": [],
+    "xtreamcodes.edit": [],
+    "xtreamcodes.update": [],
+    "aria2.edit": [],
+    "aria2.update": [],
     "appearance": [],
     "register": [],
     "login": [],

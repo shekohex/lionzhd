@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { SeriesInformationPageProps } from '@/types/series';
+import type { SeasonWithEpisodes, SeriesInformationPageProps } from '@/types/series';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
@@ -37,7 +37,6 @@ export default function SeriesInformation() {
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
-    const isInWatchlist = useCallback(() => in_watchlist, [in_watchlist]);
     // Get release year from full date
     const releaseYear = series.releaseDate ? new Date(series.releaseDate).getFullYear() : null;
 
@@ -65,7 +64,7 @@ export default function SeriesInformation() {
     }, [series]);
 
     // Handle playing a specific episode
-    const handlePlayEpisode = useCallback((episode) => {
+    const handlePlayEpisode = useCallback((episode: SeasonWithEpisodes) => {
         console.log('Playing episode:', episode);
         // Here you would implement actual episode playback
     }, []);
@@ -123,7 +122,7 @@ export default function SeriesInformation() {
                         onTrailerPlay={handleTrailerClick}
                         onAddToWatchlist={addToWatchlist}
                         onRemoveFromWatchlist={removeFromWatchlist}
-                        inMyWatchlist={isInWatchlist}
+                        inMyWatchlist={in_watchlist}
                     />
 
                     {/* Main Content Section */}

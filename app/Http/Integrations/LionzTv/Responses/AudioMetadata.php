@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Responses;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+use Spatie\TypeScriptTransformer\Attributes\TypeScriptType;
+
+#[TypeScript]
 final readonly class AudioMetadata
 {
-    /** @param array<string,string> $tags */
     public function __construct(
         public int $index,
         public string $codecName,
@@ -32,6 +35,8 @@ final readonly class AudioMetadata
         public string $maxBitRate,
         public string $nbFrames,
         public Disposition $disposition,
+        /** @var array{language:string,DURATION:string} */
+        #[TypeScriptType(['language' => 'string', 'DURATION' => 'string'])]
         public array $tags
     ) {}
 

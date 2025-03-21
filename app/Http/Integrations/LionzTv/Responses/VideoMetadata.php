@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Responses;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+use Spatie\TypeScriptTransformer\Attributes\TypeScriptType;
+
+#[TypeScript]
 final readonly class VideoMetadata
 {
-    /** @param array<string,string> $tags */
     public function __construct(
         public int $index,
         public string $codecName,
@@ -38,6 +41,8 @@ final readonly class VideoMetadata
         public string $bitsPerRawSample,
         public string $nbFrames,
         public Disposition $disposition,
+        /** @var array{HANDLER_NAME:string,DURATION:string} */
+        #[TypeScriptType(['HANDLER_NAME' => 'string', 'DURATION' => 'string'])]
         public array $tags
     ) {}
 
@@ -62,7 +67,7 @@ final readonly class VideoMetadata
             $data['has_b_frames'],
             $data['pix_fmt'],
             $data['level'],
-            $data['chroma_location'],
+            $data['chroma_location'] ?? 'left',
             $data['refs'],
             $data['is_avc'] ?? '0',
             $data['nal_length_size'] ?? '0',

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Data\VodStreamData;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
+use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperVodStream
@@ -14,11 +16,14 @@ use Laravel\Scout\Searchable;
 final class VodStream extends Model
 {
     use Searchable;
+    use WithData;
 
     /**
      * Indicates if the model's ID is auto-incrementing.
      */
     public $incrementing = false;
+
+    protected $dataClass = VodStreamData::class;
 
     /**
      * The table associated with the model.

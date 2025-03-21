@@ -28,6 +28,7 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
     Route::controller(VodStreamController::class)->prefix('movies')->group(static function (): void {
         Route::get('/', 'index')->name('movies');
         Route::get('{model}', 'show')->whereNumber('model')->name('movies.show');
+        Route::delete('{model}/cache', 'forgetCache')->whereNumber('model')->name('movies.cache');
         Route::post('{model}/watchlist', 'addToWatchlist')->whereNumber('model')->name('movies.watchlist');
         Route::delete('{model}/watchlist', 'removeFromWatchlist')->whereNumber('model')->name('movies.watchlist');
     });
@@ -35,6 +36,7 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
     Route::controller(SeriesController::class)->prefix('series')->group(static function (): void {
         Route::get('/', 'index')->name('series');
         Route::get('{model}', 'show')->whereNumber('model')->name('series.show');
+        Route::delete('{model}/cache', 'forgetCache')->whereNumber('model')->name('series.cache');
         Route::post('{model}/watchlist', 'addToWatchlist')->whereNumber('model')->name('series.watchlist');
         Route::delete('{model}/watchlist', 'removeFromWatchlist')->whereNumber('model')->name('series.watchlist');
     });

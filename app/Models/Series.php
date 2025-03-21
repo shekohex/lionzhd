@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Data\SeriesData;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
+use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperSeries
@@ -15,6 +17,7 @@ use Laravel\Scout\Searchable;
 final class Series extends Model
 {
     use Searchable;
+    use WithData;
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -22,6 +25,8 @@ final class Series extends Model
      * @var bool
      */
     public $incrementing = false;
+
+    protected $dataClass = SeriesData::class;
 
     /**
      * Indicates if all mass assignment is enabled.

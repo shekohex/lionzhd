@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Data\FeaturedMediaData;
+use App\Data\SeriesData;
+use App\Data\VodStreamData;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Container\Attributes\CurrentUser;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\LaravelData\DataCollection;
 
 final class DiscoverController extends Controller
 {
@@ -35,9 +39,9 @@ final class DiscoverController extends Controller
             ->limit(15)
             ->get();
 
-        return Inertia::render('discover', [
-            'movies' => $movies,
-            'series' => $series,
-        ]);
+        return Inertia::render('discover', new FeaturedMediaData(
+            VodStreamData::collect($movies, DataCollection::class),
+            SeriesData::collect($series, DataCollection::class),
+        ));
     }
 }

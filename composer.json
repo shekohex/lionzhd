@@ -18,8 +18,11 @@
         "laravel/tinker": "^2.10.1",
         "meilisearch/meilisearch-php": "^1.13",
         "saloonphp/cache-plugin": "^3.0",
+        "saloonphp/laravel-http-sender": "^3.1",
         "saloonphp/laravel-plugin": "^3.5",
         "saloonphp/saloon": "^3.11",
+        "spatie/laravel-data": "^4.14",
+        "spatie/laravel-typescript-transformer": "^2.5",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {

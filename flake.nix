@@ -60,6 +60,8 @@
             #xdebug.idekey=VSCODE
             # Incresing memory limit
             memory_limit = 1G
+            #opcache.enable=1
+            #opcache.memory_consumption=512
           '';
         };
         frankenphp = pkgs.frankenphp.override {
@@ -84,6 +86,7 @@
             pkgs.blade-formatter
             pkgs.phpactor
             pkgs.meilisearch
+            pkgs.aria2
           ];
           packages = [ ];
 

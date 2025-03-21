@@ -5,16 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Integrations\LionzTv\Responses;
 
 use Illuminate\Support\Arr;
+use Spatie\TypeScriptTransformer\Attributes\RecordTypeScriptType;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
+#[TypeScript]
 final readonly class SeriesInformation
 {
-    /**
-     * @param  array<string, Episode[]>  $seasonsWithEpisodes
-     * @param  list<string>  $seasons
-     * @param  list<string>  $backdropPath
-     */
     public function __construct(
         public int $seriesId,
+        /** @var array<string> */
         public array $seasons,
         public string $name,
         public string $cover,
@@ -26,10 +25,13 @@ final readonly class SeriesInformation
         public string $lastModified,
         public string $rating,
         public float $rating_5based,
+        /** @var array<string> */
         public array $backdropPath,
         public string $youtubeTrailer,
         public string $episodeRunTime,
         public string $categoryId,
+        /** @var array<string, Episode[]> */
+        #[RecordTypeScriptType('string', Episode::class, array: true)]
         public array $seasonsWithEpisodes
     ) {}
 

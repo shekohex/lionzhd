@@ -39,12 +39,12 @@ final class VodStreamController extends Controller
      */
     public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
     {
-        $vod = $client->send(new GetVodInfoRequest($model->stream_id))->dtoOrFail();
+        $vod = $client->send(new GetVodInfoRequest($model->stream_id));
         $inWatchlist = $user->inMyWatchlist($model->num, VodStream::class);
 
         return Inertia::render('movies/show', [
             'num' => $model->num,
-            'movie' => $vod,
+            'movie' => $vod->dtoOrFail(),
             'in_watchlist' => $inWatchlist,
         ]);
     }
@@ -73,5 +73,22 @@ final class VodStreamController extends Controller
         }
 
         return back()->with('success', 'Movie removed from watchlist.');
+    }
+
+    public function forgetCache(VodStream $model): RedirectResponse
+    {
+        $req = new GetVodInfoRequest($model->stream_id);
+
+        $req->forceForgetCache();
+
+        return back()->with('success', 'Cache cleared.');
+    }
+
+    /**
+     * Trigger a download of the VOD stream.
+     */
+    public function download(#[CurrentUser] User $user, VodStream $model): RedirectResponse
+    {
+        return redirect()->route('downloads.download', ['stream_id' => $model->num, 'type' => VodStream::class]);
     }
 }

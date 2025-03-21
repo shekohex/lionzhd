@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Requests;
 
-use DateInterval;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Cacheable;
@@ -59,7 +58,7 @@ final class GetSeriesRequest extends Request implements Cacheable
 
     public function cacheExpiryInSeconds(): int
     {
-        return DateInterval::createFromDateString('6 hours')->s;
+        return 12 * 60 * 60; // 12 hours in seconds
     }
 
     protected function defaultQuery(): array

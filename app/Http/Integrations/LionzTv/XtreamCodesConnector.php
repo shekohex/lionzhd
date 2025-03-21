@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Integrations\LionzTv;
 
 use App\Models\XtreamCodesConfig;
+use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Http\Auth\MultiAuthenticator;
 use Saloon\Http\Auth\QueryAuthenticator;
 use Saloon\Http\Connector;
@@ -14,6 +15,7 @@ use Saloon\Traits\Plugins\HasTimeout;
 final class XtreamCodesConnector extends Connector
 {
     use AcceptsJson;
+    use HasCaching;
     use HasTimeout;
 
     protected int $connectTimeout = 60;

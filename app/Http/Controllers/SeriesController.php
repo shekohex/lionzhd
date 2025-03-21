@@ -62,6 +62,15 @@ final class SeriesController extends Controller
         return back()->with('success', 'Series added to watchlist.');
     }
 
+    public function forgetCache(Series $model): RedirectResponse
+    {
+        $req = new GetSeriesInfoRequest($model->series_id);
+        $req->forceForgetCache();
+
+        return back()->with('success', 'Cache cleared for the series.');
+
+    }
+
     /**
      * Remove an item from the user's watchlist.
      */

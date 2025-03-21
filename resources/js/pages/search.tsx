@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { MediaType, SearchRequest, SearchResult, SortBy } from '@/types/search';
+import { FullSearchResult } from '@/types/search';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ChevronDownIcon, FilterIcon, LoaderIcon, SearchIcon, XIcon } from 'lucide-react';
@@ -79,8 +79,8 @@ function parseSearchQuery(query: string) {
 }
 
 export default function Search() {
-    const { props } = usePage<SearchResult<'full'>>();
-    const { data, setData, get, processing } = useForm<SearchRequest>(props.filters);
+    const { props } = usePage<FullSearchResult>();
+    const { data, setData, get, processing } = useForm<App.Data.SearchMediaData>(props.filters);
 
     // Parse query for magic words
     const parsedQuery = useMemo(() => {
@@ -100,16 +100,16 @@ export default function Search() {
     // Apply filters from parsed query
     useEffect(() => {
         if (parsedQuery.filters.media_type && parsedQuery.filters.media_type !== data.media_type) {
-            setData('media_type', parsedQuery.filters.media_type as MediaType);
+            setData('media_type', parsedQuery.filters.media_type as App.Enums.MediaType);
         }
 
         if (parsedQuery.filters.sort_by && parsedQuery.filters.sort_by !== data.sort_by) {
-            setData('sort_by', parsedQuery.filters.sort_by as SortBy);
+            setData('sort_by', parsedQuery.filters.sort_by as App.Enums.SearchSortby);
         }
     }, [parsedQuery, setData, data]);
 
     // Handle search form submission
-    const handleSearch = (request: SearchRequest) => {
+    const handleSearch = (request: App.Data.SearchMediaData) => {
         setData('q', request.q);
         performSearch({ preserveScroll: false });
     };
@@ -117,9 +117,9 @@ export default function Search() {
     // Handle filter selection
     const handleFilterSelect = (filterType: string, value: string) => {
         if (filterType === 'type') {
-            setData('media_type', value as MediaType);
+            setData('media_type', value as App.Enums.MediaType);
         } else if (filterType === 'sort') {
-            setData('sort_by', value as SortBy);
+            setData('sort_by', value as App.Enums.SearchSortby);
         }
 
         // Update query to include magic word

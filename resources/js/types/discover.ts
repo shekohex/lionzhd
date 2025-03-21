@@ -1,9 +1,6 @@
 import { SharedData } from '.';
-import { VodStream } from './movies';
-import { Series } from './series';
-import { InWatchlist } from './watchlist';
 
 export interface DiscoverPageProps extends SharedData {
-    movies: (VodStream & InWatchlist)[];
-    series: (Series & InWatchlist)[];
+    movies: (App.Data.VodStreamData & App.Data.InWatchlistData)[];
+    series: (App.Data.SeriesData & App.Data.InWatchlistData)[];
 }

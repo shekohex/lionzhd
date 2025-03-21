@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Responses;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+#[TypeScript]
 final readonly class VodInformation
 {
-    /**
-     * @param  list<string>  $backdropPath
-     */
     public function __construct(
         public int $vodId,
         public string $movieImage,
@@ -21,6 +21,7 @@ final readonly class VodInformation
         public string $rating,
         public string $director,
         public string $releaseDate,
+        /** @var array<string> */
         public array $backdropPath,
         public int $durationSecs,
         public string $duration,

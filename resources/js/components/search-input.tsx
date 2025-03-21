@@ -1,7 +1,7 @@
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { useDebounce } from '@/hooks/use-debounce';
-import { SearchRequest, SearchResult } from '@/types/search';
+import { LightweightSearchResult } from '@/types/search';
 import { router, useForm, usePage } from '@inertiajs/react';
 import { FilmIcon, SearchIcon, TvIcon, XIcon } from 'lucide-react';
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -11,7 +11,7 @@ interface SearchInputProps {
     searchRoute: ValidRouteName;
     placeholder?: string;
     className?: string;
-    onSubmit?: (query: SearchRequest) => void;
+    onSubmit?: (query: App.Data.SearchMediaData) => void;
     autoFocus?: boolean;
     onClear?: () => void;
     showSearchIcon?: boolean;
@@ -28,11 +28,7 @@ export function SearchInput({
     showSearchIcon = true,
     fullWidth = false,
 }: SearchInputProps) {
-    const { props: autocompleteData } = usePage<SearchResult<'lightweight'>>();
-    // Using Inertia form hook for better integration with Laravel
-    const { data, setData, processing, post, get } = useForm<SearchRequest>({
-        q: autocompleteData.filters?.q ?? '',
-    });
+    const { props: autocompleteData } = usePage<LightweightSearchResult>();
 
     const isFullSearch = useMemo(() => searchRoute === 'search.full', [searchRoute]);
     const [isFocused, setIsFocused] = useState(false);
@@ -41,6 +37,13 @@ export function SearchInput({
     const formRef = useRef<HTMLFormElement>(null);
     const searchContainerRef = useRef<HTMLDivElement>(null);
 
+    const { data, setData, processing, post, get } = useForm<App.Data.SearchMediaData>({
+        q: autocompleteData.filters?.q ?? '',
+        page: 1,
+        per_page: 5,
+        sort_by: 'popular',
+        lightweight: !isFullSearch,
+    });
     // Debounce search query
     const debouncedQuery = useDebounce(data.q || '', 500);
 

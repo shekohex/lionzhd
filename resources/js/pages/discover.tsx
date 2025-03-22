@@ -94,8 +94,8 @@ export default function Discover() {
                                     animate="show"
                                 >
                                     {movies.map((movie) => (
-                                        <motion.div key={movie.num} variants={item}>
-                                            <Link href={route('movies.show', { model: movie.num })}>
+                                        <motion.div key={movie.stream_id} variants={item}>
+                                            <Link href={route('movies.show', { model: movie.stream_id })}>
                                                 <MediaCard
                                                     title={movie.name}
                                                     posterUrl={movie.stream_icon}
@@ -142,8 +142,8 @@ export default function Discover() {
                                     animate="show"
                                 >
                                     {series.map((show) => (
-                                        <motion.div key={show.num} variants={item}>
-                                            <Link href={route('series.show', { model: show.num })}>
+                                        <motion.div key={show.series_id} variants={item}>
+                                            <Link href={route('series.show', { model: show.series_id })}>
                                                 <MediaCard
                                                     title={show.name}
                                                     posterUrl={show.cover}

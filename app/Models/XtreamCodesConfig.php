@@ -6,7 +6,9 @@ namespace App\Models;
 
 use App\Concerns\LoadsFromEnv;
 use App\Contracts\Models\EnvConfigurable;
+use App\Data\XtreamCodesConfigData;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperXtreamCodesConfig
@@ -14,6 +16,9 @@ use Illuminate\Database\Eloquent\Model;
 final class XtreamCodesConfig extends Model implements EnvConfigurable
 {
     use LoadsFromEnv;
+    use WithData;
+
+    protected $dataClass = XtreamCodesConfigData::class;
 
     protected $hidden = [
         'password',

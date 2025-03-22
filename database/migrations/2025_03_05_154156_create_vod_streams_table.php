@@ -14,10 +14,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('vod_streams', static function (Blueprint $table): void {
-            $table->unsignedInteger('num')->primary();
+            $table->unsignedInteger('stream_id')->primary();
+            $table->unsignedInteger('num')->unique();
             $table->string('name');
             $table->string('stream_type');
-            $table->unsignedInteger('stream_id')->unique();
             $table->string('stream_icon')->nullable();
             $table->string('rating')->nullable();
             $table->decimal('rating_5based', 3, 1)->default(0);

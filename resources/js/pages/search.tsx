@@ -154,6 +154,7 @@ export default function Search() {
                                 placeholder="Search movies, TV series..."
                                 searchRoute="search.full"
                                 onSubmit={handleSearch}
+                                defaultPerPage={10}
                                 fullWidth
                                 autoFocus
                             />
@@ -333,8 +334,10 @@ export default function Search() {
                                                     animate="show"
                                                 >
                                                     {props.movies?.data?.map((movie) => (
-                                                        <motion.div key={movie.num} variants={item}>
-                                                            <Link href={route('movies.show', { model: movie.num })}>
+                                                        <motion.div key={movie.stream_id} variants={item}>
+                                                            <Link
+                                                                href={route('movies.show', { model: movie.stream_id })}
+                                                            >
                                                                 <MediaCard
                                                                     title={movie.name}
                                                                     posterUrl={movie.stream_icon}
@@ -369,8 +372,10 @@ export default function Search() {
                                                     animate="show"
                                                 >
                                                     {props.series?.data?.map((series) => (
-                                                        <motion.div key={series.num} variants={item}>
-                                                            <Link href={route('series.show', { model: series.num })}>
+                                                        <motion.div key={series.series_id} variants={item}>
+                                                            <Link
+                                                                href={route('series.show', { model: series.series_id })}
+                                                            >
                                                                 <MediaCard
                                                                     title={series.name}
                                                                     posterUrl={series.cover}

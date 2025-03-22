@@ -22,7 +22,7 @@ export default function Welcome() {
     const featuredMedia = useMemo(
         () =>
             [...movies, ...series].map((item) => ({
-                num: item.num,
+                id: 'stream_id' in item ? item.stream_id : item.series_id,
                 cover: 'cover' in item ? item.cover : 'stream_icon' in item ? item.stream_icon : undefined,
                 name: item.name,
                 kind: 'plot' in item ? 'series' : 'movie',
@@ -65,7 +65,7 @@ export default function Welcome() {
                     {/* Dynamic Background Images - Fixed AnimatePresence by removing mode="wait" */}
                     <div className="pointer-events-none absolute inset-0">
                         {featuredMedia.map((bg, index) => (
-                            <AnimatePresence key={bg.num}>
+                            <AnimatePresence key={bg.id}>
                                 {index === activeBg && (
                                     <motion.div
                                         className="pointer-events-none absolute inset-0 z-0"
@@ -167,8 +167,8 @@ export default function Welcome() {
                                         <Link
                                             href={
                                                 featuredMedia[activeBg].kind === 'movie'
-                                                    ? route('movies.show', { model: featuredMedia[activeBg].num })
-                                                    : route('series.show', { model: featuredMedia[activeBg].num })
+                                                    ? route('movies.show', { model: featuredMedia[activeBg].id })
+                                                    : route('series.show', { model: featuredMedia[activeBg].id })
                                             }
                                             className="text-primary-foreground"
                                         >

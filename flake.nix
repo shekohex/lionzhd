@@ -19,6 +19,13 @@
           inherit system overlays;
         };
         stdenv = pkgs.stdenv;
+        # Function to create script
+        mkScript =
+          name: text:
+          let
+            script = pkgs.writeShellScriptBin name text;
+          in
+          script;
         myphp = pkgs.php84.override {
           embedSupport = true;
           ztsSupport = true;
@@ -67,6 +74,9 @@
         frankenphp = pkgs.frankenphp.override {
           inherit php;
         };
+        scripts = [
+          (mkScript "a" ''${php}/bin/php artisan "$@"'')
+        ];
       in
       {
         devShells.default = pkgs.mkShell {
@@ -88,7 +98,7 @@
             pkgs.meilisearch
             pkgs.aria2
           ];
-          packages = [ ];
+          packages = [ ] ++ scripts;
 
           COMPOSER_HOME = ".composer";
         };

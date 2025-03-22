@@ -48,9 +48,9 @@ final readonly class SyncMedia
                 $series->chunk(1000)->each(function ($c): void {
                     $saved = Series::query()->upsert(
                         $c->toArray(),
-                        ['num'],
+                        ['series_id'],
                         [
-                            'name', 'series_id', 'cover', 'plot', 'cast',
+                            'num', 'name', 'cover', 'plot', 'cast',
                             'director', 'genre', 'releaseDate', 'last_modified',
                             'rating', 'rating_5based', 'backdrop_path',
                             'youtube_trailer', 'episode_run_time', 'category_id',
@@ -66,11 +66,11 @@ final readonly class SyncMedia
                 $vodStreams->chunk(1000)->each(function ($c): void {
                     $saved = VodStream::query()->upsert(
                         $c->toArray(),
-                        ['num'],
+                        ['stream_id'],
                         [
+                            'num',
                             'name',
                             'stream_type',
-                            'stream_id',
                             'stream_icon',
                             'rating',
                             'rating_5based',

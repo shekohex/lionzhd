@@ -27,15 +27,6 @@ final class GetVodInfoRequest extends Request implements Cacheable
     public function __construct(private int $stream_id) {}
 
     /**
-     * Forcefully forget the cache for this request without making a new request
-     */
-    public function forceForgetCache(): void
-    {
-        $cacheDriver = $this->resolveCacheDriver();
-        $cacheDriver->delete($this->formatCacheKey());
-    }
-
-    /**
      * The endpoint for the request
      */
     public function resolveEndpoint(): string

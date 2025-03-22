@@ -15,6 +15,7 @@ interface SearchInputProps {
     autoFocus?: boolean;
     onClear?: () => void;
     showSearchIcon?: boolean;
+    defaultPerPage?: number;
     fullWidth?: boolean;
 }
 
@@ -27,6 +28,7 @@ export function SearchInput({
     onClear,
     showSearchIcon = true,
     fullWidth = false,
+    defaultPerPage = 5,
 }: SearchInputProps) {
     const { props: autocompleteData } = usePage<LightweightSearchResult>();
 
@@ -40,9 +42,8 @@ export function SearchInput({
     const { data, setData, processing, post, get } = useForm<App.Data.SearchMediaData>({
         q: autocompleteData.filters?.q ?? '',
         page: 1,
-        per_page: 5,
-        sort_by: 'popular',
-        lightweight: !isFullSearch,
+        per_page: autocompleteData.filters?.per_page ?? defaultPerPage,
+        sort_by: 'latest',
     });
     // Debounce search query
     const debouncedQuery = useDebounce(data.q || '', 500);

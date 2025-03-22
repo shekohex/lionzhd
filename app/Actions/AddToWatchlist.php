@@ -8,7 +8,6 @@ use App\Concerns\AsAction;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;
-use App\Models\Watchlist;
 
 final class AddToWatchlist
 {

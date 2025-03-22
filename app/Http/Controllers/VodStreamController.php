@@ -40,11 +40,10 @@ final class VodStreamController extends Controller
     public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
     {
         $vod = $client->send(new GetVodInfoRequest($model->stream_id));
-        $inWatchlist = $user->inMyWatchlist($model->num, VodStream::class);
+        $inWatchlist = $user->inMyWatchlist($model->stream_id, VodStream::class);
 
         return Inertia::render('movies/show', [
-            'num' => $model->num,
-            'movie' => $vod->dtoOrFail(),
+            'info' => $vod->dtoOrFail(),
             'in_watchlist' => $inWatchlist,
         ]);
     }
@@ -54,7 +53,7 @@ final class VodStreamController extends Controller
      */
     public function addToWatchlist(#[CurrentUser] User $user, VodStream $model): RedirectResponse
     {
-        $added = AddToWatchlist::run($user, $model->num, VodStream::class);
+        $added = AddToWatchlist::run($user, $model->stream_id, VodStream::class);
         if (! $added) {
             return back()->withErrors('Failed to add movie to watchlist.');
         }
@@ -67,7 +66,7 @@ final class VodStreamController extends Controller
      */
     public function removeFromWatchlist(#[CurrentUser] User $user, VodStream $model): RedirectResponse
     {
-        $removed = RemoveFromWatchlist::run($user, $model->num, VodStream::class);
+        $removed = RemoveFromWatchlist::run($user, $model->stream_id, VodStream::class);
         if (! $removed) {
             return back()->withErrors('Failed to remove movie from watchlist.');
         }
@@ -75,11 +74,11 @@ final class VodStreamController extends Controller
         return back()->with('success', 'Movie removed from watchlist.');
     }
 
-    public function forgetCache(VodStream $model): RedirectResponse
+    public function forgetCache(VodStream $model, XtreamCodesConnector $client): RedirectResponse
     {
-        $req = new GetVodInfoRequest($model->stream_id);
+        $req = (new GetVodInfoRequest($model->stream_id))->invalidateCache();
 
-        $req->forceForgetCache();
+        $client->send($req);
 
         return back()->with('success', 'Cache cleared.');
     }
@@ -89,6 +88,6 @@ final class VodStreamController extends Controller
      */
     public function download(#[CurrentUser] User $user, VodStream $model): RedirectResponse
     {
-        return redirect()->route('downloads.download', ['stream_id' => $model->num, 'type' => VodStream::class]);
+        return redirect()->route('downloads.download', ['stream_id' => $model->stream_id, 'type' => VodStream::class]);
     }
 }

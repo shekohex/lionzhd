@@ -15,22 +15,21 @@ final class SearchMediaData extends Data
 {
     public function __construct(
         public ?string $q,
+        public ?int $per_page,
         #[Min(1)]
         public ?int $page = 1,
-        public ?int $per_page = 5,
         public ?MediaType $media_type = null,
-        public ?SearchSortby $sort_by = SearchSortby::Popular,
-        public ?bool $lightweight = false,
+        public ?SearchSortby $sort_by = SearchSortby::Latest,
     ) {}
 
     public function isMovie(): bool
     {
-        return $this->media_type?->isMovie();
+        return $this->media_type?->isMovie() ?? false;
     }
 
     public function isSeries(): bool
     {
-        return $this->media_type?->isSeries();
+        return $this->media_type?->isSeries() ?? false;
     }
 
     public function hasQuery(): bool

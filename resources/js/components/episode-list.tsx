@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { type SeasonsWithEpisodes, type SeasonWithEpisodes } from '@/types/series';
+import { type SeasonsWithEpisodes } from '@/types/series';
 import { motion } from 'framer-motion';
 import { PlayIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -9,7 +9,7 @@ import { useState } from 'react';
 interface EpisodeListProps {
     seasonsWithEpisodes: SeasonsWithEpisodes;
     className?: string;
-    onPlayEpisode?: (episode: SeasonWithEpisodes) => void;
+    onPlayEpisode?: (episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
 }
 
 export default function EpisodeList({ seasonsWithEpisodes, className, onPlayEpisode }: EpisodeListProps) {
@@ -71,7 +71,7 @@ export default function EpisodeList({ seasonsWithEpisodes, className, onPlayEpis
 }
 
 interface EpisodeCardProps {
-    episode: SeasonWithEpisodes;
+    episode: App.Http.Integrations.LionzTv.Responses.Episode;
     onPlay?: () => void;
 }
 

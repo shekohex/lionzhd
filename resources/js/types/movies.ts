@@ -6,7 +6,6 @@ export interface MoviesPageProps extends SharedData {
 }
 
 export interface MovieInformationPageProps extends SharedData {
-    num: number;
-    movie: App.Http.Integrations.LionzTv.Responses.VodInformation;
+    info: App.Http.Integrations.LionzTv.Responses.VodInformation;
     in_watchlist: boolean;
 }

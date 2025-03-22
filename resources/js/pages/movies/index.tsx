@@ -96,8 +96,8 @@ export default function Movies() {
                                     animate="show"
                                 >
                                     {movies.map((movie) => (
-                                        <motion.div key={movie.num} variants={item}>
-                                            <Link href={route('movies.show', { model: movie.num })}>
+                                        <motion.div key={movie.stream_id} variants={item}>
+                                            <Link href={route('movies.show', { model: movie.stream_id })}>
                                                 <MediaCard
                                                     title={movie.name}
                                                     posterUrl={movie.stream_icon}

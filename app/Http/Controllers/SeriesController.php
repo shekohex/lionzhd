@@ -40,11 +40,10 @@ final class SeriesController extends Controller
     public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, Series $model): Response
     {
         $series = $client->send(new GetSeriesInfoRequest($model->series_id))->dtoOrFail();
-        $inWatchlist = $user->inMyWatchlist($model->num, Series::class);
+        $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
 
         return Inertia::render('series/show', [
-            'num' => $model->num,
-            'series' => $series,
+            'info' => $series,
             'in_watchlist' => $inWatchlist,
         ]);
     }
@@ -54,7 +53,7 @@ final class SeriesController extends Controller
      */
     public function addToWatchlist(#[CurrentUser] User $user, Series $model): RedirectResponse
     {
-        $added = AddToWatchlist::run($user, $model->num, Series::class);
+        $added = AddToWatchlist::run($user, $model->series_id, Series::class);
         if (! $added) {
             return back()->withErrors('Failed to add series to watchlist.');
         }
@@ -62,10 +61,10 @@ final class SeriesController extends Controller
         return back()->with('success', 'Series added to watchlist.');
     }
 
-    public function forgetCache(Series $model): RedirectResponse
+    public function forgetCache(Series $model, XtreamCodesConnector $client): RedirectResponse
     {
-        $req = new GetSeriesInfoRequest($model->series_id);
-        $req->forceForgetCache();
+        $req = (new GetSeriesInfoRequest($model->series_id))->invalidateCache();
+        $client->send($req);
 
         return back()->with('success', 'Cache cleared for the series.');
 
@@ -76,7 +75,7 @@ final class SeriesController extends Controller
      */
     public function removeFromWatchlist(#[CurrentUser] User $user, Series $model): RedirectResponse
     {
-        $removed = RemoveFromWatchlist::run($user, $model->num, Series::class);
+        $removed = RemoveFromWatchlist::run($user, $model->series_id, Series::class);
         if (! $removed) {
             return back()->withErrors('Failed to remove series from watchlist.');
         }

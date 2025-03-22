@@ -19,29 +19,12 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface Aria2ConfigPageProps extends SharedData {
-    host: string;
-    port: number;
-    secret: string;
-    use_ssl: boolean;
-}
-
-interface Aria2Form {
-    host: string;
-    port: number;
-    secret: string;
-    use_ssl: boolean;
-}
+interface Aria2ConfigPageProps extends SharedData, App.Data.Aria2ConfigData {}
 
 export default function Aria2Config() {
     const { props } = usePage<Aria2ConfigPageProps>();
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<Aria2Form>>({
-        host: props.host,
-        port: props.port,
-        secret: props.secret,
-        use_ssl: props.use_ssl,
-    });
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<App.Data.Aria2ConfigData>(props);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();

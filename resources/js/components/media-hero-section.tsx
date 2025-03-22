@@ -1,13 +1,14 @@
+import ForgetCacheButton from '@/components/forget-cache-button';
+import MediaBackdrop from '@/components/media-backdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import WatchlistButton from '@/components/watchlist-button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { InfoIcon, PlayIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import MediaBackdrop from './media-backdrop';
-import WatchlistButton from './watchlist-button';
 
 export interface MediaHeroSectionProps {
     inMyWatchlist?: boolean;
@@ -28,13 +29,14 @@ export interface MediaHeroSectionProps {
     onPlay?: () => void;
     onTrailerPlay?: () => void;
     onMoreInfo?: () => void;
+    onAddToWatchlist?: () => void;
+    onRemoveFromWatchlist?: () => void;
+    onForgetCache?: () => void;
     // UI Customization
     className?: string;
     showActions?: boolean;
     showMetadata?: boolean;
     maxDescriptionLength?: number;
-    onAddToWatchlist?: () => void;
-    onRemoveFromWatchlist?: () => void;
 }
 
 const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
@@ -54,6 +56,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     onMoreInfo,
     onAddToWatchlist,
     onRemoveFromWatchlist,
+    onForgetCache,
     className,
     showActions = true,
     showMetadata = true,
@@ -205,6 +208,9 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                         onRemoveFromWatchlist={onRemoveFromWatchlist}
                                         isInWatchlist={inMyWatchlist}
                                     />
+
+                                    {/* Forget Cache button - only if forget cache */}
+                                    <ForgetCacheButton onForgetCache={onForgetCache} />
                                     {/* More Info button */}
                                     {onMoreInfo && (
                                         <TooltipProvider>

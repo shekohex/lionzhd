@@ -18,29 +18,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-interface XtreamCodesConfigPageProps extends SharedData {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-}
-
-interface XtreamCodesForm {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-}
+interface XtreamCodesConfigPageProps extends SharedData, App.Data.XtreamCodesConfigData {}
 
 export default function XtreamCodesConfig() {
     const { props } = usePage<XtreamCodesConfigPageProps>();
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<XtreamCodesForm>>({
-        host: props.host,
-        port: props.port,
-        username: props.username,
-        password: props.password,
-    });
+    const { data, setData, patch, errors, processing, recentlySuccessful } =
+        useForm<App.Data.XtreamCodesConfigData>(props);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();

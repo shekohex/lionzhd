@@ -6,7 +6,9 @@ namespace App\Models;
 
 use App\Concerns\LoadsFromEnv;
 use App\Contracts\Models\EnvConfigurable;
+use App\Data\Aria2ConfigData;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\LaravelData\WithData;
 
 /**
  * @mixin IdeHelperAria2Config
@@ -14,6 +16,9 @@ use Illuminate\Database\Eloquent\Model;
 final class Aria2Config extends Model implements EnvConfigurable
 {
     use LoadsFromEnv;
+    use WithData;
+
+    protected $dataClass = Aria2ConfigData::class;
 
     protected $fillable = [
         'host',

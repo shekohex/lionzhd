@@ -5,7 +5,11 @@ export interface SeriesPageProps extends SharedData {
 }
 
 export interface SeriesInformationPageProps extends SharedData {
-    num: number;
-    series: App.Http.Integrations.LionzTv.Responses.SeriesInformation;
+    info: App.Http.Integrations.LionzTv.Responses.SeriesInformation;
     in_watchlist: boolean;
 }
+
+export type SeasonsWithEpisodes = Pick<
+    App.Http.Integrations.LionzTv.Responses.SeriesInformation,
+    'seasonsWithEpisodes'
+>['seasonsWithEpisodes'];

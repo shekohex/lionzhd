@@ -18,6 +18,13 @@ declare module 'ziggy-js' {
             "required": true
         }
     ],
+    "movies.cache": [
+        {
+            "name": "model",
+            "required": true,
+            "binding": "stream_id"
+        }
+    ],
     "movies.watchlist": [
         {
             "name": "model",
@@ -29,6 +36,13 @@ declare module 'ziggy-js' {
         {
             "name": "model",
             "required": true
+        }
+    ],
+    "series.cache": [
+        {
+            "name": "model",
+            "required": true,
+            "binding": "series_id"
         }
     ],
     "series.watchlist": [

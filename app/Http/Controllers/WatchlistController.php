@@ -44,13 +44,14 @@ final class WatchlistController extends Controller
 
         // Transform the data for the frontend
         $items = $watchlistItems->map(function ($item): array {
+            /** @var VodStream|Series */
             $watchable = $item->watchable;
             $type = $item->watchable_type === VodStream::class ? 'movie' : 'series';
 
             return [
                 'id' => $item->id,
                 'type' => $type,
-                'watchableId' => $watchable->num,
+                'watchableId' => $watchable->getKey(),
                 'name' => $watchable->name,
                 'cover' => $type === 'movie' ? $watchable->stream_icon : $watchable->cover,
                 'addedAt' => $item->created_at->diffForHumans(),

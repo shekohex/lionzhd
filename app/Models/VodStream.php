@@ -33,7 +33,7 @@ final class VodStream extends Model
     /**
      * The primary key for the model.
      */
-    protected $primaryKey = 'num';
+    protected $primaryKey = 'stream_id';
 
     /**
      * The attributes that are mass assignable.
@@ -41,7 +41,6 @@ final class VodStream extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'num',
         'name',
         'stream_type',
         'stream_id',
@@ -84,7 +83,6 @@ final class VodStream extends Model
     protected function casts(): array
     {
         return [
-            'num' => 'integer',
             'stream_id' => 'integer',
             'rating_5based' => 'decimal:1',
             'is_adult' => 'boolean',

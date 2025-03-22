@@ -23,7 +23,7 @@ final readonly class LightweightSearchFilter
     public function __invoke(LengthAwarePaginator $paginator, Closure $next): mixed
     {
         $results = $paginator->through(fn ($model) => [
-            'num' => $model->num,
+            'id' => $this->kind === MediaType::Movie ? $model->stream_id : $model->series_id,
             'name' => $model->name,
             'type' => $this->kind,
             'poster' => $model->cover,

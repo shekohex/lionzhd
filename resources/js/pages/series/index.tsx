@@ -96,11 +96,11 @@ export default function Series() {
                                     animate="show"
                                 >
                                     {series.map((show) => (
-                                        <motion.div key={show.num} variants={item}>
+                                        <motion.div key={show.series_id} variants={item}>
                                             <Link
                                                 preserveState
                                                 preserveScroll
-                                                href={route('series.show', { model: show.num })}
+                                                href={route('series.show', { model: show.series_id })}
                                             >
                                                 <MediaCard
                                                     title={show.name}

@@ -31,24 +31,25 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 export default function MovieInformation() {
     const { props } = usePage<MovieInformationPageProps>();
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
-    const { movie, in_watchlist, num } = props;
+    const { delete: forgetCache } = useForm();
+    const { info, in_watchlist } = props;
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
 
     // Get release year from full date
-    const releaseYear = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : null;
+    const releaseYear = info.releaseDate ? new Date(info.releaseDate).getFullYear() : null;
 
     // Handle movie playback
     const handlePlay = useCallback(() => {
         // For demonstration purposes, this would be connected to actual video playback
-        console.log('Playing movie:', movie.movie.name);
+        console.log('Playing movie:', info.movie.name);
 
         // Without actual implementation, just open the trailer if available
-        if (movie.youtubeTrailer) {
+        if (info.youtubeTrailer) {
             setIsTrailerOpen(true);
         }
-    }, [movie]);
+    }, [info]);
 
     // Handle trailer button click
     const handleTrailerClick = useCallback(() => {
@@ -56,18 +57,22 @@ export default function MovieInformation() {
     }, []);
 
     const addToWatchlist = useCallback(() => {
-        addToWatchlistCall(route('movies.watchlist', { model: num }), {
+        addToWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
             preserveScroll: true,
-            preserveState: true,
+            preserveState: false,
         });
-    }, [addToWatchlistCall, num]);
+    }, [addToWatchlistCall, info.vodId]);
 
     const removeFromWatchlist = useCallback(() => {
-        removeFromWatchlistCall(route('movies.watchlist', { model: num }), {
+        removeFromWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
             preserveScroll: true,
-            preserveState: true,
+            preserveState: false,
         });
-    }, [removeFromWatchlistCall, num]);
+    }, [removeFromWatchlistCall, info.vodId]);
+
+    const handleForgetCache = useCallback(() => {
+        forgetCache(route('movies.cache', { model: info.vodId }), { preserveScroll: true, preserveState: false });
+    }, [forgetCache, info.vodId]);
 
     // Technical details section with video/audio information
     const renderTechnicalDetails = () => {
@@ -79,24 +84,24 @@ export default function MovieInformation() {
                     <div>
                         <h4 className="text-muted-foreground mb-2 font-medium">Video</h4>
                         <dl className="space-y-1">
-                            {movie.video?.codecName && (
+                            {info.video?.codecName && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Codec:</dt>
-                                    <dd>{movie.video.codecName.toUpperCase()}</dd>
+                                    <dd>{info.video.codecName.toUpperCase()}</dd>
                                 </div>
                             )}
-                            {movie.video?.width && movie.video?.height && (
+                            {info.video?.width && info.video?.height && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Resolution:</dt>
                                     <dd>
-                                        {movie.video.width}×{movie.video.height}
+                                        {info.video.width}×{info.video.height}
                                     </dd>
                                 </div>
                             )}
-                            {movie.video?.bitRate && (
+                            {info.video?.bitRate && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Bitrate:</dt>
-                                    <dd>{Math.round(parseInt(movie.video.bitRate) / 1000)} Kbps</dd>
+                                    <dd>{Math.round(parseInt(info.video.bitRate) / 1000)} Kbps</dd>
                                 </div>
                             )}
                         </dl>
@@ -105,26 +110,26 @@ export default function MovieInformation() {
                     <div>
                         <h4 className="text-muted-foreground mb-2 font-medium">Audio</h4>
                         <dl className="space-y-1">
-                            {movie.audio?.codecName && (
+                            {info.audio?.codecName && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Codec:</dt>
-                                    <dd>{movie.audio.codecName.toUpperCase()}</dd>
+                                    <dd>{info.audio.codecName.toUpperCase()}</dd>
                                 </div>
                             )}
-                            {movie.audio?.channels && (
+                            {info.audio?.channels && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Channels:</dt>
                                     <dd>
-                                        {movie.audio.channelLayout
-                                            ? movie.audio.channelLayout.toUpperCase()
-                                            : `${movie.audio.channels} channels`}
+                                        {info.audio.channelLayout
+                                            ? info.audio.channelLayout.toUpperCase()
+                                            : `${info.audio.channels} channels`}
                                     </dd>
                                 </div>
                             )}
-                            {movie.audio?.bitRate && (
+                            {info.audio?.bitRate && (
                                 <div className="flex justify-between">
                                     <dt className="text-muted-foreground">Bitrate:</dt>
-                                    <dd>{Math.round(parseInt(movie.audio.bitRate) / 1000)} Kbps</dd>
+                                    <dd>{Math.round(parseInt(info.audio.bitRate) / 1000)} Kbps</dd>
                                 </div>
                             )}
                         </dl>
@@ -141,31 +146,32 @@ export default function MovieInformation() {
             href: route('movies'),
         },
         {
-            title: movie.movie.name,
-            href: route('movies.show', { model: movie.vodId }),
+            title: info.movie.name,
+            href: route('movies.show', { model: info.vodId }),
         },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={`${movie.movie.name} | Movie Information`} />
+            <Head title={`${info.movie.name} | Movie Information`} />
 
             <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <div className="relative w-full">
                     {/* Hero Section with fallback image handling */}
                     <MediaHeroSection
-                        title={movie.movie.name}
-                        description={movie.plot}
+                        title={info.movie.name}
+                        description={info.plot}
                         releaseYear={releaseYear ?? '20??'}
-                        rating={movie.rating}
-                        duration={movie.duration}
-                        genres={movie.genre}
-                        backdropUrl={movie.backdropPath?.length > 0 ? movie.backdropPath[0] : null}
-                        posterUrl={movie.movieImage || movie.backdrop}
-                        additionalBackdrops={movie.backdropPath?.slice(1) || []}
-                        trailerUrl={movie.youtubeTrailer}
+                        rating={info.rating}
+                        duration={info.duration}
+                        genres={info.genre}
+                        backdropUrl={info.backdropPath?.length > 0 ? info.backdropPath[0] : null}
+                        posterUrl={info.movieImage || info.backdrop}
+                        additionalBackdrops={info.backdropPath?.slice(1) || []}
+                        trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}
                         onTrailerPlay={handleTrailerClick}
+                        onForgetCache={handleForgetCache}
                         onAddToWatchlist={addToWatchlist}
                         onRemoveFromWatchlist={removeFromWatchlist}
                         inMyWatchlist={in_watchlist}
@@ -181,7 +187,7 @@ export default function MovieInformation() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6 }}
                                 >
-                                    <CastList cast={movie.cast} director={movie.director} />
+                                    <CastList cast={info.cast} director={info.director} />
                                 </motion.div>
                             </AnimatePresence>
 
@@ -199,18 +205,18 @@ export default function MovieInformation() {
                                         <div className="flex flex-wrap items-center gap-2">
                                             <Badge variant="outline" className="bg-card/50 backdrop-blur-sm">
                                                 <Film className="mr-1 h-3 w-3" />{' '}
-                                                {movie.movie.containerExtension.toUpperCase()}
+                                                {info.movie.containerExtension.toUpperCase()}
                                             </Badge>
 
-                                            {movie.bitrate && (
+                                            {info.bitrate && (
                                                 <Badge variant="outline" className="bg-card/50 backdrop-blur-sm">
-                                                    {Math.round(movie.bitrate / 1000)} Kbps
+                                                    {Math.round(info.bitrate / 1000)} Kbps
                                                 </Badge>
                                             )}
 
-                                            {movie.video?.width && movie.video?.height && (
+                                            {info.video?.width && info.video?.height && (
                                                 <Badge variant="outline" className="bg-card/50 backdrop-blur-sm">
-                                                    {movie.video.width}×{movie.video.height}
+                                                    {info.video.width}×{info.video.height}
                                                 </Badge>
                                             )}
                                         </div>
@@ -224,9 +230,9 @@ export default function MovieInformation() {
                     </div>
 
                     {/* Trailer Video Modal */}
-                    {movie.youtubeTrailer && (
+                    {info.youtubeTrailer && (
                         <VideoTrailerPreview
-                            trailerUrl={movie.youtubeTrailer}
+                            trailerUrl={info.youtubeTrailer}
                             isOpen={isTrailerOpen}
                             onClose={() => setIsTrailerOpen(false)}
                         />

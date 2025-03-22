@@ -16,7 +16,7 @@ final class SeriesData extends Data
 
     public string $name;
 
-    public string $series_id;
+    public int $series_id;
 
     public string $cover;
 

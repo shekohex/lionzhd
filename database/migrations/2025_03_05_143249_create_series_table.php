@@ -14,9 +14,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('series', static function (Blueprint $table): void {
-            $table->integer('num')->primary();
+            $table->unsignedInteger('series_id')->primary();
+            $table->unsignedInteger('num')->unique();
             $table->string('name');
-            $table->integer('series_id')->unique();
             $table->string('cover')->nullable();
             $table->text('plot')->nullable();
             $table->text('cast')->nullable();

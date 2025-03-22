@@ -1,4 +1,10 @@
 declare namespace App.Data {
+    export type Aria2ConfigData = {
+        host: string;
+        port: number;
+        secret: string;
+        use_ssl: boolean;
+    };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;
@@ -25,12 +31,11 @@ declare namespace App.Data {
         per_page?: number;
         media_type?: App.Enums.MediaType;
         sort_by?: App.Enums.SearchSortby;
-        lightweight?: boolean;
     };
     export type SeriesData = {
         num: number;
         name: string;
-        series_id: string;
+        series_id: number;
         cover: string;
         plot: string;
         cast: string;
@@ -60,6 +65,12 @@ declare namespace App.Data {
         direct_source?: string;
         created_at: string;
         updated_at: string;
+    };
+    export type XtreamCodesConfigData = {
+        host: string;
+        port: number;
+        username: string;
+        password: string;
     };
 }
 declare namespace App.Enums {

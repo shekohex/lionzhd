@@ -43,7 +43,7 @@ final class Series extends Model
     /**
      * The primary key for the model.
      */
-    protected $primaryKey = 'num';
+    protected $primaryKey = 'series_id';
 
     /**
      * The attributes that are mass assignable.
@@ -51,7 +51,6 @@ final class Series extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'num',
         'name',
         'series_id',
         'cover',
@@ -101,7 +100,6 @@ final class Series extends Model
     protected function casts(): array
     {
         return [
-            'num' => 'integer',
             'series_id' => 'integer',
             'rating_5based' => 'decimal:1',
             'backdrop_path' => AsArrayObject::class,

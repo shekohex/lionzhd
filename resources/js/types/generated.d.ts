@@ -9,6 +9,14 @@ declare namespace App.Data {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;
     };
+    export type DownloadedFileData = {
+        index: number;
+        path: string;
+        length: number;
+        completedLength: number;
+        selected: boolean;
+        uris: { status: string; uri: string }[];
+    };
     export type FeaturedMediaData = {
         movies: Array<App.Data.VodStreamData>;
         series: Array<App.Data.SeriesData>;
@@ -25,10 +33,33 @@ declare namespace App.Data {
         q?: string;
         per_page: number;
     };
+    export type MediaDownloadRefData = {
+        id: number;
+        gid: string;
+        media_id: number;
+        media_type: 'movie' | 'series';
+        downloadable_id: number;
+        created_at: string;
+        updated_at: string;
+        media: App.Data.VodStreamData | App.Data.SeriesData;
+        downloadStatus?: App.Data.MediaDownloadStatusData;
+        episode?: number;
+    };
+    export type MediaDownloadStatusData = {
+        gid: string;
+        status: App.Enums.MediaDownloadStatus;
+        totalLength: number;
+        completedLength: number;
+        downloadSpeed: number;
+        errorCode: number;
+        errorMessage?: string;
+        dir: string;
+        files: { [key: number]: App.Data.DownloadedFileData };
+    };
     export type SearchMediaData = {
         q?: string;
-        page?: number;
         per_page?: number;
+        page?: number;
         media_type?: App.Enums.MediaType;
         sort_by?: App.Enums.SearchSortby;
     };
@@ -74,6 +105,7 @@ declare namespace App.Data {
     };
 }
 declare namespace App.Enums {
+    export type MediaDownloadStatus = 'unknown' | 'active' | 'waiting' | 'paused' | 'error' | 'complete' | 'removed';
     export type MediaType = 'movie' | 'series';
     export type SearchSortby = 'popular' | 'latest' | 'rating';
 }

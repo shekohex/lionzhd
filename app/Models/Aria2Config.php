@@ -63,13 +63,19 @@ final class Aria2Config extends Model implements EnvConfigurable
     }
 
     /**
+     * Get the host of the RPC server.
+     */
+    public function baseUrl(): string
+    {
+        return "{$this->host}:{$this->port}";
+    }
+
+    /**
      * Get the full RPC endpoint URL.
      */
     public function getRpcEndpoint(): string
     {
-        $protocol = $this->use_ssl ? 'https' : 'http';
-
-        return "{$protocol}://{$this->host}:{$this->port}/jsonrpc";
+        return "{$this->baseUrl()}/jsonrpc";
     }
 
     /**

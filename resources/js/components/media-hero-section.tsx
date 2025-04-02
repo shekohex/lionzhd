@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import WatchlistButton from '@/components/watchlist-button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { InfoIcon, PlayIcon } from 'lucide-react';
+import { DownloadIcon, InfoIcon, PlayIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -32,6 +32,7 @@ export interface MediaHeroSectionProps {
     onAddToWatchlist?: () => void;
     onRemoveFromWatchlist?: () => void;
     onForgetCache?: () => void;
+    onDownload?: (...args: unknown[]) => void;
     // UI Customization
     className?: string;
     showActions?: boolean;
@@ -57,6 +58,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     onAddToWatchlist,
     onRemoveFromWatchlist,
     onForgetCache,
+    onDownload,
     className,
     showActions = true,
     showMetadata = true,
@@ -199,6 +201,14 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                         <Button size="lg" variant="secondary" onClick={onTrailerPlay} className="gap-2">
                                             <PlayIcon size={18} />
                                             Trailer
+                                        </Button>
+                                    )}
+
+                                    {/* Download button - only if onDownload available */}
+                                    {onDownload && (
+                                        <Button size="lg" variant="secondary" onClick={onDownload} className="gap-2">
+                                            <DownloadIcon size={18} />
+                                            Download
                                         </Button>
                                     )}
 

@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import type { SeriesInformationPageProps } from '@/types/series';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -64,11 +64,23 @@ export default function SeriesInformation() {
         }
     }, [info]);
 
-    // Handle playing a specific episode
-    const handlePlayEpisode = useCallback((episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
-        console.log('Playing episode:', episode);
-        // Here you would implement actual episode playback
-    }, []);
+    // Handle downloading a specific episode
+    const handleDownloadEpisode = useCallback(
+        (episodeIndex: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
+            router.visit(
+                route('series.download.single', {
+                    model: info.seriesId,
+                    season: episode.season,
+                    episode: episodeIndex,
+                }),
+                {
+                    preserveScroll: true,
+                    preserveState: false,
+                },
+            );
+        },
+        [info.seriesId],
+    );
 
     // Handle trailer button click
     const handleTrailerClick = useCallback(() => {
@@ -142,7 +154,7 @@ export default function SeriesInformation() {
                                 >
                                     <EpisodeList
                                         seasonsWithEpisodes={info.seasonsWithEpisodes}
-                                        onPlayEpisode={handlePlayEpisode}
+                                        onDownloadEpisode={handleDownloadEpisode}
                                     />
                                 </motion.div>
                             </AnimatePresence>

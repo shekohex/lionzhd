@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { MovieInformationPageProps } from '@/types/movies';
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -55,6 +55,13 @@ export default function MovieInformation() {
     const handleTrailerClick = useCallback(() => {
         setIsTrailerOpen(true);
     }, []);
+    // Handle download button click for movies
+    const handleDownload = useCallback(() => {
+        router.visit(route('movies.download', { model: info.vodId }), {
+            preserveScroll: true,
+            preserveState: false,
+        });
+    }, [info.vodId]);
 
     const addToWatchlist = useCallback(() => {
         addToWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
@@ -167,6 +174,7 @@ export default function MovieInformation() {
                         genres={info.genre}
                         backdropUrl={info.backdropPath?.length > 0 ? info.backdropPath[0] : null}
                         posterUrl={info.movieImage || info.backdrop}
+                        onDownload={handleDownload}
                         additionalBackdrops={info.backdropPath?.slice(1) || []}
                         trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}

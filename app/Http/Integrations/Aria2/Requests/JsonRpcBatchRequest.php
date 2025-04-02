@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\Aria2\Requests;
 
-use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
-use Illuminate\Support\Str;
+use App\Http\Integrations\Aria2\Responses\JsonRpcBatchResponse;
+use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
-abstract class JsonRpcRequest extends Request implements HasBody
+final class JsonRpcBatchRequest extends Request implements HasBody
 {
     use HasJsonBody;
 
@@ -24,19 +25,17 @@ abstract class JsonRpcRequest extends Request implements HasBody
     /**
      * The response class
      */
-    protected ?string $response = JsonRpcResponse::class;
+    protected ?string $response = JsonRpcBatchResponse::class;
 
     /**
-     * @param  list<mixed>  $params
+     * @param  list<JsonRpcRequest>  $calls
      */
-    protected function __construct(
-        protected readonly string $call,
-        protected array $params = [],
-        protected bool $systemCall = false,
-        protected ?string $id = null,
-        protected readonly string $version = '2.0'
+    public function __construct(
+        protected readonly array $calls,
     ) {
-        $this->id ??= Str::uuid()->toString();
+        if (empty($this->calls)) {
+            throw new InvalidArgumentException('At least one call is required.');
+        }
     }
 
     /**
@@ -62,11 +61,6 @@ abstract class JsonRpcRequest extends Request implements HasBody
      */
     final public function defaultBody(): array
     {
-        return [
-            'jsonrpc' => $this->version,
-            'method' => $this->systemCall ? "system.{$this->call}" : "aria2.{$this->call}",
-            'params' => $this->params ?? [],
-            'id' => $this->id,
-        ];
+        return Arr::map($this->calls, fn (JsonRpcRequest $call) => $call->defaultBody());
     }
 }

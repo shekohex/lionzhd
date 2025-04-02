@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 final class Watchlist extends Model
 {
     /**
-     * The attributes that are mass assignable.
+     * the attributes that are mass assignable.
      *
      * @var list<string>
      */

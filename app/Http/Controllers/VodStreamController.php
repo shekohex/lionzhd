@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\AddToWatchlist;
+use App\Actions\CreateXtreamcodesDownloadUrl;
+use App\Actions\DownloadMedia;
+use App\Actions\GetDownloadStatus;
 use App\Actions\RemoveFromWatchlist;
+use App\Data\MediaDownloadStatusData;
 use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Container\Attributes\CurrentUser;
@@ -84,10 +89,41 @@ final class VodStreamController extends Controller
     }
 
     /**
-     * Trigger a download of the VOD stream.
+     * Trigger a download of the Video on demand stream.
      */
-    public function download(#[CurrentUser] User $user, VodStream $model): RedirectResponse
+    public function download(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): RedirectResponse
     {
-        return redirect()->route('downloads.download', ['stream_id' => $model->stream_id, 'type' => VodStream::class]);
+
+        $vod = $client->send(new GetVodInfoRequest($model->stream_id));
+        $dto = $vod->dtoOrFail();
+        // Check if the user has already downloaded this stream and the download is still active
+        $existingDownloads = MediaDownloadRef::query()
+            ->where('media_id', $model->stream_id)
+            ->where('media_type', VodStream::class)
+            ->get();
+        // Check if any of the existing downloads are still active
+        $gids = $existingDownloads->pluck('gid');
+        $firstActive = null;
+        if ($gids->isNotEmpty()) {
+            $activeDownloads = GetDownloadStatus::run($gids->toArray())->map(fn (array $response) => MediaDownloadStatusData::from($response));
+            $firstActive = $activeDownloads->firstWhere(fn ($download) => $download->status->downloadedOrDownloading());
+        }
+        if ($firstActive) {
+            return redirect()->route('downloads', [
+                'downloadable_id' => $model->stream_id,
+                'gid' => $firstActive->gid,
+            ])->with('success', 'Download started.');
+        }
+
+        $url = CreateXtreamcodesDownloadUrl::run($dto);
+        $gid = DownloadMedia::run($url);
+
+        MediaDownloadRef::fromVodStream($model, $gid)->saveOrFail();
+
+        return redirect()->route('downloads', [
+            'downloadable_id' => $model->stream_id,
+            'gid' => $gid,
+        ])->with('success', 'Download started.');
+
     }
 }

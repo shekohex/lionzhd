@@ -41,6 +41,12 @@ const mainNavItems: NavItem[] = [
         url: '/watchlist',
         icon: Bookmark,
     },
+
+    {
+        title: 'Downloads',
+        url: '/downloads',
+        icon: Folder,
+    },
 ];
 
 const footerNavItems: NavItem[] = [

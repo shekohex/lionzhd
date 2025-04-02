@@ -9,48 +9,41 @@ use App\Models\Aria2Config;
 use Saloon\Http\Connector;
 use Saloon\Http\Response;
 use Saloon\Traits\Plugins\AcceptsJson;
+use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use Saloon\Traits\Plugins\HasTimeout;
+use Throwable;
 
 final class JsonRpcConnector extends Connector
 {
     use AcceptsJson;
+    use AlwaysThrowOnErrors;
     use HasTimeout;
+
+    public ?int $tries = 3;
+
+    public ?bool $useExponentialBackoff = true;
 
     protected int $connectTimeout = 60;
 
     protected int $requestTimeout = 120;
 
-    protected function __construct(private readonly Aria2Config $araia2Config) {}
+    public function __construct(private readonly Aria2Config $aria2Config) {}
 
     /**
      * The Base URL of the API
      */
     public function resolveBaseUrl(): string
     {
-        return $this->araia2Config->getRpcEndpoint();
+        return $this->aria2Config->baseUrl();
     }
 
-    public function hasRequestFailed(Response $response): bool
+    public function getRequestException(Response $response, ?Throwable $senderException): JsonRpcException
     {
-        if ($response->failed()) {
-            return true;
-        }
-
-        return $response->json('error') !== null;
+        return new JsonRpcException($response, $senderException);
     }
 
     protected function defaultAuth(): Aria2JsonRpcAuthenticator
     {
-        return new Aria2JsonRpcAuthenticator($this->araia2Config);
-    }
-
-    /**
-     * Default HTTP client options
-     */
-    protected function defaultConfig(): array
-    {
-        return [
-            'stream' => true,
-        ];
+        return new Aria2JsonRpcAuthenticator($this->aria2Config);
     }
 }

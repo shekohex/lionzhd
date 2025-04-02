@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Integrations\Aria2\Requests;
 
 use App\Http\Integrations\Aria2\Responses\AddUriResponse;
-use Illuminate\Support\Uri;
+use League\Uri\Uri;
 
 final class AddUriRequest extends JsonRpcRequest
 {

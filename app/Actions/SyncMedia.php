@@ -43,6 +43,12 @@ final readonly class SyncMedia
             VodStream::removeAllFromSearch();
             Series::removeAllFromSearch();
 
+            // Remove all existing series and VOD streams
+            Log::debug('Deleting all existing series');
+            Series::query()->truncate();
+            Log::debug('Deleting all existing VOD streams');
+            VodStream::query()->truncate();
+
             Telescope::withoutRecording(function () use ($series, $vodStreams): void {
 
                 $series->chunk(1000)->each(function ($c): void {

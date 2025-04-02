@@ -3,16 +3,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 import { type SeasonsWithEpisodes } from '@/types/series';
 import { motion } from 'framer-motion';
-import { PlayIcon } from 'lucide-react';
+import { DownloadIcon } from 'lucide-react';
 import { useState } from 'react';
 
 interface EpisodeListProps {
     seasonsWithEpisodes: SeasonsWithEpisodes;
     className?: string;
-    onPlayEpisode?: (episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
+    onDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
 }
 
-export default function EpisodeList({ seasonsWithEpisodes, className, onPlayEpisode }: EpisodeListProps) {
+export default function EpisodeList({ seasonsWithEpisodes, className, onDownloadEpisode }: EpisodeListProps) {
     // Get available season numbers and sort them
     const seasonNumbers = Object.keys(seasonsWithEpisodes)
         .map(Number)
@@ -56,7 +56,7 @@ export default function EpisodeList({ seasonsWithEpisodes, className, onPlayEpis
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.05 * (index % 20) }}
                     >
-                        <EpisodeCard episode={episode} onPlay={() => onPlayEpisode?.(episode)} />
+                        <EpisodeCard episode={episode} onDownload={() => onDownloadEpisode?.(index, episode)} />
                     </motion.div>
                 ))}
 
@@ -72,10 +72,10 @@ export default function EpisodeList({ seasonsWithEpisodes, className, onPlayEpis
 
 interface EpisodeCardProps {
     episode: App.Http.Integrations.LionzTv.Responses.Episode;
-    onPlay?: () => void;
+    onDownload?: () => void;
 }
 
-function EpisodeCard({ episode, onPlay }: EpisodeCardProps) {
+function EpisodeCard({ episode, onDownload }: EpisodeCardProps) {
     const [isHovered, setIsHovered] = useState(false);
 
     // Format episode number with leading zero if needed
@@ -98,9 +98,9 @@ function EpisodeCard({ episode, onPlay }: EpisodeCardProps) {
                     variant="ghost"
                     size="icon"
                     className="absolute left-4 opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={onPlay}
+                    onClick={onDownload}
                 >
-                    <PlayIcon size={24} />
+                    <DownloadIcon size={24} />
                 </Button>
             </div>
 

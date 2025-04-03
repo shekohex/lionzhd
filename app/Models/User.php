@@ -44,7 +44,7 @@ final class User extends Authenticatable
      */
     public static function canSignUp(): bool
     {
-        return self::query()->count() < 1;
+        return self::query()->count() < config('auth.defaults.max_users');
     }
 
     /**

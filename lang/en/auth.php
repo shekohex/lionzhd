@@ -19,4 +19,5 @@ return [
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'already_registered' => 'There is already a user registered. Please login instead.',
+    'max_users_reached' => 'The maximum number of users has been reached. Please contact support.',
 ];

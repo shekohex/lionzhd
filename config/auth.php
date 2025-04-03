@@ -19,6 +19,7 @@ return [
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),
+        'max_users' => env('AUTH_MAX_USERS', 10),
     ],
 
     /*

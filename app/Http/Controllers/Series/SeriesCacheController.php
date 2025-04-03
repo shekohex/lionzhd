@@ -16,6 +16,7 @@ final class SeriesCacheController extends Controller
     {
         $req = new GetSeriesInfoRequest($model->series_id);
         $req = $req->invalidateCache();
+
         $client->send($req);
 
         return back();

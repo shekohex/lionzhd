@@ -23,7 +23,7 @@ final class JsonRpcException extends Exception
     public function __construct(/**
      * The Saloon HTTP response.
      */
-    private readonly ?Response $rawResponse, ?Throwable $previous = null)
+        private readonly ?Response $rawResponse, ?Throwable $previous = null)
     {
         $this->extractErrorData();
 

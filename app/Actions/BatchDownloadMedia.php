@@ -49,6 +49,7 @@ final readonly class BatchDownloadMedia
                 ),
             );
         }
+
         $req = new JsonRpcBatchRequest($calls);
 
         /** @var JsonRpcBatchResponse $response */

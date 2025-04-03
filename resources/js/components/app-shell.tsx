@@ -11,8 +11,9 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, variant = 'header' }: AppShellProps) {
-    const { auth, errors: rawErrors } = usePage<SharedData>().props;
+    const { auth, errors: rawErrors, flash: rawFlash } = usePage<SharedData>().props;
     const errors = useMemo(() => rawErrors, [rawErrors]);
+    const flash = useMemo(() => rawFlash, [rawFlash]);
     const isAuthenticated = auth.user !== null;
 
     // Sidebar state
@@ -29,6 +30,35 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
             localStorage.setItem('sidebar', String(open));
         }
     };
+
+    // Handle flash messages
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success, {
+                description: 'Operation completed successfully.',
+                duration: 3000,
+                action: {
+                    label: 'Dismiss',
+                    onClick: () => {
+                        toast.dismiss();
+                    },
+                },
+            });
+        }
+
+        if (flash.warning) {
+            toast.warning(flash.warning, {
+                description: 'There was a warning during the operation.',
+                duration: 3000,
+                action: {
+                    label: 'Dismiss',
+                    onClick: () => {
+                        toast.dismiss();
+                    },
+                },
+            });
+        }
+    }, [flash]);
 
     // Handle errors
     useEffect(() => {

@@ -2,22 +2,27 @@ import ResponsiveImage from '@/components/responsive-image';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@inertiajs/react';
-import { Pause, Play, Redo, X } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Pause, Play, Redo, Trash2, X } from 'lucide-react';
 
 interface DownloadInformationProps {
     download: App.Data.MediaDownloadRefData;
+    highlighted?: boolean;
     onPause?: () => void;
     onResume?: () => void;
     onRetry?: () => void;
+    onRemove?: () => void;
     onCancel?: () => void;
 }
 
 const DownloadInformation: React.FC<DownloadInformationProps> = ({
     download,
+    highlighted,
     onCancel,
     onPause,
     onResume,
     onRetry,
+    onRemove,
 }) => {
     const downloadPercentage =
         (download.downloadStatus &&
@@ -46,7 +51,21 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
     };
 
     return (
-        <div className="flex items-center justify-between">
+        <motion.div
+            className="flex items-center justify-between"
+            initial={true}
+            animate={
+                highlighted
+                    ? {
+                          backgroundColor: [
+                              'oklch(from var(--muted-foreground) 0.3 c h)',
+                              'oklch(from var(--muted-foreground) 0.0 c h)',
+                          ],
+                          transition: { duration: 3, ease: 'easeInOut' },
+                      }
+                    : {}
+            }
+        >
             <div className="flex items-center gap-4">
                 <Link
                     preserveState={false}
@@ -70,7 +89,7 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                     <h3 className="font-semibold">{download.media.name}</h3>
                     {download.media_type === 'series' && download.episode !== null && download.episode !== undefined ? (
                         <p className="text-muted-foreground text-sm">
-                            Episode: {download.episode + 1} (#{download.downloadable_id})
+                            S{download.season}E{download.episode} - {download.media.name}
                         </p>
                     ) : null}
                 </div>
@@ -142,41 +161,60 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                             </Tooltip>
                         </TooltipProvider>
                     )}
-                    {download.downloadStatus?.status === 'error' ||
-                        (download.downloadStatus?.status == 'unknown' && (
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => onRetry?.()}
-                                            className="hover:bg-muted rounded-md p-1"
-                                        >
-                                            <Redo className="h-4 w-4" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p className="text-sm">Retry Download</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        ))}
+                    {download.downloadStatus?.status === 'error' && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => onRetry?.()}
+                                        className="hover:bg-muted rounded-md p-1"
+                                    >
+                                        <Redo className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="text-sm">Retry Download</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button variant="destructive" size="icon" onClick={() => onCancel?.()}>
-                                    <X />
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => onRemove?.()}
+                                    className="hover:bg-muted rounded-md p-1"
+                                >
+                                    <Trash2 className="h-4 w-4" />
                                 </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                                <p className="text-sm">Abort Download</p>
+                                <p className="text-sm">Remove Download</p>
                             </TooltipContent>
                         </Tooltip>
                     </TooltipProvider>
+
+                    {download.downloadStatus?.status !== 'complete' && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="destructive" size="icon" onClick={() => onCancel?.()}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="text-sm">Abort Download</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

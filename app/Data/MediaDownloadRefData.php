@@ -26,6 +26,7 @@ final class MediaDownloadRefData extends Data
         public CarbonImmutable $updated_at,
         public VodStreamData|SeriesData $media,
         public ?MediaDownloadStatusData $downloadStatus = null,
+        public ?int $season = null,
         public ?int $episode = null,
     ) {
         match ($this->media_type) {

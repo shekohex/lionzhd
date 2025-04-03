@@ -74,6 +74,7 @@ final class SeriesDownloadController extends Controller
 
                 continue;
             }
+
             $selectedEpisodes[] = $selectedEpisode;
         }
 

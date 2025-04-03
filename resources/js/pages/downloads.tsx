@@ -8,7 +8,7 @@ import { DownloadsPageProps } from '@/types/downloads';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDownIcon, FilterIcon, FolderOpen } from 'lucide-react';
-import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
+import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useRef } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
@@ -52,6 +52,11 @@ const FILTER_OPTIONS = {
 
 export default function Downloads() {
     const { props } = usePage<DownloadsPageProps>();
+    const [action, setAction] = useQueryState<App.Enums.MediaDownloadAction>(
+        'action',
+        parseAsStringEnum(['cancel', 'pause', 'resume', 'retry', 'remove']),
+    );
+    const [highlightedDownload] = useQueryState('gid', parseAsString);
     const { downloads } = props;
     const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(2000));
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
@@ -73,7 +78,7 @@ export default function Downloads() {
             currentStopfn.current();
             const { stop: newStop } = router.poll(
                 interval,
-                { preserveUrl: true, only: ['downloads'] },
+                { showProgress: true, preserveUrl: true, only: ['downloads', 'name'] },
                 { autoStart: true },
             );
             // Set the new stop function
@@ -85,6 +90,20 @@ export default function Downloads() {
     const handleCancelDownload = useCallback((download: App.Data.MediaDownloadRefData) => {
         router.delete(route('downloads.destroy', { model: download.id }), { preserveScroll: true });
     }, []);
+
+    const handleDownloadAction = useCallback(
+        (download: App.Data.MediaDownloadRefData) => {
+            router.patch(
+                route('downloads.edit', { model: download.id }),
+                { action: action },
+                {
+                    preserveScroll: true,
+                    preserveUrl: true,
+                },
+            );
+        },
+        [action],
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -165,6 +184,23 @@ export default function Downloads() {
                                 <motion.div key={download.id} className="rounded-md border p-4" layout>
                                     <DownloadInformation
                                         download={download}
+                                        highlighted={download.gid === highlightedDownload}
+                                        onPause={() => {
+                                            setAction('pause');
+                                            handleDownloadAction(download);
+                                        }}
+                                        onResume={() => {
+                                            setAction('resume');
+                                            handleDownloadAction(download);
+                                        }}
+                                        onRetry={() => {
+                                            setAction('retry');
+                                            handleDownloadAction(download);
+                                        }}
+                                        onRemove={() => {
+                                            setAction('remove');
+                                            handleDownloadAction(download);
+                                        }}
                                         onCancel={() => handleCancelDownload(download)}
                                     />
                                 </motion.div>

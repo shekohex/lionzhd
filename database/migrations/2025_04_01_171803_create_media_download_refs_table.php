@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('gid')->unique();
             $table->morphs('media'); // Polymorphic relationship to both VODs and Series
             $table->unsignedInteger('downloadable_id');
-            $table->unsignedInteger('episode')->nullable();
+            $table->unsignedInteger('season')->nullable(); // Nullable for VODs
+            $table->unsignedInteger('episode')->nullable(); // Nullable for VODs
             $table->timestamps();
         });
     }

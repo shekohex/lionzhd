@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 use Inertia\Middleware;
 use Override;
 use Tighten\Ziggy\Ziggy;
@@ -41,15 +42,20 @@ final class HandleInertiaRequests extends Middleware
     #[Override]
     public function share(Request $request): array
     {
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user()?->only('id', 'name', 'email'),
+                'user' => FacadesRequest::user()?->only('id', 'name', 'email'),
+            ],
+            'flash' => [
+                'success' => fn () => FacadesRequest::session()->get('success'),
+                'warning' => fn () => FacadesRequest::session()->get('warning'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
-                'location' => $request->url(),
+                'location' => FacadesRequest::url(),
             ],
         ];
     }

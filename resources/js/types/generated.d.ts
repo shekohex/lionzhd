@@ -20,6 +20,9 @@ declare namespace App.Data {
         selected: boolean;
         uris: { status: string; uri: string }[];
     };
+    export type EditMediaDownloadData = {
+        action: App.Enums.MediaDownloadAction;
+    };
     export type FeaturedMediaData = {
         movies: Array<App.Data.VodStreamData>;
         series: Array<App.Data.SeriesData>;
@@ -46,6 +49,7 @@ declare namespace App.Data {
         updated_at: string;
         media: App.Data.VodStreamData | App.Data.SeriesData;
         downloadStatus?: App.Data.MediaDownloadStatusData;
+        season?: number;
         episode?: number;
     };
     export type MediaDownloadStatusData = {
@@ -112,6 +116,7 @@ declare namespace App.Data {
     };
 }
 declare namespace App.Enums {
+    export type MediaDownloadAction = 'pause' | 'resume' | 'cancel' | 'remove' | 'retry';
     export type MediaDownloadStatus = 'unknown' | 'active' | 'waiting' | 'paused' | 'error' | 'complete' | 'removed';
     export type MediaType = 'movie' | 'series';
     export type SearchSortby = 'popular' | 'latest' | 'rating';

@@ -23,6 +23,7 @@ final class MediaDownloadRef extends Model
         'media_id',
         'media_type',
         'downloadable_id',
+        'season',
         'episode',
     ];
 
@@ -48,8 +49,19 @@ final class MediaDownloadRef extends Model
             'media_id' => $series->series_id,
             'media_type' => Series::class,
             'downloadable_id' => $episode->id,
+            'season' => $episode->season,
             'episode' => $episode->episodeNum,
         ]);
+    }
+
+    public function isVodStream(): bool
+    {
+        return $this->media_type === VodStream::class;
+    }
+
+    public function isSeriesWithEpisode(): bool
+    {
+        return $this->media_type === Series::class && $this->episode !== null;
     }
 
     /**

@@ -71,6 +71,7 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
 
     Route::controller(MediaDownloadsController::class)->prefix('downloads')->group(static function (): void {
         Route::get('/', 'index')->name('downloads');
+        Route::patch('{model}', 'edit')->whereNumber('model')->name('downloads.edit');
         Route::delete('{model}', 'destroy')->whereNumber('model')->name('downloads.destroy');
     });
 });

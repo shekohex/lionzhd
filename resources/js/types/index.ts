@@ -25,6 +25,10 @@ export interface NavItem {
 export interface SharedData {
     name: string;
     auth: Auth;
+    flash: {
+        success?: string;
+        warning?: string;
+    };
     ziggy: Config & { location: string };
     [key: string]: unknown;
 }

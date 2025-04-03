@@ -37,6 +37,18 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     }
 
     /**
+     * Register the Telescope gate.
+     *
+     * This gate determines who can access Telescope in non-local environments.
+     */
+    protected function gate(): void
+    {
+        Gate::define('viewTelescope', fn ($user) => in_array($user->email, [
+            //
+        ], true));
+    }
+
+    /**
      * Prevent sensitive request details from being logged by Telescope.
      */
     private function hideSensitiveRequestDetails(): void
@@ -52,17 +64,5 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
             'x-csrf-token',
             'x-xsrf-token',
         ]);
-    }
-
-    /**
-     * Register the Telescope gate.
-     *
-     * This gate determines who can access Telescope in non-local environments.
-     */
-    protected function gate(): void
-    {
-        Gate::define('viewTelescope', fn ($user) => in_array($user->email, [
-            //
-        ], true));
     }
 }

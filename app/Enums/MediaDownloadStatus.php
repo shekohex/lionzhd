@@ -17,6 +17,43 @@ enum MediaDownloadStatus: string
     case Complete = 'complete';
     case Removed = 'removed';
 
+    /**
+     * Check if the current status can take the given action.
+     */
+    public function canTakeAction(MediaDownloadAction $action): bool
+    {
+        return match ($this) {
+            self::Active => match ($action) {
+                MediaDownloadAction::Pause,
+                MediaDownloadAction::Cancel,
+                MediaDownloadAction::Remove => true,
+                default => false,
+            },
+            self::Waiting => match ($action) {
+                MediaDownloadAction::Cancel,
+                MediaDownloadAction::Remove => true,
+                default => false,
+            },
+            self::Paused => match ($action) {
+                MediaDownloadAction::Resume,
+                MediaDownloadAction::Cancel,
+                MediaDownloadAction::Remove => true,
+                default => false,
+            },
+            self::Error => match ($action) {
+                MediaDownloadAction::Retry,
+                MediaDownloadAction::Remove => true,
+                default => false,
+            },
+            self::Complete => match ($action) {
+                MediaDownloadAction::Remove => true,
+                default => false,
+            },
+            self::Removed => false,
+            self::UNKNOWN => false,
+        };
+    }
+
     public function downloadedOrDownloading(): bool
     {
         return match ($this) {

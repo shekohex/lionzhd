@@ -13,7 +13,7 @@ interface MediaHeroProps {
     releaseYear?: string;
     rating?: string | number;
     runtime?: string;
-    genres?: string[];
+    genres?: string | string[];
     plot?: string;
     className?: string;
     onPlay?: () => void;
@@ -23,7 +23,6 @@ interface MediaHeroProps {
 export default function MediaHero({
     title,
     backdropUrl,
-    posterUrl,
     releaseYear,
     rating,
     runtime,
@@ -31,7 +30,6 @@ export default function MediaHero({
     plot,
     className,
     onPlay,
-    trailerUrl,
 }: MediaHeroProps) {
     const [isInMyList, setIsInMyList] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);

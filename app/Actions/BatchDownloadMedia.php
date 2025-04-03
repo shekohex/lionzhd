@@ -35,7 +35,7 @@ final readonly class BatchDownloadMedia
     ): Collection {
         $calls = [];
         foreach ($urls as $key => $url) {
-            $options = $optionsFn !== null ? $optionsFn($key) : [];
+            $options = $optionsFn instanceof Closure ? $optionsFn($key) : [];
             $calls[] = new AddUriRequest(
                 [$url],
                 array_merge(

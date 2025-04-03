@@ -25,7 +25,7 @@ final readonly class CreateDownloadDir
         ?Episode $episode = null,
     ): string {
         // sanity check
-        throw_if($data instanceof SeriesInformation && $episode === null,
+        throw_if($data instanceof SeriesInformation && !$episode instanceof Episode,
             new InvalidArgumentException('Episode is required for series information')
         );
 

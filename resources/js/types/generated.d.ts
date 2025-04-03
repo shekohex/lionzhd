@@ -6,7 +6,7 @@ declare namespace App.Data {
         use_ssl: boolean;
     };
     export type BatchDownloadEpisodesData = {
-        selectedEpisodes: any;
+        selectedEpisodes: Array<App.Data.SelectedEpisodeData>;
     };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;

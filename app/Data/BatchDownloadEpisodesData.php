@@ -12,10 +12,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class BatchDownloadEpisodesData extends Data
 {
-    /**
-     * @param  DataCollection<SelectedEpisodeData>  $selectedEpisodes
-     */
     public function __construct(
+        /** @var DataCollection<SelectedEpisodeData> */
         #[DataCollectionOf(SelectedEpisodeData::class)]
         public DataCollection $selectedEpisodes,
     ) {}

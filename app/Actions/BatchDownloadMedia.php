@@ -9,11 +9,12 @@ use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\AddUriRequest;
 use App\Http\Integrations\Aria2\Requests\JsonRpcBatchRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcBatchResponse;
+use Closure;
 use Illuminate\Support\Collection;
 use League\Uri\Uri;
 
 /**
- * @method static Collection<int, mixed> run(Uri[] $url, array $options = [])
+ * @method static Collection<int, mixed> run(Uri[] $urls, null|Closure(int): array<string, mixed> $optionsFn = null)
  */
 final readonly class BatchDownloadMedia
 {
@@ -25,15 +26,16 @@ final readonly class BatchDownloadMedia
      * Execute the action.
      *
      * @param  Uri[]  $urls
-     * @param  array<string, mixed>  $options
+     * @param  ?Closure(int): array<string, mixed>  $optionsFn
      * @return Collection<int, mixed>
      */
     public function __invoke(
         array $urls,
-        array $options = [],
+        ?Closure $optionsFn = null,
     ): Collection {
         $calls = [];
-        foreach ($urls as $url) {
+        foreach ($urls as $key => $url) {
+            $options = $optionsFn !== null ? $optionsFn($key) : [];
             $calls[] = new AddUriRequest(
                 [$url],
                 array_merge(

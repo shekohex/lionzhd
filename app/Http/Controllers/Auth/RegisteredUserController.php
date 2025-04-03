@@ -54,7 +54,7 @@ final class RegisteredUserController extends Controller
     {
         if (! User::canSignUp()) {
             Session::flash('canSignUp', false);
-            Session::flash('error', __('auth.already_registered'));
+            Session::flash('error', __('auth.max_users_reached'));
 
             return to_route('login');
         }

@@ -30,18 +30,18 @@ final readonly class Disposition
     public static function fromJson(array $data): self
     {
         return new self(
-            $data['default'],
-            $data['dub'],
-            $data['original'],
-            $data['comment'],
-            $data['lyrics'],
-            $data['karaoke'],
-            $data['forced'],
-            $data['hearing_impaired'],
-            $data['visual_impaired'],
-            $data['clean_effects'],
-            $data['attached_pic'],
-            $data['timed_thumbnails']
+            $data['default'] ?? 0,
+            $data['dub'] ?? 0,
+            $data['original'] ?? 0,
+            $data['comment'] ?? 0,
+            $data['lyrics'] ?? 0,
+            $data['karaoke'] ?? 0,
+            $data['forced'] ?? 0,
+            $data['hearing_impaired'] ?? 0,
+            $data['visual_impaired'] ?? 0,
+            $data['clean_effects'] ?? 0,
+            $data['attached_pic'] ?? 0,
+            $data['timed_thumbnails'] ?? 0
         );
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Series;
 
 use App\Actions\BatchDownloadMedia;
+use App\Actions\CreateDownloadDir;
 use App\Actions\CreateXtreamcodesDownloadUrl;
 use App\Actions\DownloadMedia;
 use App\Actions\GetActiveDownloads;
@@ -46,7 +47,7 @@ final class SeriesDownloadController extends Controller
         }
 
         $url = CreateXtreamcodesDownloadUrl::run($selectedEpisode);
-        $gid = DownloadMedia::run($url);
+        $gid = DownloadMedia::run($url, ['dir' => CreateDownloadDir::run($dto, $selectedEpisode)]);
 
         MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode)->saveOrFail();
 
@@ -84,7 +85,9 @@ final class SeriesDownloadController extends Controller
 
         $urls = collect($selectedEpisodes)->map(fn (Episode $selectedEpisode) => CreateXtreamcodesDownloadUrl::run($selectedEpisode));
 
-        $gids = BatchDownloadMedia::run($urls->toArray());
+        $gids = BatchDownloadMedia::run($urls->toArray(), fn (int $index) => [
+            'dir' => CreateDownloadDir::run($dto, $selectedEpisodes[$index]),
+        ]);
 
         $errors = $gids->filter(fn (mixed $response) => is_array($response) && isset($response['error']))->map(fn (array $response) => $response['error']);
 

@@ -46,31 +46,31 @@ final readonly class AudioMetadata
     public static function fromJson(array $data): self
     {
         return new self(
-            $data['index'],
-            $data['codec_name'],
-            $data['codec_long_name'],
-            $data['profile'] ?? '',
-            $data['codec_type'],
-            $data['codec_time_base'],
-            $data['codec_tag_string'],
-            $data['codec_tag'],
-            $data['sample_fmt'],
-            $data['sample_rate'],
-            $data['channels'],
-            $data['channel_layout'],
-            $data['bits_per_sample'],
-            $data['r_frame_rate'],
-            $data['avg_frame_rate'],
-            $data['time_base'],
-            $data['start_pts'],
-            $data['start_time'],
+            $data['index'] ?? 0,
+            $data['codec_name'] ?? 'aac',
+            $data['codec_long_name'] ?? 'AAC (Advanced Audio Codec)',
+            $data['profile'] ?? 'Main',
+            $data['codec_type'] ?? 'audio',
+            $data['codec_time_base'] ?? '1/44100',
+            $data['codec_tag_string'] ?? 'mp4a',
+            $data['codec_tag'] ?? 'mp4a',
+            $data['sample_fmt'] ?? 'fltp',
+            $data['sample_rate'] ?? '44100',
+            $data['channels'] ?? 2,
+            $data['channel_layout'] ?? 'stereo',
+            $data['bits_per_sample'] ?? 16,
+            $data['r_frame_rate'] ?? '0/0',
+            $data['avg_frame_rate'] ?? '0/0',
+            $data['time_base'] ?? '1/1',
+            $data['start_pts'] ?? 0,
+            $data['start_time'] ?? '0',
             $data['duration_ts'] ?? 0, // 0 seconds
             $data['duration'] ?? '00:00:00.000',
             $data['bit_rate'] ?? '5000000', // 5 Mbps is a standard bitrate for audio
             $data['max_bit_rate'] ?? '5000000', // 5 Mbps is a standard bitrate for audio
             $data['nb_frames'] ?? '144000', // ~1h30m movie at 24fps
-            Disposition::fromJson($data['disposition']),
-            $data['tags']
+            Disposition::fromJson($data['disposition'] ?? []),
+            $data['tags'] ?? []
         );
     }
 }

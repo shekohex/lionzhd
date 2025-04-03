@@ -60,9 +60,7 @@ export default function Downloads() {
     const { downloads } = props;
     const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(2000));
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
-    const pollRef = useRef(
-        router.poll(pollingInterval, { preserveUrl: true, only: ['downloads', 'name'] }, { autoStart: false }),
-    );
+    const pollRef = useRef(router.poll(pollingInterval, { preserveUrl: true }, { autoStart: false }));
 
     useEffect(() => {
         pollRef.current.start();
@@ -76,11 +74,7 @@ export default function Downloads() {
             setPollingInterval(interval);
             // Stop the previous polling
             pollRef.current.stop();
-            pollRef.current = router.poll(
-                interval,
-                { preserveUrl: true, only: ['downloads', 'name'] },
-                { autoStart: false },
-            );
+            pollRef.current = router.poll(interval, { preserveUrl: true }, { autoStart: false });
             pollRef.current.start();
         },
         [setPollingInterval],

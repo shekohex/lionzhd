@@ -8,7 +8,7 @@ use App\Models\Aria2Config;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Console\Command;
 
-final class InitializeConfigurations extends Command
+final class InitializeConfigurationsCommand extends Command
 {
     /**
      * The name and signature of the console command.

@@ -4,10 +4,11 @@ import { useEffect } from 'react';
 
 interface SearchOverlayProps {
     open: boolean;
+    enabled?: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
-export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
+export function SearchOverlay({ open, onOpenChange, enabled = false }: SearchOverlayProps) {
     // Handle keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -23,15 +24,18 @@ export function SearchOverlay({ open, onOpenChange }: SearchOverlayProps) {
             }
         };
 
+        if (!enabled) {
+            return;
+        }
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [open, onOpenChange]);
+    }, [open, onOpenChange, enabled]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-3xl gap-0 p-0">
+            <DialogContent className="max-w-3xl gap-0 p-0" aria-description="Search for movies, series, and more">
                 <div className="w-full p-4">
-                    <SearchInput fullWidth autoFocus className="shadow-none" />
+                    <SearchInput searchRoute="search.lightweight" fullWidth autoFocus className="shadow-none" />
                 </div>
             </DialogContent>
         </Dialog>

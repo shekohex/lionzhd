@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Http\Integrations\LionzTv\Responses\Episode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -26,8 +27,8 @@ final class MediaDownloadRef extends Model
     ];
 
     public static function fromVodStream(
-        VodStream $vodStream,
         string $gid,
+        VodStream $vodStream,
     ): self {
         return new self([
             'gid' => $gid,
@@ -38,17 +39,16 @@ final class MediaDownloadRef extends Model
     }
 
     public static function fromSeriesAndEpisode(
-        Series $series,
         string $gid,
-        int $episode,
-        int $episode_id,
+        Series $series,
+        Episode $episode,
     ): self {
         return new self([
             'gid' => $gid,
             'media_id' => $series->series_id,
             'media_type' => Series::class,
-            'downloadable_id' => $episode_id,
-            'episode' => $episode,
+            'downloadable_id' => $episode->id,
+            'episode' => $episode->episodeNum,
         ]);
     }
 

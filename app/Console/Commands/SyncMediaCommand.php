@@ -9,7 +9,7 @@ use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-final class SyncMedia extends Command
+final class SyncMediaCommand extends Command
 {
     /**
      * The name and signature of the console command.

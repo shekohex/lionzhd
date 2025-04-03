@@ -31,11 +31,9 @@ final class JsonRpcBatchRequest extends Request implements HasBody
      * @param  list<JsonRpcRequest>  $calls
      */
     public function __construct(
-        protected readonly array $calls,
+        private array $calls,
     ) {
-        if (empty($this->calls)) {
-            throw new InvalidArgumentException('At least one call is required.');
-        }
+        throw_if($this->calls === [], new InvalidArgumentException('At least one call is required.'));
     }
 
     /**

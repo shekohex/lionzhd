@@ -99,7 +99,7 @@ final class WatchlistController extends Controller
             return to_route('watchlist')
                 ->with('message', 'Item removed from your watchlist');
 
-        } catch (ModelNotFoundException $e) {
+        } catch (ModelNotFoundException) {
             return to_route('watchlist')
                 ->withErrors('Watchlist item does not exist');
         }

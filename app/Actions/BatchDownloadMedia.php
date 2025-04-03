@@ -6,15 +6,16 @@ namespace App\Actions;
 
 use App\Concerns\AsAction;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
+use App\Http\Integrations\Aria2\Requests\AddUriRequest;
 use App\Http\Integrations\Aria2\Requests\JsonRpcBatchRequest;
-use App\Http\Integrations\Aria2\Requests\TellStatusRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcBatchResponse;
 use Illuminate\Support\Collection;
+use League\Uri\Uri;
 
 /**
- * @method static Collection<int, array<string, mixed>> run(array $gids, array $keys = [])
+ * @method static Collection<int, mixed> run(Uri[] $url, array $options = [])
  */
-final readonly class GetDownloadStatus
+final readonly class BatchDownloadMedia
 {
     use AsAction;
 
@@ -23,19 +24,31 @@ final readonly class GetDownloadStatus
     /**
      * Execute the action.
      *
-     * @param  list<string>  $gids
-     * @param  list<string>  $keys
-     * @return Collection<int, array<string, mixed>>
+     * @param  Uri[]  $urls
+     * @param  array<string, mixed>  $options
+     * @return Collection<int, mixed>
      */
     public function __invoke(
-        array $gids,
-        array $keys = [],
+        array $urls,
+        array $options = [],
     ): Collection {
         $calls = [];
-        foreach ($gids as $gid) {
-            $calls[] = new TellStatusRequest($gid, $keys);
+        foreach ($urls as $url) {
+            $calls[] = new AddUriRequest(
+                [$url],
+                array_merge(
+                    [
+                        'continue' => true,
+                        'enable-http-pipelining' => true,
+                        'allow-overwrite' => true,
+                        'auto-file-renaming' => false,
+                        'retry-wait' => 5,
+                        'max-tries' => 10,
+                    ],
+                    $options,
+                ),
+            );
         }
-
         $req = new JsonRpcBatchRequest($calls);
 
         /** @var JsonRpcBatchResponse $response */
@@ -51,5 +64,6 @@ final readonly class GetDownloadStatus
             return $response['result'];
 
         });
+
     }
 }

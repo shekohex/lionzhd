@@ -1,17 +1,37 @@
+import ResponsiveImage from '@/components/responsive-image';
+import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@inertiajs/react';
+import { Pause, Play, Redo, X } from 'lucide-react';
 
 interface DownloadInformationProps {
     download: App.Data.MediaDownloadRefData;
+    onPause?: () => void;
+    onResume?: () => void;
+    onRetry?: () => void;
+    onCancel?: () => void;
 }
 
-const DownloadInformation: React.FC<DownloadInformationProps> = ({ download }) => {
+const DownloadInformation: React.FC<DownloadInformationProps> = ({
+    download,
+    onCancel,
+    onPause,
+    onResume,
+    onRetry,
+}) => {
     const downloadPercentage =
         (download.downloadStatus &&
             Math.round((download.downloadStatus.completedLength / download.downloadStatus.totalLength) * 100)) ??
         0;
     const percentage = downloadPercentage || 0;
     const totalBytes = download.downloadStatus ? download.downloadStatus.totalLength : 0;
+    const title = download.media.name;
+    const movie = download.media_type === 'movie' ? (download.media as App.Data.VodStreamData) : null;
+    const series = download.media_type === 'series' ? (download.media as App.Data.SeriesData) : null;
+
+    const backdropUrl = movie?.stream_icon || series?.cover;
+    const posterUrl = movie?.stream_icon || series?.cover;
+    const additionalBackdrops = series?.backdrop_path || [];
 
     const formatBytes = (bytes: number, decimals: number = 2) => {
         if (!+bytes) return '0 Bytes';
@@ -29,25 +49,29 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({ download }) =
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
                 <Link
+                    preserveState={false}
                     href={route(download.media_type === 'movie' ? 'movies.show' : 'series.show', {
                         model: download.media_id,
                     })}
                 >
-                    {/* TODO: Implement Media Info Component */}
-                    <img
-                        src={
-                            download.media_type === 'series'
-                                ? (download.media as App.Data.SeriesData).cover
-                                : (download.media as App.Data.VodStreamData).stream_icon
-                        }
-                        alt={download.media.name}
-                        className="h-16 w-16 rounded-md object-cover"
+                    <ResponsiveImage
+                        src={backdropUrl}
+                        fallbackSrc={posterUrl}
+                        additionalFallbacks={additionalBackdrops}
+                        alt={title}
+                        className="h-16 w-16"
+                        aspectRatio=""
+                        showSkeleton={true}
+                        showPlaceholder={true}
+                        placeholderClassName="h-full w-full bg-gradient-to-b from-muted/20 to-muted"
                     />
                 </Link>
                 <div>
                     <h3 className="font-semibold">{download.media.name}</h3>
                     {download.media_type === 'series' && download.episode !== null && download.episode !== undefined ? (
-                        <p className="text-muted-foreground text-sm">Episode: {download.episode + 1}</p>
+                        <p className="text-muted-foreground text-sm">
+                            Episode: {download.episode + 1} (#{download.downloadable_id})
+                        </p>
                     ) : null}
                 </div>
             </div>
@@ -77,8 +101,80 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({ download }) =
                         </Tooltip>
                     </TooltipProvider>
                 ) : (
-                    <span className="text-sm">{download.downloadStatus?.status}</span>
+                    <span className="text-sm">{download.downloadStatus?.status ?? 'N/A'}</span>
                 )}
+                <div className="flex items-center gap-2">
+                    {download.downloadStatus?.status === 'active' && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => onPause?.()}
+                                        className="hover:bg-muted rounded-md p-1"
+                                    >
+                                        <Pause className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="text-sm">Pause Download</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                    {download.downloadStatus?.status === 'paused' && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => onResume?.()}
+                                        className="hover:bg-muted rounded-md p-1"
+                                    >
+                                        <Play className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="text-sm">Resume Download</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                    {download.downloadStatus?.status === 'error' ||
+                        (download.downloadStatus?.status == 'unknown' && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => onRetry?.()}
+                                            className="hover:bg-muted rounded-md p-1"
+                                        >
+                                            <Redo className="h-4 w-4" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="text-sm">Retry Download</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ))}
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button variant="destructive" size="icon" onClick={() => onCancel?.()}>
+                                    <X />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-sm">Abort Download</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                </div>
             </div>
         </div>
     );

@@ -5,6 +5,9 @@ declare namespace App.Data {
         secret: string;
         use_ssl: boolean;
     };
+    export type BatchDownloadEpisodesData = {
+        selectedEpisodes: any;
+    };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;
@@ -62,6 +65,10 @@ declare namespace App.Data {
         page?: number;
         media_type?: App.Enums.MediaType;
         sort_by?: App.Enums.SearchSortby;
+    };
+    export type SelectedEpisodeData = {
+        season: number;
+        episodeNum: number;
     };
     export type SeriesData = {
         num: number;

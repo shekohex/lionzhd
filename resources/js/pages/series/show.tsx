@@ -82,6 +82,23 @@ export default function SeriesInformation() {
         [info.seriesId],
     );
 
+    const handleDownloadSelectedEpisodes = useCallback(
+        (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
+            console.log('Selected episodes for download:', selectedEpisodes);
+            router.post(
+                route('series.download.batch', { model: info.seriesId }),
+                {
+                    selectedEpisodes,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: false,
+                },
+            );
+        },
+        [info.seriesId],
+    );
+
     // Handle trailer button click
     const handleTrailerClick = useCallback(() => {
         setIsTrailerOpen(true);
@@ -155,6 +172,7 @@ export default function SeriesInformation() {
                                     <EpisodeList
                                         seasonsWithEpisodes={info.seasonsWithEpisodes}
                                         onDownloadEpisode={handleDownloadEpisode}
+                                        onDownloadSelected={handleDownloadSelectedEpisodes}
                                     />
                                 </motion.div>
                             </AnimatePresence>

@@ -137,7 +137,7 @@ export function SearchInput({
             // Use a small timeout to ensure the query state is updated
             setTimeout(() => {
                 handleSubmit();
-            }, 0);
+            }, 1);
         },
         [handleSubmit, setData],
     );

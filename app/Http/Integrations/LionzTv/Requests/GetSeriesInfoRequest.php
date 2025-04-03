@@ -48,7 +48,7 @@ final class GetSeriesInfoRequest extends Request implements Cacheable
 
     public function cacheExpiryInSeconds(): int
     {
-        return 1 * 24 * 60 * 60; // 1-day in seconds
+        return 24 * 60 * 60; // 1-day in seconds
     }
 
     protected function cacheKey(PendingRequest $pendingRequest): string

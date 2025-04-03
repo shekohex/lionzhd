@@ -6,7 +6,6 @@ use Rector\CodingStyle\Rector\Encapsed\EncapsedStringsToSprintfRector;
 use Rector\Config\RectorConfig;
 use Rector\Php83\Rector\ClassMethod\AddOverrideAttributeToOverriddenMethodsRector;
 use Rector\TypeDeclaration\Rector\ArrowFunction\AddArrowFunctionReturnTypeRector;
-use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
 use RectorLaravel\Set\LaravelLevelSetList;
 use RectorLaravel\Set\LaravelSetList;
 
@@ -24,10 +23,6 @@ return RectorConfig::configure()
         AddOverrideAttributeToOverriddenMethodsRector::class,
         EncapsedStringsToSprintfRector::class,
         AddArrowFunctionReturnTypeRector::class,
-    ])
-    // register single rule
-    ->withRules([
-        TypedPropertyFromStrictConstructorRector::class,
     ])
     ->withPhpSets()
     ->withAttributesSets()

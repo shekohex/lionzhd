@@ -29,13 +29,13 @@ final class VodStreamData extends Data
 
     public bool $is_adult;
 
-    public ?int $category_id;
+    public ?int $category_id = null;
 
     public string $container_extension;
 
-    public ?string $custom_sid;
+    public ?string $custom_sid = null;
 
-    public ?string $direct_source;
+    public ?string $direct_source = null;
 
     public CarbonImmutable $created_at;
 

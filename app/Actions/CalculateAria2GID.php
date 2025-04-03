@@ -31,8 +31,7 @@ final class CalculateAria2GID
             default => throw new InvalidArgumentException('Invalid kind provided.'),
         };
         $data = "{$modelPath}/{$download_id}";
-        $hash = hash('xxh3', $data);
 
-        return $hash;
+        return hash('xxh3', $data);
     }
 }

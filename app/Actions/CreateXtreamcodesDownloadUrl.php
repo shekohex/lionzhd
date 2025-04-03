@@ -13,11 +13,11 @@ use League\Uri\Uri;
 /**
  * @method static Uri run(VodInformation|Episode $data)
  */
-final class CreateXtreamcodesDownloadUrl
+final readonly class CreateXtreamcodesDownloadUrl
 {
     use AsAction;
 
-    public function __construct(private readonly XtreamCodesConfig $config) {}
+    public function __construct(private XtreamCodesConfig $config) {}
 
     /**
      * Execute the action.
@@ -40,14 +40,13 @@ final class CreateXtreamcodesDownloadUrl
         };
 
         $template = "{$this->config->baseUrl()}/{model_path}/{username}/{password}/{download_id}.{container_extension}";
-        $uri = Uri::fromTemplate($template, [
+
+        return Uri::fromTemplate($template, [
             'username' => $this->config->username,
             'password' => $this->config->password,
             'model_path' => $modelPath,
             'download_id' => $download_id,
             'container_extension' => $containerExtension,
         ]);
-
-        return $uri;
     }
 }

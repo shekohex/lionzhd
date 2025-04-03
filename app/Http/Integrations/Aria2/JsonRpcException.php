@@ -11,23 +11,20 @@ use Throwable;
 final class JsonRpcException extends Exception
 {
     /**
-     * The Saloon HTTP response.
-     */
-    protected ?Response $rawResponse;
-
-    /**
      * The Aria2 error code.
      */
-    protected ?int $aria2ErrorCode;
+    private ?int $aria2ErrorCode = null;
 
     /**
      * Create a new JsonRpcException instance.
      *
      * @return void
      */
-    public function __construct(Response $response, ?Throwable $previous = null)
+    public function __construct(/**
+     * The Saloon HTTP response.
+     */
+    private readonly ?Response $rawResponse, ?Throwable $previous = null)
     {
-        $this->rawResponse = $response;
         $this->extractErrorData();
 
         parent::__construct(
@@ -56,7 +53,7 @@ final class JsonRpcException extends Exception
     /**
      * Extract error data from the response.
      */
-    protected function extractErrorData(): void
+    private function extractErrorData(): void
     {
         $responseData = $this->rawResponse->json();
 
@@ -68,13 +65,10 @@ final class JsonRpcException extends Exception
     /**
      * Extract the error message from the response.
      */
-    protected function extractErrorMessage(): string
+    private function extractErrorMessage(): string
     {
         $responseData = $this->rawResponse->json();
-        if (isset($responseData['error']['message'])) {
-            return $responseData['error']['message'];
-        }
 
-        return 'Unknown Aria2 JSON-RPC error';
+        return $responseData['error']['message'] ?? 'Unknown Aria2 JSON-RPC error';
     }
 }

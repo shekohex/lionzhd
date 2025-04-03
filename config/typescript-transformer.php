@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Spatie\LaravelTypeScriptTransformer\Transformers\DtoTransformer;
@@ -55,7 +56,7 @@ return [
         DateTimeImmutable::class => 'string',
         CarbonInterface::class => 'string',
         CarbonImmutable::class => 'string',
-        Carbon\Carbon::class => 'string',
+        Carbon::class => 'string',
     ],
 
     /*

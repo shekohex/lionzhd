@@ -231,7 +231,7 @@ function AuthenticatedContent() {
             >
                 <h2 className="text-primary mb-6 text-3xl font-bold">Search Our Entire Library</h2>
                 <SearchInput
-                    searchRoute="home.search"
+                    searchRoute="search.lightweight"
                     placeholder="Search movies, TV series..."
                     fullWidth
                     className="shadow-primary/5 shadow-lg"

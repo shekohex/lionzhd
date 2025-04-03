@@ -1,13 +1,5 @@
 <?php
 
 declare(strict_types=1);
+uses(\Illuminate\Foundation\Testing\RefreshDatabase::class);
 
-namespace Tests\Unit;
-
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-
-final class ExampleTest extends TestCase
-{
-    use RefreshDatabase;
-}

@@ -1,7 +1,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { ImageIcon } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 export type ImageLoadingState = 'loading' | 'loaded' | 'error';
 
@@ -59,13 +59,13 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
     const currentSrc = allPossibleSources[currentAttemptIndex];
 
     // Handler for successful image loads
-    const handleImageLoaded = () => {
+    const handleImageLoaded = useCallback(() => {
         setLoadingState('loaded');
         onLoaded?.();
-    };
+    }, [onLoaded]);
 
     // Handler for image load errors
-    const handleImageError = () => {
+    const handleImageError = useCallback(() => {
         console.error(`Failed to load image: ${currentSrc}`);
 
         // Try the next source
@@ -82,14 +82,14 @@ const ResponsiveImage: React.FC<ResponsiveImageProps> = ({
             setLoadingState('error');
             onAllFailed?.();
         }
-    };
+    }, [currentSrc, allPossibleSources, currentAttemptIndex, onAllFailed]);
 
     // Reset component state when sources change
     useEffect(() => {
         // Reset to the first source when sources change
         setCurrentAttemptIndex(0);
         setLoadingState('loading');
-    }, [allPossibleSources]);
+    }, []);
 
     // Render image placeholder when in error state and showPlaceholder is true
     if (loadingState === 'error' && showPlaceholder) {

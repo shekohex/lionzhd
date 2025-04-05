@@ -40,5 +40,11 @@ php artisan route:cache
 php artisan view:cache
 php artisan event:cache
 
+# Link the storage directory
+# -----------------------------------------------------------
+# Ensure the storage directory is linked to the public directory.
+php artisan storage:link --force
+
+
 # Run default commands
 exec "$@"

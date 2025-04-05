@@ -33,7 +33,7 @@ RUN install-php-extensions \
 # Update PHP configurations
 RUN sed -e 's/^expose_php.*/expose_php = Off/' "$PHP_INI_DIR/php.ini-production" > "$PHP_INI_DIR/php.ini" \
     && sed -i -e 's/^upload_max_filesize.*/upload_max_filesize = 600M/' -e 's/^post_max_size.*/post_max_size = 0/' \
-    -e 's/^memory_limit.*/memory_limit = 600M/' "$PHP_INI_DIR/php.ini"
+    -e 's/^memory_limit.*/memory_limit = 1G/' "$PHP_INI_DIR/php.ini"
 
 # Set some build ENV variables
 ENV LOG_CHANNEL=stdout
@@ -95,7 +95,7 @@ CMD ["php", "artisan", "schedule:work", "--no-interaction"]
 # Queue stage
 FROM base as queue
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php", "artisan", "queue:work", "--memory=512M", "--timeout=0", "--tries=3", "--no-interaction"]
+CMD ["php", "artisan", "queue:work", "--memory=0", "--timeout=0", "--tries=3", "--no-interaction"]
 
 # Application stage
 FROM base as app

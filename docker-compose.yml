@@ -9,6 +9,8 @@ services:
     restart: always
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
     env_file:
       - .env
     volumes:
@@ -24,6 +26,8 @@ services:
     restart: always
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
     volumes:
       - ./data/database:/data/database
     env_file:
@@ -47,6 +51,8 @@ services:
       - caddy_config:/config
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
     env_file:
       - .env
     depends_on:

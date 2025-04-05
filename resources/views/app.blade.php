@@ -3,11 +3,8 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="og:site_name" content="{{ config('app.name') }}">
-        <meta name="og:title" content="{{ config('app.name') }}">
-        <meta name="og:description" content="Simple and fast web application">
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
-        <script>
+        <script type="text/javascript">
             (function() {
                 const appearance = '{{ $appearance ?? "system" }}';
                 if (appearance === 'system') {

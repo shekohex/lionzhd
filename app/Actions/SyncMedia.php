@@ -17,6 +17,8 @@ use Laravel\Telescope\Telescope;
 
 /**
  * Sync media content from Xtream Codes API
+ *
+ * @method static void run()
  */
 final readonly class SyncMedia
 {

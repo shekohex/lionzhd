@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { HardDriveDownload, Key, MonitorPlay, SunMoon, UserPen } from 'lucide-react';
+import { FolderSync, HardDriveDownload, Key, MonitorPlay, SunMoon, UserPen } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
 const sidebarNavItems: NavItem[] = [
@@ -27,6 +27,11 @@ const sidebarNavItems: NavItem[] = [
         title: 'Aria2',
         url: '/settings/aria2',
         icon: HardDriveDownload,
+    },
+    {
+        title: 'Sync Media Library',
+        url: '/settings/syncmedia',
+        icon: FolderSync,
     },
     {
         title: 'Appearance',

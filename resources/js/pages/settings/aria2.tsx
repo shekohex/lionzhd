@@ -14,6 +14,10 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Settings',
+        href: '/settings',
+    },
+    {
         title: 'Aria2 settings',
         href: '/settings/aria2',
     },

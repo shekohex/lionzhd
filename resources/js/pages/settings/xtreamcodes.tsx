@@ -13,6 +13,10 @@ import SettingsLayout from '@/layouts/settings/layout';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
+        title: 'Settings',
+        href: '/settings',
+    },
+    {
         title: 'XtreamCodes settings',
         href: '/settings/xtreamcodes',
     },

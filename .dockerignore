@@ -1,16 +1,21 @@
+.DS_Store
+/.git
+/.github
 /.direnv
 /.phpunit.cache
+/data
 /bootstrap/ssr
 /node_modules
-/public/build
 /public/hot
+/public/build
+/tests
 /public/storage
 /storage/*.key
 /storage/pail
+/database/database.sqlite
 /vendor
 /.composer/
 /data.ms
-/data
 .env
 .env.backup
 .env.production
@@ -28,7 +33,6 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-/resources/js/ziggy.js
 
 # windsurf rules
 .windsurfrules

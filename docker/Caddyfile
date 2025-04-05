@@ -1,0 +1,17 @@
+{
+	frankenphp
+	order php_server before file_server
+}
+
+http://localhost {
+	route {
+		root * public/
+		encode zstd br gzip
+		php_server {
+			index index.php
+			try_files {path} index.php
+			# Required for the public/storage/ directory...
+			resolve_root_symlink
+		}
+	}
+}

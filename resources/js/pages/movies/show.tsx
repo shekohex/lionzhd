@@ -66,14 +66,14 @@ export default function MovieInformation() {
     const addToWatchlist = useCallback(() => {
         addToWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
         });
     }, [addToWatchlistCall, info.vodId]);
 
     const removeFromWatchlist = useCallback(() => {
-        removeFromWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
+        removeFromWatchlistCall(route('movies.watchlist.destroy', { model: info.vodId }), {
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
         });
     }, [removeFromWatchlistCall, info.vodId]);
 

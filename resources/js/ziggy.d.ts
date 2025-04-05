@@ -31,6 +31,12 @@ declare module 'ziggy-js' {
                 required: true;
             },
         ];
+        'movies.watchlist.destroy': [
+            {
+                name: 'model';
+                required: true;
+            },
+        ];
         'movies.download': [
             {
                 name: 'model';
@@ -57,6 +63,12 @@ declare module 'ziggy-js' {
                 required: true;
             },
         ];
+        'series.watchlist.destroy': [
+            {
+                name: 'model';
+                required: true;
+            },
+        ];
         'series.download.single': [
             {
                 name: 'model';
@@ -69,12 +81,6 @@ declare module 'ziggy-js' {
             },
             {
                 name: 'episode';
-                required: true;
-            },
-        ];
-        'series.download': [
-            {
-                name: 'model';
                 required: true;
             },
         ];

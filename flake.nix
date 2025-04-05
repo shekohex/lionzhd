@@ -97,6 +97,7 @@
             pkgs.phpactor
             pkgs.meilisearch
             pkgs.aria2
+            pkgs.caddy
           ];
           packages = [ ] ++ scripts;
 

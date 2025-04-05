@@ -107,14 +107,14 @@ export default function SeriesInformation() {
     const addToWatchlist = useCallback(() => {
         addToWatchlistCall(route('series.watchlist', { model: info.seriesId }), {
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
         });
     }, [addToWatchlistCall, info.seriesId]);
 
     const removeFromWatchlist = useCallback(() => {
-        removeFromWatchlistCall(route('series.watchlist', { model: info.seriesId }), {
+        removeFromWatchlistCall(route('series.watchlist.destroy', { model: info.seriesId }), {
             preserveScroll: true,
-            preserveState: false,
+            preserveState: true,
         });
     }, [removeFromWatchlistCall, info.seriesId]);
 

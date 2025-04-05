@@ -33,12 +33,11 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
     });
     Route::prefix('movies')->delete('{model}/cache', [VodStreamCacheController::class, 'destroy'])->whereNumber('model')->name('movies.cache');
     Route::controller(VodStreamWatchlistController::class)->prefix('movies')->group(static function (): void {
-        Route::post('{model}/watchlist', 'create')->whereNumber('model')->name('movies.watchlist');
-        Route::delete('{model}/watchlist', 'destroy')->whereNumber('model')->name('movies.watchlist');
+        Route::post('{model}/watchlist', 'store')->whereNumber('model')->name('movies.watchlist');
+        Route::delete('{model}/watchlist', 'destroy')->whereNumber('model')->name('movies.watchlist.destroy');
     });
     Route::controller(VodStreamDownloadController::class)->prefix('movies')->group(static function (): void {
         Route::get('{model}/download', 'create')->whereNumber('model')->name('movies.download');
-        Route::delete('{model}/download', 'destroy')->whereNumber('model')->name('movies.download');
     });
 
     Route::controller(SeriesController::class)->prefix('series')->group(static function (): void {
@@ -50,8 +49,8 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
         Route::delete('{model}/cache', 'destroy')->whereNumber('model')->name('series.cache');
     });
     Route::controller(SeriesWatchlistController::class)->prefix('series')->group(static function (): void {
-        Route::post('{model}/watchlist', 'create')->whereNumber('model')->name('series.watchlist');
-        Route::delete('{model}/watchlist', 'destroy')->whereNumber('model')->name('series.watchlist');
+        Route::post('{model}/watchlist', 'store')->whereNumber('model')->name('series.watchlist');
+        Route::delete('{model}/watchlist', 'destroy')->whereNumber('model')->name('series.watchlist.destroy');
     });
     Route::controller(SeriesDownloadController::class)->prefix('series')->group(static function (): void {
         Route::get('{model}/{season}/{episode}/download', 'create')
@@ -59,7 +58,6 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->whereNumber('season')
             ->whereNumber('episode')
             ->name('series.download.single');
-        Route::delete('{model}/download', 'destroy')->whereNumber('model')->name('series.download');
         Route::post('{model}/download', 'store')->whereNumber('model')->name('series.download.batch');
     });
 

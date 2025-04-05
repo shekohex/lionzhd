@@ -36,13 +36,13 @@ final class AppServiceProvider extends ServiceProvider
         if (DB::getDriverName() === 'sqlite') {
             try {
                 DB::unprepared(<<<'SQL'
-                PRAGMA busy_timeout = 5000;
-                PRAGMA cache_size = -20000;
-                PRAGMA foreign_keys = ON;
-                PRAGMA incremental_vacuum;
-                PRAGMA mmap_size = 2147483648;
-                PRAGMA temp_store = MEMORY;
-                PRAGMA synchronous = NORMAL;
+                -- PRAGMA busy_timeout = 5000;
+                -- PRAGMA cache_size = -20000;
+                -- PRAGMA foreign_keys = ON;
+                -- PRAGMA incremental_vacuum;
+                -- PRAGMA mmap_size = 2147483648;
+                -- PRAGMA temp_store = MEMORY;
+                -- PRAGMA synchronous = NORMAL;
                 SQL,
                 );
             } catch (QueryException $e) {

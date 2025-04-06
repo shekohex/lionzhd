@@ -45,6 +45,12 @@ php artisan event:cache
 # Ensure the storage directory is linked to the public directory.
 php artisan storage:link --force
 
+# Sync Scout indexes settings
+# -----------------------------------------------------------
+# Ensure the Scout indexes are synced with the database.
+# -----------------------------------------------------------
+php artisan scout:sync-index-settings --no-interaction
+
 
 # Run default commands
 exec "$@"

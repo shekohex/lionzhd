@@ -21,6 +21,7 @@
         "saloonphp/laravel-http-sender": "^3.1",
         "saloonphp/laravel-plugin": "^3.5",
         "saloonphp/saloon": "^3.11",
+        "sentry/sentry-laravel": "^4.13",
         "spatie/laravel-data": "^4.14",
         "spatie/laravel-typescript-transformer": "^2.5",
         "tightenco/ziggy": "^2.4"

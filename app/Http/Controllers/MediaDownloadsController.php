@@ -10,6 +10,7 @@ use App\Data\MediaDownloadRefData;
 use App\Data\MediaDownloadStatusData;
 use App\Enums\MediaDownloadAction;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
+use App\Http\Integrations\Aria2\JsonRpcException;
 use App\Http\Integrations\Aria2\Requests\PauseRequest;
 use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
 use App\Http\Integrations\Aria2\Requests\RemoveRequest;
@@ -111,12 +112,16 @@ final class MediaDownloadsController extends Controller
     {
         $model->delete();
         $req = new RemoveDownloadResultRequest($model->gid);
-        /** @var JsonRpcResponse $response */
-        $response = $connector->send($req)->dtoOrFail();
-        if ($response->hasError()) {
-            return back()->withErrors(['action' => $response->errorMessage()]);
-        }
+        try {
+            /** @var JsonRpcResponse $response */
+            $response = $connector->send($req);
+            if ($response->hasError()) {
+                return back()->withErrors(['action' => $response->errorMessage()]);
+            }
 
-        return back()->with('success', 'Download removed successfully.');
+            return back()->with('success', 'Download removed successfully.');
+        } catch (JsonRpcException $e) {
+            return back()->withErrors(['action' => $e->getMessage()]);
+        }
     }
 }

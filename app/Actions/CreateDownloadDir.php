@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Concerns\AsAction;
+use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\GetGlobalOptionsRequest;
 use App\Http\Integrations\Aria2\Responses\GetGlobalOptionsResponse;
 use App\Http\Integrations\LionzTv\Responses\Episode;
 use App\Http\Integrations\LionzTv\Responses\SeriesInformation;
 use App\Http\Integrations\LionzTv\Responses\VodInformation;
-use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use InvalidArgumentException;
 
 /**
@@ -20,7 +20,7 @@ final readonly class CreateDownloadDir
 {
     use AsAction;
 
-    public function __construct(private XtreamCodesConnector $connector) {}
+    public function __construct(private JsonRpcConnector $connector) {}
 
     /**
      * Execute the action.

@@ -3,7 +3,7 @@
 	order php_server before file_server
 }
 
-http://localhost {
+http://:80 {
 	route {
 		root * public/
 		encode zstd br gzip

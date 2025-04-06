@@ -11,7 +11,7 @@ touch /data/database/database.sqlite
 # -----------------------------------------------------------
 # Ensure the database schema is up to date.
 # -----------------------------------------------------------
-php artisan migrate --no-interaction
+php artisan migrate --force --no-interaction
 
 # Run Our Custom Commands
 # -----------------------------------------------------------

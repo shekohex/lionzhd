@@ -53,18 +53,8 @@ final readonly class CreateDownloadDir
             SeriesInformation::class => 'Season '.mb_str_pad((string) $episode->season, 2, '0', STR_PAD_LEFT),
         };
 
-        $mediaFileName = match ($data::class) {
-            VodInformation::class => $data->movie->name,
-            SeriesInformation::class => $episode->title,
-        };
-
-        $containerExtension = match ($data::class) {
-            VodInformation::class => $data->movie->containerExtension,
-            SeriesInformation::class => $episode->containerExtension,
-        };
-
         $downloadsDir = $globalOptions['dir'] ?? '/aria2/data';
-        $template = "{$downloadsDir}/{$mediaDir}/{$mediaDirName}/{$mediaSubDir}/{$mediaFileName}.{$containerExtension}";
+        $template = "{$downloadsDir}/{$mediaDir}/{$mediaDirName}/{$mediaSubDir}/";
 
         // replace `//` with `/` to avoid double slashes
         $template = preg_replace('/\/\//', '/', $template);

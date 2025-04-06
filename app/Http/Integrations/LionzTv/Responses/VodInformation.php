@@ -59,4 +59,28 @@ final readonly class VodInformation
             Movie::fromJson($data['movie_data'])
         );
     }
+
+    public static function fake(): self
+    {
+        return new self(
+            fake()->randomNumber(),
+            fake()->imageUrl(),
+            fake()->uuid(),
+            fake()->imageUrl(),
+            fake()->url(),
+            fake()->word(),
+            fake()->sentence(),
+            fake()->name(),
+            (string) fake()->randomFloat(1, 1, 10),
+            fake()->name(),
+            fake()->date(),
+            [fake()->imageUrl()],
+            fake()->randomNumber(),
+            fake()->word(),
+            VideoMetadata::fromJson([]),
+            AudioMetadata::fromJson([]),
+            fake()->randomNumber(),
+            Movie::fake()
+        );
+    }
 }

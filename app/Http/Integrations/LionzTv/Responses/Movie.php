@@ -34,4 +34,17 @@ final readonly class Movie
             $data['direct_source']
         );
     }
+
+    public static function fake(): self
+    {
+        return new self(
+            fake()->randomNumber(),
+            fake()->word(),
+            fake()->dateTime()->format('Y-m-d H:i:s'),
+            fake()->word(),
+            fake()->word(),
+            fake()->word(),
+            fake()->word()
+        );
+    }
 }

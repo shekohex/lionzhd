@@ -1,5 +1,9 @@
 # Lionz IPTV Downloader
 
+<p align="center">
+  <img src=".github/assets/demo.gif" alt="Lionz IPTV Downloader Demo" width="100%">
+</p>
+
 A modern, high-performance IPTV content manager built with Laravel that integrates with [Lionz](https://lionz.tv) IPTV service. This tool leverages the Xtream Codes API to fetch and manage Series and VODs, uses aria2c for efficient downloading, and Meilisearch for lightning-fast content search and indexing.
 
 ## Table of Contents

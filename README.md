@@ -35,7 +35,7 @@ Ensure you have the following installed:
 - **[pnpm](https://pnpm.io/)** - Package manager for Node.js dependencies
 - **[Composer](https://getcomposer.org/)** - PHP dependency manager
 - **[Meilisearch](https://www.meilisearch.com/)** - Search engine (running on port 7700)
-- **[aria2](https://aria2.github.io/)** - Download manager (running on port 16800)
+- **[aria2](https://aria2.github.io/)** - Download manager (running on port 6800)
     - Recommended: [Motrix](https://motrix.app/) as a GUI for aria2
 
 ## Installation
@@ -94,7 +94,7 @@ MEILISEARCH_KEY=your-master-key
 
 # Aria2 Configuration
 ARIA2_RPC_HOST=http://localhost
-ARIA2_RPC_PORT=16800
+ARIA2_RPC_PORT=6800
 ARIA2_RPC_SECRET=your-secret-token
 ```
 

@@ -33,6 +33,7 @@ RUN install-php-extensions \
 # Update PHP configurations
 RUN sed -e 's/^expose_php.*/expose_php = Off/' "$PHP_INI_DIR/php.ini-production" > "$PHP_INI_DIR/php.ini" \
     && sed -i -e 's/^upload_max_filesize.*/upload_max_filesize = 600M/' -e 's/^post_max_size.*/post_max_size = 0/' \
+    -e 's/^zend.exception_ignore_args.*/zend.exception_ignore_args = Off/' \
     -e 's/^memory_limit.*/memory_limit = 1G/' "$PHP_INI_DIR/php.ini"
 
 # Set some build ENV variables

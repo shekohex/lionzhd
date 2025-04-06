@@ -131,7 +131,7 @@ return [
 
         'sentry' => [
             'driver' => 'sentry',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('SENTRY_LOG_LEVEL', 'error'),
             'bubble' => true,
         ],
     ],

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Concerns\AsAction;
+use App\Http\Integrations\Aria2\Requests\GetGlobalOptionsRequest;
+use App\Http\Integrations\Aria2\Responses\GetGlobalOptionsResponse;
 use App\Http\Integrations\LionzTv\Responses\Episode;
 use App\Http\Integrations\LionzTv\Responses\SeriesInformation;
 use App\Http\Integrations\LionzTv\Responses\VodInformation;
+use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use InvalidArgumentException;
 
 /**
@@ -16,6 +19,8 @@ use InvalidArgumentException;
 final readonly class CreateDownloadDir
 {
     use AsAction;
+
+    public function __construct(private XtreamCodesConnector $connector) {}
 
     /**
      * Execute the action.
@@ -28,6 +33,10 @@ final readonly class CreateDownloadDir
         throw_if($data instanceof SeriesInformation && ! $episode instanceof Episode,
             new InvalidArgumentException('Episode is required for series information')
         );
+
+        /** @var GetGlobalOptionsResponse */
+        $res = $this->connector->send(new GetGlobalOptionsRequest)->dtoOrFail();
+        $globalOptions = $res->getOptions();
 
         $mediaDir = match ($data::class) {
             VodInformation::class => 'movies',
@@ -54,7 +63,8 @@ final readonly class CreateDownloadDir
             SeriesInformation::class => $episode->containerExtension,
         };
 
-        $template = "{$mediaDir}/{$mediaDirName}/{$mediaSubDir}/{$mediaFileName}.{$containerExtension}";
+        $downloadsDir = $globalOptions['dir'] ?? '/aria2/data';
+        $template = "{$downloadsDir}/{$mediaDir}/{$mediaDirName}/{$mediaSubDir}/{$mediaFileName}.{$containerExtension}";
 
         // replace `//` with `/` to avoid double slashes
         $template = preg_replace('/\/\//', '/', $template);

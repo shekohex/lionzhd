@@ -1,0 +1,64 @@
+services:
+  queue:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: queue
+      args:
+        ENVIRONMENT: production
+    restart: always
+    environment:
+      - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
+    env_file:
+      - .env
+    volumes:
+      - ./data/database:/data/database
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: scheduler
+      args:
+        ENVIRONMENT: production
+    restart: always
+    environment:
+      - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
+    volumes:
+      - ./data/database:/data/database
+    env_file:
+      - .env
+
+  application:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: app
+      args:
+        ENVIRONMENT: production
+    restart: always
+    ports:
+      - '8000:80' # HTTP
+    #   - "443:443" # HTTPS
+    #   - "443:443/udp" # HTTP/3
+    volumes:
+      - ./data/database:/data/database
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - DB_DATABASE=/data/database/database.sqlite
+      - ARIA2_RPC_HOST=http://host.docker.internal
+      - MEILISEARCH_HOST=http://host.docker.internal:7700
+    env_file:
+      - .env
+    depends_on:
+      - queue
+      - scheduler
+
+volumes:
+  caddy_data:
+  caddy_config:

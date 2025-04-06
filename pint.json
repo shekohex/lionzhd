@@ -1,0 +1,89 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "array_push": true,
+        "backtick_to_shell_exec": true,
+        "date_time_immutable": true,
+        "declare_strict_types": true,
+        "lowercase_keywords": true,
+        "lowercase_static_reference": true,
+        "final_class": true,
+        "void_return": true,
+        "clean_namespace": true,
+        "no_empty_phpdoc": true,
+        "use_arrow_functions": true,
+        "return_type_declaration": {
+            "space_before": "none"
+        },
+        "final_internal_class": {
+            "exclude": [
+                "final",
+                "Entity",
+                "ORM\\Entity",
+                "ORM\\Mapping\\Entity",
+                "Mapping\\Entity",
+                "Document",
+                "ODM\\Document"
+            ]
+        },
+        "final_public_method_for_abstract_class": true,
+        "fully_qualified_strict_types": {
+            "import_symbols": true
+        },
+        "global_namespace_import": {
+            "import_classes": true,
+            "import_constants": true,
+            "import_functions": true
+        },
+        "mb_str_functions": true,
+        "modernize_types_casting": true,
+        "new_with_parentheses": {
+            "anonymous_class": false,
+            "named_class": false
+        },
+        "no_superfluous_elseif": true,
+        "no_useless_else": true,
+        "no_multiple_statements_per_line": true,
+        "ordered_class_elements": {
+            "order": [
+                "use_trait",
+                "case",
+                "constant",
+                "constant_public",
+                "constant_protected",
+                "constant_private",
+                "property_public",
+                "property_protected",
+                "property_private",
+                "construct",
+                "destruct",
+                "magic",
+                "phpunit",
+                "method_abstract",
+                "method_public_static",
+                "method_public",
+                "method_protected_static",
+                "method_protected",
+                "method_private_static",
+                "method_private"
+            ],
+            "sort_algorithm": "none"
+        },
+        "ordered_interfaces": {
+            "order": "length"
+        },
+        "ordered_traits": {
+            "case_sensitive": false
+        },
+        "protected_to_private": true,
+        "self_accessor": true,
+        "self_static_accessor": true,
+        "strict_comparison": true,
+        "strict_param": true,
+        "short_scalar_cast": true,
+        "visibility_required": {
+            "elements": ["property", "method", "const"]
+        },
+        "phpdoc_single_line_var_spacing": true
+    }
+}

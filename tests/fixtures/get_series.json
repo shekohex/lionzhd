@@ -1,0 +1,62 @@
+[
+    {
+        "num": 1,
+        "name": "044-Friends",
+        "series_id": 196,
+        "cover": "https://m.media-amazon.com/images/M/MV5BNDVkYjU0MzctMWRmZi00NTkxLTgwZWEtOWVhYjZlYjllYmU4XkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_.jpg",
+        "plot": "مغامرات مجموعة من الأصدقاء وهم يتنقلون بين مخاطر العمل والحياة والحب في مانهاتن.",
+        "cast": "Matthew Perry, Matt LeBlanc, Courteney Cox, David Schwimmer, Jennifer Aniston",
+        "director": "",
+        "genre": "Comedy, Drama",
+        "releaseDate": "1994-09-22",
+        "last_modified": "1633933762",
+        "rating": "8",
+        "rating_5based": 4,
+        "backdrop_path": [
+            "https://image.tmdb.org/t/p/w1280/efiX8iir6GEBWCD0uCFIi5NAyYA.jpg"
+        ],
+        "youtube_trailer": "p8rU4ysw-5M",
+        "episode_run_time": "22",
+        "category_id": "518"
+    },
+    {
+        "num": 2,
+        "name": "Batwoman",
+        "series_id": 213,
+        "cover": "https://m.media-amazon.com/images/M/MV5BMTc0YTdhNTYtMjI1MC00ZDQwLTljNTMtNGI3ODRlYzhhM2FiXkEyXkFqcGdeQXVyNzE3ODQxNjU@._V1_FMjpg_UY399_.jpg",
+        "plot": "كيت\" التغلب على شياطينها قبل أن تقبل الدعوة لتصبح رمز الأمل في \"جوثام\".",
+        "cast": "Ruby Rose, Rachel Skarsten, Meagan Tandy, Dougray Scott, Camrus Johnson",
+        "director": "",
+        "genre": "Action & Adventure, Sci-Fi & Fantasy, Mystery",
+        "releaseDate": "2019-10-06",
+        "last_modified": "1696480621",
+        "rating": "6",
+        "rating_5based": 3,
+        "backdrop_path": [
+            "https://image.tmdb.org/t/p/w1280/spc5mNkW2daK1ob7Z7jqNkSlKS2.jpg"
+        ],
+        "youtube_trailer": "",
+        "episode_run_time": "42",
+        "category_id": "491"
+    },
+    {
+        "num": 3,
+        "name": "Dark",
+        "series_id": 214,
+        "cover": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/ajmkAwuK1TRFWMjKoSMgoAXbnc7.jpg",
+        "plot": "يتسبب طفل مفقود في مساعدة أربع عائلات لبعضها البعض للحصول على إجابات. ما لم يتمكنوا من تخيله هو أن هذا اللغز سيكون مرتبطا بأسرار أخرى لا حصر لها للمدينة الصغيرة.",
+        "cast": "",
+        "director": "",
+        "genre": "Sci-Fi & Fantasy, Drama, Mystery",
+        "releaseDate": "2017-12-01",
+        "last_modified": "1634712415",
+        "rating": "8",
+        "rating_5based": 4,
+        "backdrop_path": [
+            "https://image.tmdb.org/t/p/w1280/3lBDg3i6nn5R2NKFCJ6oKyUo2j5.jpg"
+        ],
+        "youtube_trailer": "rrwycJ08PSA",
+        "episode_run_time": "53",
+        "category_id": "534"
+    }
+]

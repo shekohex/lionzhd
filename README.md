@@ -1,80 +1,131 @@
 # Lionz IPTV Downloader
 
-Lionz IPTV Downloader is a simple, yet powerful tool designed to interact with the [Lionz](https://lionz.tv) IPTV service. It leverages the Xtream Codes API to fetch series and VODs, downloads them using aria2c, and utilizes Meilisearch for efficient content indexing and searching.
+A modern, high-performance IPTV content manager built with Laravel that integrates with [Lionz](https://lionz.tv) IPTV service. This tool leverages the Xtream Codes API to fetch and manage Series and VODs, uses aria2c for efficient downloading, and Meilisearch for lightning-fast content search and indexing.
+
+## Table of Contents
+
+- [Features](#features)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Features
 
-- Search and download VODs
-- Search and download Series (including specific episodes)
-- Update MeiliSearch indexes for faster searching
-- Interactive command-line interface
-- Integration with aria2c for efficient downloading
-- Utilizes Meilisearch for quick and accurate content searches
+- **Smart Content Management**
+    - Search and download VODs or Series (individual episodes or complete seasons)
+    - Automatic media library synchronization with MeiliSearch indexing
+    - Favorite series tracking with automatic new episode downloads
+- **Modern Architecture**
+    - Clean and responsive web interface built with React and Tailwind CSS
+    - Efficient download management through aria2 integration
+    - Real-time updates and notifications
+- **Performance Focused**
+    - Fast content searching with MeiliSearch integration
+    - Efficient background job processing for media syncing
+    - Optimized content delivery
 
 ## Prerequisites
 
-Before you begin, ensure you have met the following requirements:
+Ensure you have the following installed:
 
-- Python 3.7+
-- [Meilisearch](https://www.meilisearch.com/) installed and running on port 7700
-- [aria2c](https://aria2.github.io/) instance running on port 16800
-  - We recommend using [Motrix](https://motrix.app/) as a GUI for aria2c
-- [uv](https://github.com/astral-sh/uv) for managing project dependencies
+- **PHP 8.4** or higher
+- **[pnpm](https://pnpm.io/)** - Package manager for Node.js dependencies
+- **[Composer](https://getcomposer.org/)** - PHP dependency manager
+- **[Meilisearch](https://www.meilisearch.com/)** - Search engine (running on port 7700)
+- **[aria2](https://aria2.github.io/)** - Download manager (running on port 16800)
+    - Recommended: [Motrix](https://motrix.app/) as a GUI for aria2
 
 ## Installation
 
 1. Clone the repository:
-   ```
-   git clone https://github.com/shekohex/lionzhd.git
-   cd lionzhd
-   ```
 
-2. Install dependencies using uv:
-   ```
-   uv venv
-   source .venv/bin/activate
-   uv sync
-   ```
+```bash
+git clone https://github.com/shekohex/lionzhd.git
+cd lionzhd
+```
+
+2. Install PHP dependencies:
+
+```bash
+composer install
+```
+
+3. Install Node.js dependencies:
+
+```bash
+pnpm install
+```
+
+4. Set up the SQLite database:
+
+```bash
+touch database/database.sqlite
+```
+
+5. Initialize the project:
+
+```bash
+composer run-script post-create-project-cmd
+```
 
 ## Configuration
 
-1. Copy the `.env.example` file to `.env`:
-   ```
-   cp .env.example .env
-   ```
+1. Create your environment file:
 
-2. Edit the `.env` file and fill in your Lionz IPTV service credentials:
-   ```
-   XTREAM_CODES_API_HOST=
-   XTREAM_CODES_API_PORT=
-   XTREAM_CODES_API_USER=
-   XTREAM_CODES_API_PASS=
-   MEILI_HTTP_URL=
-   MEILI_MASTER_KEY=
-   ARIA2_RPC_HOST=
-   ARIA2_RPC_PORT=
-   ARIA2_RPC_SECRET=
-   ```
+```bash
+cp .env.example .env
+```
+
+2. Configure your `.env` file with the following essential settings:
+
+```ini
+# Lionz IPTV Service Credentials
+XTREAM_CODES_API_HOST=your-host
+XTREAM_CODES_API_PORT=your-port
+XTREAM_CODES_API_USER=your-username
+XTREAM_CODES_API_PASS=your-password
+
+# MeiliSearch Configuration
+MEILISEARCH_HOST=http://localhost:7700
+MEILISEARCH_KEY=your-master-key
+
+# Aria2 Configuration
+ARIA2_RPC_HOST=http://localhost
+ARIA2_RPC_PORT=16800
+ARIA2_RPC_SECRET=your-secret-token
+```
 
 ## Usage
 
-To run the Lionz IPTV Downloader:
+Start the development server and all required services:
 
-```
-uv run lionz
-```
-
-or run the Web UI:
-
-```
-uv run web runserver
+```bash
+composer dev
 ```
 
-Follow the interactive prompts to search for content, select items to download, and manage MeiliSearch indexes.
+This command will concurrently run:
+
+- Laravel development server
+- Queue worker for background jobs
+- Log watcher
+- Vite development server for frontend assets
+
+The application will be available at `http://localhost:8000`.
+
+### Development with SSR
+
+For server-side rendering support:
+
+```bash
+composer dev:ssr
+```
 
 ## Contributing
 
-Contributions to the Lionz IPTV Downloader are welcome. Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 

@@ -1,6 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "shekohex/lionz",
+    "version": "1.0.12",
     "type": "project",
     "description": "lionz.tv Download Tool using aria2 and built with the Laravel framework.",
     "keywords": [

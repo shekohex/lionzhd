@@ -11,7 +11,7 @@ touch /data/database/database.sqlite
 # -----------------------------------------------------------
 # Ensure the database schema is up to date.
 # -----------------------------------------------------------
-php artisan migrate --force --no-interaction
+php artisan migrate --force --graceful --no-interaction
 
 # Run Our Custom Commands
 # -----------------------------------------------------------
@@ -51,6 +51,11 @@ php artisan storage:link --force
 # -----------------------------------------------------------
 php artisan scout:sync-index-settings --no-interaction
 
+# Publish Telescope assets
+# -----------------------------------------------------------
+# Ensure the Telescope assets are published.
+# -----------------------------------------------------------
+php artisan telescope:publish
 
 # Run default commands
 exec "$@"

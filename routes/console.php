@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use App\Jobs\RefreshMediaContents;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
 // Schedule the RefreshMediaContents job to run daily at midnight UTC
-Schedule::job(app(RefreshMediaContents::class))
+Schedule::job(RefreshMediaContents::class)
+    ->name('refresh-media-contents')
+    ->description('Refresh media contents')
     ->dailyAt('00:00')
     ->timezone(new DateTimeZone('UTC'))
     ->withoutOverlapping()

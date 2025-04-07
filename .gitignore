@@ -36,3 +36,7 @@ yarn-error.log
 /.roo
 /memory-bank
 
+
+**/caddy
+frankenphp
+frankenphp-worker.php

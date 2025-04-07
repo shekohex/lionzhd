@@ -40,7 +40,7 @@ RUN sed -e 's/^expose_php.*/expose_php = Off/' "$PHP_INI_DIR/php.ini-production"
     -e 's/^zend.exception_ignore_args.*/zend.exception_ignore_args = Off/' \
     -e 's/^max_execution_time.*/max_execution_time = 120/' \
     -e 's/^max_input_time.*/max_input_time = 60/' \
-    -e 's/^memory_limit.*/memory_limit = 1G/' "$PHP_INI_DIR/php.ini"
+    -e 's/^memory_limit.*/memory_limit = 1024M/' "$PHP_INI_DIR/php.ini"
 
 # Set some build ENV variables
 ENV LOG_CHANNEL=stdout
@@ -102,11 +102,11 @@ CMD ["php", "artisan", "schedule:work", "--no-interaction"]
 # Queue stage
 FROM base as queue
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["php", "artisan", "queue:work", "--memory=0", "--timeout=0", "--tries=3", "--no-interaction"]
+CMD ["php", "artisan", "queue:work", "--memory=2048", "--timeout=0", "--tries=3", "--no-interaction"]
 
 # Application stage
 FROM base as app
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 EXPOSE 80 443
 HEALTHCHECK --interval=10m --timeout=30s --start-period=10s --retries=5 CMD [ "curl", "-f", "http://localhost/up" ]
-CMD ["frankenphp", "run"]
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--caddyfile=/lionz/Caddyfile", "--no-interaction"]

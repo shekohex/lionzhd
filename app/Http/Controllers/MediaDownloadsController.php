@@ -120,8 +120,8 @@ final class MediaDownloadsController extends Controller
             }
 
             return back()->with('success', 'Download removed successfully.');
-        } catch (JsonRpcException $e) {
-            return back()->withErrors(['action' => $e->getMessage()]);
+        } catch (JsonRpcException $jsonRpcException) {
+            return back()->withErrors(['action' => $jsonRpcException->getMessage()]);
         }
     }
 }

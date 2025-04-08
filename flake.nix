@@ -98,6 +98,7 @@
             pkgs.meilisearch
             pkgs.aria2
             pkgs.caddy
+            pkgs.valkey
           ];
           packages = [ ] ++ scripts;
 

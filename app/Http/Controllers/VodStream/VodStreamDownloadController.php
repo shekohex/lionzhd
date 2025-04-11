@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\VodStream;
 
-use App\Actions\CreateDownloadDir;
+use App\Actions\CreateDownloadOut;
 use App\Actions\CreateXtreamcodesDownloadUrl;
 use App\Actions\DownloadMedia;
 use App\Actions\GetActiveDownloads;
@@ -37,7 +37,7 @@ final class VodStreamDownloadController extends Controller
         }
 
         $url = CreateXtreamcodesDownloadUrl::run($dto);
-        $gid = DownloadMedia::run($url, ['dir' => CreateDownloadDir::run($dto)]);
+        $gid = DownloadMedia::run($url, ['out' => CreateDownloadOut::run($dto)]);
 
         MediaDownloadRef::fromVodStream($gid, $model)->saveOrFail();
 

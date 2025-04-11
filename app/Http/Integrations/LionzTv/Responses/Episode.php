@@ -48,4 +48,23 @@ final readonly class Episode
             $data['direct_source'] ?? ''
         );
     }
+
+    public static function fake(): self
+    {
+        return new self(
+            (string) fake()->randomNumber(),
+            fake()->randomNumber(),
+            fake()->sentence(),
+            fake()->fileExtension(),
+            fake()->randomNumber(),
+            fake()->time(),
+            VideoMetadata::fromJson([]),
+            AudioMetadata::fromJson([]),
+            fake()->randomNumber(),
+            fake()->uuid(),
+            fake()->dateTime()->format('Y-m-d H:i:s'),
+            fake()->randomNumber(),
+            ''
+        );
+    }
 }

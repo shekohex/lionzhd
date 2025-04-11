@@ -30,7 +30,7 @@ final readonly class SeriesInformation
         public string $youtubeTrailer,
         public string $episodeRunTime,
         public string $categoryId,
-        /** @var array<string, Episode[]> */
+        /** @var array<array-key, Episode[]> */
         #[RecordTypeScriptType('string', Episode::class, array: true)]
         public array $seasonsWithEpisodes
     ) {}
@@ -65,6 +65,34 @@ final readonly class SeriesInformation
                 static fn (array $episodes) => collect($episodes)
                     ->map(static fn (array $episode) => Episode::fromJson($episode))
             )->toArray()
+        );
+    }
+
+    public static function fake(): self
+    {
+        return new self(
+            fake()->randomNumber(),
+            ['1'],
+            fake()->name(),
+            fake()->imageUrl(),
+            fake()->text(),
+            fake()->name(),
+            fake()->name(),
+            fake()->word(),
+            fake()->dateTime()->format('Y-m-d'),
+            fake()->dateTime()->format('Y-m-d H:i:s'),
+            fake()->word(),
+            5.0,
+            [fake()->imageUrl()],
+            fake()->url(),
+            '00:00:00',
+            '',
+            [
+                '1' => [
+                    Episode::fake(),
+                    Episode::fake(),
+                ],
+            ]
         );
     }
 }

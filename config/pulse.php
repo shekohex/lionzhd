@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Laravel\Pulse\Http\Middleware\Authorize;
+use Laravel\Pulse\Pulse;
 use Laravel\Pulse\Recorders\CacheInteractions;
 use Laravel\Pulse\Recorders\Exceptions;
 use Laravel\Pulse\Recorders\Queues;
@@ -12,8 +14,6 @@ use Laravel\Pulse\Recorders\SlowQueries;
 use Laravel\Pulse\Recorders\SlowRequests;
 use Laravel\Pulse\Recorders\UserJobs;
 use Laravel\Pulse\Recorders\UserRequests;
-use Laravel\Pulse\Http\Middleware\Authorize;
-use Laravel\Pulse\Pulse;
 
 return [
 

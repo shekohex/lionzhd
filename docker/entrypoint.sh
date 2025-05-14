@@ -55,7 +55,7 @@ php artisan scout:sync-index-settings --no-interaction
 # -----------------------------------------------------------
 # Ensure the Telescope assets are published.
 # -----------------------------------------------------------
-php artisan telescope:publish
+# php artisan telescope:publish
 
 # Run default commands
 exec "$@"

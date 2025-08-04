@@ -143,7 +143,7 @@ export function EnhancedPagination({
             // Small delay to allow Inertia navigation to start
             setTimeout(() => {
                 scrollToTop('smooth');
-            }, 50);
+            }, 100);
         }
     };
 

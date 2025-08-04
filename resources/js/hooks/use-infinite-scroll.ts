@@ -117,10 +117,11 @@ export function useInfiniteScroll<T = unknown>({
         const currentPageFromUrl = new URL(window.location.href).searchParams.get('page');
         const pageNum = currentPageFromUrl ? parseInt(currentPageFromUrl, 10) : 1;
         
-        if (pageNum === 1) {
+        // Reset if we're back to page 1 or if the data length suggests a fresh start
+        if (pageNum === 1 || data.length !== allData.length) {
             setAllData(data);
         }
-    }, [data]);
+    }, [data, allData.length]);
     
     const loadMore = useCallback(async () => {
         if (!nextPageUrl || isLoading || !enabled) {

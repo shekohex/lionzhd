@@ -1,7 +1,9 @@
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
 import MediaSection from '@/components/media-section';
-import { Pagination } from '@/components/ui/pagination';
+import { DualPagination } from '@/components/ui/enhanced-pagination';
+import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
+import { useIsMobile } from '@/hooks/use-mobile';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { MoviesPageProps } from '@/types/movies';
@@ -55,7 +57,21 @@ export default function Movies() {
     } = props;
 
     const [isLoading, setIsLoading] = useState(true);
+    const isMobile = useIsMobile();
     const hasMovies = total > 0;
+
+    // Setup infinite scroll for mobile
+    const infiniteScroll = useInfiniteScroll({
+        data: movies,
+        links: props.movies?.links || [],
+        enabled: isMobile,
+        only: ['movies'],
+        preserveState: true,
+        preserveScroll: false, // We handle scroll manually
+    });
+
+    // Use appropriate data source based on device
+    const displayedMovies = isMobile ? infiniteScroll.allData : movies;
 
     useEffect(() => {
         // Simulate loading state for demonstration
@@ -89,13 +105,29 @@ export default function Movies() {
                             />
                         ) : (
                             <>
+                                {/* Top pagination for desktop */}
+                                {!isMobile && props.movies?.links && props.movies.links.length > 3 && (
+                                    <div className="mb-8">
+                                        <DualPagination
+                                            links={props.movies.links}
+                                            preserveState={true}
+                                            preserveScroll={true}
+                                            prefetch={true}
+                                            only={['movies']}
+                                            showTop={true}
+                                            showBottom={false}
+                                            topClassName="border-b border-border pb-4"
+                                        />
+                                    </div>
+                                )}
+
                                 <motion.div
                                     className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                                     variants={container}
                                     initial="hidden"
                                     animate="show"
                                 >
-                                    {movies.map((movie) => (
+                                    {displayedMovies.map((movie) => (
                                         <motion.div key={movie.stream_id} variants={item}>
                                             <Link href={route('movies.show', { model: movie.stream_id })}>
                                                 <MediaCard
@@ -108,20 +140,23 @@ export default function Movies() {
                                         </motion.div>
                                     ))}
                                 </motion.div>
-                                <div className="flex justify-center">
-                                    {/* Movies pagination - with section-specific partial reload */}
-                                    {props.movies?.links && props.movies.links.length > 3 && (
-                                        <div className="mt-8">
-                                            <Pagination
-                                                links={props.movies.links}
-                                                preserveState={true}
-                                                preserveScroll={true}
-                                                prefetch={true}
-                                                only={['movies', 'filters']}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+
+                                {/* Bottom pagination/infinite scroll */}
+                                {props.movies?.links && props.movies.links.length > 3 && (
+                                    <div className="mt-8">
+                                        <DualPagination
+                                            links={props.movies.links}
+                                            preserveState={true}
+                                            preserveScroll={true}
+                                            prefetch={true}
+                                            only={['movies']}
+                                            showTop={false}
+                                            showBottom={true}
+                                            infiniteScroll={isMobile ? infiniteScroll : undefined}
+                                            bottomClassName="pt-4 border-t border-border"
+                                        />
+                                    </div>
+                                )}
                             </>
                         )}
                     </MediaSection>

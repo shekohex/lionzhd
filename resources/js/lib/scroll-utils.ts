@@ -26,7 +26,7 @@ export function scrollToElement(
     offset: number = 0,
 ): void {
     const target = typeof element === 'string' ? document.getElementById(element) : element;
-    
+
     if (!target) {
         console.warn('Scroll target element not found');
         return;
@@ -61,7 +61,7 @@ export function isNearBottom(threshold: number = 200): boolean {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
-    
+
     return scrollTop + windowHeight >= documentHeight - threshold;
 }
 
@@ -73,11 +73,11 @@ export function getScrollPercentage(): number {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const documentHeight = document.documentElement.scrollHeight;
     const windowHeight = window.innerHeight;
-    
+
     if (documentHeight <= windowHeight) {
         return 100; // If content fits in viewport, consider it 100% scrolled
     }
-    
+
     return Math.round((scrollTop / (documentHeight - windowHeight)) * 100);
 }
 
@@ -89,14 +89,14 @@ export function getScrollPercentage(): number {
  */
 export function onScroll(callback: () => void, delay: number = 100): () => void {
     let timeoutId: NodeJS.Timeout;
-    
+
     const handler = () => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(callback, delay);
     };
-    
+
     window.addEventListener('scroll', handler, { passive: true });
-    
+
     return () => {
         clearTimeout(timeoutId);
         window.removeEventListener('scroll', handler);

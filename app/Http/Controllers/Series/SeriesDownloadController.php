@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Series;
 
+use App\Actions\BatchCreateSignedDirectLinks;
 use App\Actions\BatchDownloadMedia;
 use App\Actions\CreateDownloadOut;
+use App\Actions\CreateSignedDirectLink;
 use App\Actions\CreateXtreamcodesDownloadUrl;
 use App\Actions\DownloadMedia;
 use App\Actions\GetActiveDownloads;
@@ -17,7 +19,10 @@ use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\MediaDownloadRef;
 use App\Models\Series;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final class SeriesDownloadController extends Controller
 {
@@ -109,5 +114,81 @@ final class SeriesDownloadController extends Controller
         }
 
         return redirect()->route('downloads')->with('success', 'Downloads started for selected episodes.');
+    }
+
+    /**
+     * Create a direct download link for a single episode.
+     */
+    public function direct(XtreamCodesConnector $client, Series $model, int $season, int $episode, Request $request): RedirectResponse|SymfonyResponse
+    {
+        if (! config('features.direct_download_links', false)) {
+            abort(404);
+        }
+
+        $series = $client->send(new GetSeriesInfoRequest($model->series_id));
+        $dto = $series->dtoOrFail();
+
+        /** @var ?Episode */
+        $selectedEpisode = $dto->seasonsWithEpisodes[$season][$episode];
+        if ($selectedEpisode === null) {
+            return back()->withErrors('Episode not found.');
+        }
+
+        $signedUrl = CreateSignedDirectLink::run($selectedEpisode);
+
+        return new SymfonyResponse(view('direct-download.start', [
+            'signedUrl' => $signedUrl,
+        ])->render(), 200, ['Content-Type' => 'text/html; charset=utf-8']);
+    }
+
+    /**
+     * Create a batch of direct download links for selected episodes as a text file.
+     */
+    public function batchDirectTxt(XtreamCodesConnector $client, Series $model, BatchDownloadEpisodesData $request): SymfonyResponse
+    {
+        if (! config('features.direct_download_links', false)) {
+            abort(404);
+        }
+
+        $series = $client->send(new GetSeriesInfoRequest($model->series_id));
+        $dto = $series->dtoOrFail();
+
+        /** @var Episode[] */
+        $selectedEpisodes = [];
+        /** @var string[] */
+        $errors = [];
+
+        $selectedEpisodesData = $request->selectedEpisodes;
+
+        foreach ($selectedEpisodesData as $episodeData) {
+            $seasonIndex = $episodeData->season;
+            $episodeIndex = $episodeData->episodeNum;
+
+            if (! isset($dto->seasonsWithEpisodes[$seasonIndex][$episodeIndex])) {
+                $errors[] = "S{$seasonIndex}E{$episodeIndex} not found.";
+
+                continue;
+            }
+
+            $selectedEpisodes[] = $dto->seasonsWithEpisodes[$seasonIndex][$episodeIndex];
+        }
+
+        if (! empty($errors)) {
+            return back()->withErrors($errors);
+        }
+
+        if (empty($selectedEpisodes)) {
+            return back()->withErrors('No episodes selected.');
+        }
+
+        $signedUrls = BatchCreateSignedDirectLinks::run($selectedEpisodes);
+
+        $result = $signedUrls->prepend('# Direct Download Links for Series, copy one by one or use a download manager');
+        $content = $result->implode(PHP_EOL);
+
+        return new Response($content, 200, [
+            'Content-Type' => 'text/plain',
+            'Content-Disposition' => 'attachment; filename="direct-links.txt"',
+        ]);
     }
 }

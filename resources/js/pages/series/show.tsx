@@ -82,11 +82,39 @@ export default function SeriesInformation() {
         [info.seriesId],
     );
 
+    // Handle direct downloading a specific episode (open in new tab)
+    const handleDirectDownloadEpisode = useCallback(
+        (episodeIndex: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
+            const url = route('series.direct.single', {
+                model: info.seriesId,
+                season: episode.season,
+                episode: episodeIndex,
+            });
+            window.open(url, '_blank', 'noopener');
+        },
+        [info.seriesId],
+    );
+
     const handleDownloadSelectedEpisodes = useCallback(
         (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
-            console.log('Selected episodes for download:', selectedEpisodes);
             router.post(
                 route('series.download.batch', { model: info.seriesId }),
+                {
+                    selectedEpisodes,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: false,
+                },
+            );
+        },
+        [info.seriesId],
+    );
+
+    const handleDirectDownloadSelectedEpisodes = useCallback(
+        (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
+            router.post(
+                route('series.direct.batch', { model: info.seriesId }),
                 {
                     selectedEpisodes,
                 },
@@ -172,7 +200,9 @@ export default function SeriesInformation() {
                                     <EpisodeList
                                         seasonsWithEpisodes={info.seasonsWithEpisodes}
                                         onDownloadEpisode={handleDownloadEpisode}
+                                        onDirectDownloadEpisode={handleDirectDownloadEpisode}
                                         onDownloadSelected={handleDownloadSelectedEpisodes}
+                                        onDirectDownloadSelected={handleDirectDownloadSelectedEpisodes}
                                     />
                                 </motion.div>
                             </AnimatePresence>

@@ -1,18 +1,26 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { type SeasonsWithEpisodes } from '@/types/series';
 import { motion } from 'framer-motion';
-import { Download, DownloadIcon, ListChecks, ListTodo } from 'lucide-react';
+import { Download, DownloadIcon, ExternalLinkIcon, ListChecks, ListTodo } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 interface EpisodeListProps {
     seasonsWithEpisodes: SeasonsWithEpisodes;
     className?: string;
     onDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
+    onDirectDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
     onDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
+    onDirectDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
 }
 
 class SelectedEpisodes {
@@ -78,7 +86,9 @@ export default function EpisodeList({
     seasonsWithEpisodes,
     className,
     onDownloadEpisode,
+    onDirectDownloadEpisode,
     onDownloadSelected,
+    onDirectDownloadSelected,
 }: EpisodeListProps) {
     // Get available season numbers and sort them
     const seasonNumbers = Object.keys(seasonsWithEpisodes)
@@ -146,6 +156,12 @@ export default function EpisodeList({
         onDownloadSelected?.(selectedEpisodesArray);
     }, [onDownloadSelected, selectedEpisodes]);
 
+    // Handle direct download selected episodes button click
+    const handleDirectDownloadSelected = useCallback(() => {
+        const selectedEpisodesArray = selectedEpisodes.getSelectedEpisodes();
+        onDirectDownloadSelected?.(selectedEpisodesArray);
+    }, [onDirectDownloadSelected, selectedEpisodes]);
+
     if (seasonNumbers.length === 0) return null;
 
     return (
@@ -155,22 +171,38 @@ export default function EpisodeList({
 
                 <div className="flex items-center gap-4">
                     {/* Download Selected button */}
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button onClick={handleDownloadSelected} disabled={selectedEpisodes.size === 0}>
-                                    <Download size={20} />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p className="text-sm">
-                                    {selectedEpisodes.size === 0
-                                        ? 'Select Episodes to download'
-                                        : `Download Selected (${selectedEpisodes.size})`}
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <DropdownMenu>
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button disabled={selectedEpisodes.size === 0}>
+                                            <Download size={20} />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="text-sm">
+                                        {selectedEpisodes.size === 0
+                                            ? 'Select Episodes to download'
+                                            : `Download Selected (${selectedEpisodes.size})`}
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={handleDownloadSelected}>
+                                <DownloadIcon className="mr-2 h-4 w-4" />
+                                Server Download
+                            </DropdownMenuItem>
+                            {onDirectDownloadSelected && (
+                                <DropdownMenuItem onClick={handleDirectDownloadSelected}>
+                                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                    Direct Download
+                                </DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     {/* Select All button */}
                     <TooltipProvider>
                         <Tooltip>
@@ -220,6 +252,7 @@ export default function EpisodeList({
                             selected={selectedEpisodes.has(selectedSeason, episode.episodeNum)}
                             episode={episode}
                             onDownload={() => onDownloadEpisode?.(index, episode)}
+                            onDirectDownload={() => onDirectDownloadEpisode?.(index, episode)}
                             onSelected={(isSelected) => handleEpisodeSelect(episode.episodeNum, isSelected)}
                         />
                     </motion.div>
@@ -239,10 +272,11 @@ interface EpisodeCardProps {
     episode: App.Http.Integrations.LionzTv.Responses.Episode;
     selected?: boolean;
     onDownload?: () => void;
+    onDirectDownload?: () => void;
     onSelected?: (isSelected: boolean) => void;
 }
 
-function EpisodeCard({ episode, onDownload, onSelected, selected }: EpisodeCardProps) {
+function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, selected }: EpisodeCardProps) {
     // Format episode number with leading zero if needed
     const formattedEpisodeNum = episode.episodeNum < 10 ? `0${episode.episodeNum}` : String(episode.episodeNum);
 
@@ -258,14 +292,30 @@ function EpisodeCard({ episode, onDownload, onSelected, selected }: EpisodeCardP
                 </span>
 
                 {/* Play button (shown on hover) */}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute left-4 opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={onDownload}
-                >
-                    <DownloadIcon size={24} />
-                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute left-4 opacity-0 transition-opacity group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <DownloadIcon size={24} />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={onDownload}>
+                            <DownloadIcon className="mr-2 h-4 w-4" />
+                            Server Download
+                        </DropdownMenuItem>
+                        {onDirectDownload && (
+                            <DropdownMenuItem onClick={onDirectDownload}>
+                                <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                Direct Download
+                            </DropdownMenuItem>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
 
             {/* Episode content */}

@@ -12,7 +12,6 @@ use App\Actions\CreateXtreamcodesDownloadUrl;
 use App\Actions\DownloadMedia;
 use App\Actions\GetActiveDownloads;
 use App\Data\BatchDownloadEpisodesData;
-use App\Data\SelectedEpisodeData;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
 use App\Http\Integrations\LionzTv\Responses\Episode;
@@ -145,7 +144,7 @@ final class SeriesDownloadController extends Controller
     /**
      * Create a batch of direct download links for selected episodes as a text file.
      */
-    public function batchDirectTxt(XtreamCodesConnector $client, Series $model, Request $request): SymfonyResponse
+    public function batchDirectTxt(XtreamCodesConnector $client, Series $model, BatchDownloadEpisodesData $request): SymfonyResponse
     {
         if (! config('features.direct_download_links', false)) {
             abort(404);
@@ -159,8 +158,7 @@ final class SeriesDownloadController extends Controller
         /** @var string[] */
         $errors = [];
 
-        // Use the SelectedEpisodeData DTO for validation
-        $selectedEpisodesData = SelectedEpisodeData::collect($request->input('selectedEpisodes', []));
+        $selectedEpisodesData = $request->selectedEpisodes;
 
         foreach ($selectedEpisodesData as $episodeData) {
             $seasonIndex = $episodeData->season;
@@ -185,7 +183,8 @@ final class SeriesDownloadController extends Controller
 
         $signedUrls = BatchCreateSignedDirectLinks::run($selectedEpisodes);
 
-        $content = $signedUrls->implode(PHP_EOL);
+        $result = $signedUrls->prepend('# Direct Download Links for Series, copy one by one or use a download manager');
+        $content = $result->implode(PHP_EOL);
 
         return new Response($content, 200, [
             'Content-Type' => 'text/plain',

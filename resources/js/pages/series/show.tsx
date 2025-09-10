@@ -97,7 +97,6 @@ export default function SeriesInformation() {
 
     const handleDownloadSelectedEpisodes = useCallback(
         (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
-            console.log('Selected episodes for download:', selectedEpisodes);
             router.post(
                 route('series.download.batch', { model: info.seriesId }),
                 {
@@ -114,40 +113,16 @@ export default function SeriesInformation() {
 
     const handleDirectDownloadSelectedEpisodes = useCallback(
         (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
-            // Submit a real POST form (not Inertia) so the browser downloads the text file
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('series.direct.batch', { model: info.seriesId });
-            form.target = '_blank';
-
-            // CSRF token
-            const token = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
-            if (token?.content) {
-                const csrf = document.createElement('input');
-                csrf.type = 'hidden';
-                csrf.name = '_token';
-                csrf.value = token.content;
-                form.appendChild(csrf);
-            }
-
-            // Add selectedEpisodes[*][season] and [episodeNum]
-            selectedEpisodes.forEach((ep, idx) => {
-                const season = document.createElement('input');
-                season.type = 'hidden';
-                season.name = `selectedEpisodes[${idx}][season]`;
-                season.value = String(ep.season);
-                form.appendChild(season);
-
-                const episodeNum = document.createElement('input');
-                episodeNum.type = 'hidden';
-                episodeNum.name = `selectedEpisodes[${idx}][episodeNum]`;
-                episodeNum.value = String(ep.episodeNum);
-                form.appendChild(episodeNum);
-            });
-
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
+            router.post(
+                route('series.direct.batch', { model: info.seriesId }),
+                {
+                    selectedEpisodes,
+                },
+                {
+                    preserveScroll: true,
+                    preserveState: false,
+                },
+            );
         },
         [info.seriesId],
     );

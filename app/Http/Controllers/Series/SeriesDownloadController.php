@@ -137,7 +137,9 @@ final class SeriesDownloadController extends Controller
 
         $signedUrl = CreateSignedDirectLink::run($selectedEpisode);
 
-        return redirect()->to($signedUrl);
+        return new SymfonyResponse(view('direct-download.start', [
+            'signedUrl' => $signedUrl,
+        ])->render(), 200, ['Content-Type' => 'text/html; charset=utf-8']);
     }
 
     /**

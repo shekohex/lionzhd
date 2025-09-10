@@ -18,6 +18,9 @@ final class DirectDownloadController extends Controller
      */
     public function show(Request $request, string $token): RedirectResponse|Response
     {
+        if (! config('features.direct_download_links', false)) {
+            abort(404);
+        }
         $cacheKey = "direct:link:{$token}";
         $remoteUrl = Cache::get($cacheKey);
 

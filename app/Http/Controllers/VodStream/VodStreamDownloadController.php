@@ -64,6 +64,8 @@ final class VodStreamDownloadController extends Controller
 
         $signedUrl = CreateSignedDirectLink::run($dto);
 
-        return redirect()->to($signedUrl);
+        return response()->view('direct-download.start', [
+            'signedUrl' => $signedUrl,
+        ]);
     }
 }

@@ -11,6 +11,7 @@
 /.composer/
 /data.ms
 /data
+*.rdb
 .env
 .env.backup
 .env.production

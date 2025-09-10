@@ -63,10 +63,10 @@ export default function MovieInformation() {
         });
     }, [info.vodId]);
 
-    // Handle direct download button click for movies (full navigation, not Inertia)
+    // Handle direct download button click for movies (open in new tab)
     const handleDirectDownload = useCallback(() => {
-        // Use a normal navigation so the browser can follow cross-origin redirects
-        window.location.assign(route('movies.direct', { model: info.vodId }));
+        const url = route('movies.direct', { model: info.vodId });
+        window.open(url, '_blank', 'noopener');
     }, [info.vodId]);
 
     const addToWatchlist = useCallback(() => {

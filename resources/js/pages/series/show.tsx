@@ -82,17 +82,15 @@ export default function SeriesInformation() {
         [info.seriesId],
     );
 
-    // Handle direct downloading a specific episode (full navigation, not Inertia)
+    // Handle direct downloading a specific episode (open in new tab)
     const handleDirectDownloadEpisode = useCallback(
         (episodeIndex: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
-            // Use a normal navigation so the browser can follow cross-origin redirects
-            window.location.assign(
-                route('series.direct.single', {
-                    model: info.seriesId,
-                    season: episode.season,
-                    episode: episodeIndex,
-                }),
-            );
+            const url = route('series.direct.single', {
+                model: info.seriesId,
+                season: episode.season,
+                episode: episodeIndex,
+            });
+            window.open(url, '_blank', 'noopener');
         },
         [info.seriesId],
     );
@@ -120,6 +118,7 @@ export default function SeriesInformation() {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = route('series.direct.batch', { model: info.seriesId });
+            form.target = '_blank';
 
             // CSRF token
             const token = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;

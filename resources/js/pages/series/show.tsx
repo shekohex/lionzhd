@@ -82,6 +82,21 @@ export default function SeriesInformation() {
         [info.seriesId],
     );
 
+    // Handle direct downloading a specific episode (full navigation, not Inertia)
+    const handleDirectDownloadEpisode = useCallback(
+        (episodeIndex: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
+            // Use a normal navigation so the browser can follow cross-origin redirects
+            window.location.assign(
+                route('series.direct.single', {
+                    model: info.seriesId,
+                    season: episode.season,
+                    episode: episodeIndex,
+                }),
+            );
+        },
+        [info.seriesId],
+    );
+
     const handleDownloadSelectedEpisodes = useCallback(
         (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
             console.log('Selected episodes for download:', selectedEpisodes);
@@ -95,6 +110,45 @@ export default function SeriesInformation() {
                     preserveState: false,
                 },
             );
+        },
+        [info.seriesId],
+    );
+
+    const handleDirectDownloadSelectedEpisodes = useCallback(
+        (selectedEpisodes: App.Data.SelectedEpisodeData[]) => {
+            // Submit a real POST form (not Inertia) so the browser downloads the text file
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = route('series.direct.batch', { model: info.seriesId });
+
+            // CSRF token
+            const token = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null;
+            if (token?.content) {
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = token.content;
+                form.appendChild(csrf);
+            }
+
+            // Add selectedEpisodes[*][season] and [episodeNum]
+            selectedEpisodes.forEach((ep, idx) => {
+                const season = document.createElement('input');
+                season.type = 'hidden';
+                season.name = `selectedEpisodes[${idx}][season]`;
+                season.value = String(ep.season);
+                form.appendChild(season);
+
+                const episodeNum = document.createElement('input');
+                episodeNum.type = 'hidden';
+                episodeNum.name = `selectedEpisodes[${idx}][episodeNum]`;
+                episodeNum.value = String(ep.episodeNum);
+                form.appendChild(episodeNum);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         },
         [info.seriesId],
     );
@@ -172,7 +226,9 @@ export default function SeriesInformation() {
                                     <EpisodeList
                                         seasonsWithEpisodes={info.seasonsWithEpisodes}
                                         onDownloadEpisode={handleDownloadEpisode}
+                                        onDirectDownloadEpisode={handleDirectDownloadEpisode}
                                         onDownloadSelected={handleDownloadSelectedEpisodes}
+                                        onDirectDownloadSelected={handleDirectDownloadSelectedEpisodes}
                                     />
                                 </motion.div>
                             </AnimatePresence>

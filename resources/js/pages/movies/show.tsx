@@ -63,6 +63,12 @@ export default function MovieInformation() {
         });
     }, [info.vodId]);
 
+    // Handle direct download button click for movies (full navigation, not Inertia)
+    const handleDirectDownload = useCallback(() => {
+        // Use a normal navigation so the browser can follow cross-origin redirects
+        window.location.assign(route('movies.direct', { model: info.vodId }));
+    }, [info.vodId]);
+
     const addToWatchlist = useCallback(() => {
         addToWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
             preserveScroll: true,
@@ -175,6 +181,8 @@ export default function MovieInformation() {
                         backdropUrl={info.backdropPath?.length > 0 ? info.backdropPath[0] : null}
                         posterUrl={info.movieImage || info.backdrop}
                         onDownload={handleDownload}
+                        onDirectDownload={handleDirectDownload}
+                        showDirectDownload={true}
                         additionalBackdrops={info.backdropPath?.slice(1) || []}
                         trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}

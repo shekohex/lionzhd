@@ -2,11 +2,17 @@ import ForgetCacheButton from '@/components/forget-cache-button';
 import MediaBackdrop from '@/components/media-backdrop';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import WatchlistButton from '@/components/watchlist-button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { DownloadIcon, InfoIcon, PlayIcon } from 'lucide-react';
+import { DownloadIcon, ExternalLinkIcon, InfoIcon, PlayIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
@@ -33,6 +39,8 @@ export interface MediaHeroSectionProps {
     onRemoveFromWatchlist?: () => void;
     onForgetCache?: () => void;
     onDownload?: (...args: unknown[]) => void;
+    onDirectDownload?: (...args: unknown[]) => void;
+    showDirectDownload?: boolean;
     // UI Customization
     className?: string;
     showActions?: boolean;
@@ -59,6 +67,8 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     onRemoveFromWatchlist,
     onForgetCache,
     onDownload,
+    onDirectDownload,
+    showDirectDownload = false,
     className,
     showActions = true,
     showMetadata = true,
@@ -205,12 +215,33 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                     )}
 
                                     {/* Download button - only if onDownload available */}
-                                    {onDownload && (
+                                    {onDownload && showDirectDownload ? (
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button size="lg" variant="secondary" className="gap-2">
+                                                    <DownloadIcon size={18} />
+                                                    Download
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent>
+                                                <DropdownMenuItem onClick={onDownload}>
+                                                    <DownloadIcon className="mr-2 h-4 w-4" />
+                                                    Server Download
+                                                </DropdownMenuItem>
+                                                {onDirectDownload && (
+                                                    <DropdownMenuItem onClick={onDirectDownload}>
+                                                        <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                                        Direct Download
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    ) : onDownload ? (
                                         <Button size="lg" variant="secondary" onClick={onDownload} className="gap-2">
                                             <DownloadIcon size={18} />
                                             Download
                                         </Button>
-                                    )}
+                                    ) : null}
 
                                     {/* My List button with tooltip */}
                                     <WatchlistButton

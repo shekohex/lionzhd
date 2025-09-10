@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\DirectDownloadController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
@@ -38,6 +39,7 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
     });
     Route::controller(VodStreamDownloadController::class)->prefix('movies')->group(static function (): void {
         Route::get('{model}/download', 'create')->whereNumber('model')->name('movies.download');
+        Route::get('{model}/direct', 'direct')->whereNumber('model')->name('movies.direct');
     });
 
     Route::controller(SeriesController::class)->prefix('series')->group(static function (): void {
@@ -59,6 +61,14 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->whereNumber('episode')
             ->name('series.download.single');
         Route::post('{model}/download', 'store')->whereNumber('model')->name('series.download.batch');
+        Route::get('{model}/{season}/{episode}/direct', 'direct')
+            ->whereNumber('model')
+            ->whereNumber('season')
+            ->whereNumber('episode')
+            ->name('series.direct.single');
+        Route::post('{model}/direct.txt', 'batchDirectTxt')
+            ->whereNumber('model')
+            ->name('series.direct.batch');
     });
 
     Route::controller(WatchlistController::class)->prefix('watchlist')->group(static function (): void {
@@ -73,6 +83,10 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
         Route::delete('{model}', 'destroy')->whereNumber('model')->name('downloads.destroy');
     });
 });
+
+Route::get('/dl/{token}', [DirectDownloadController::class, 'show'])
+    ->middleware('signed')
+    ->name('direct.resolve');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

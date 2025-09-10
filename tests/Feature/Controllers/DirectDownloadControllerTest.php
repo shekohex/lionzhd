@@ -19,18 +19,18 @@ describe('Direct Download Controller', function (): void {
             now()->addHours(4),
             ['token' => 'test-token']
         );
-        
+
         // Mock the cache
         Cache::put('direct:link:test-token', 'https://example.com/remote-url.mp4', now()->addHours(4));
-        
+
         $response = $this->get($url);
-        
+
         $response->assertRedirect('https://example.com/remote-url.mp4');
     });
 
     it('returns 403 for invalid signature', function (): void {
         $response = $this->get('/dl/test-token');
-        
+
         $response->assertForbidden();
     });
 
@@ -41,9 +41,9 @@ describe('Direct Download Controller', function (): void {
             now()->subHour(),
             ['token' => 'test-token']
         );
-        
+
         $response = $this->get($url);
-        
+
         $response->assertForbidden();
     });
 
@@ -54,9 +54,27 @@ describe('Direct Download Controller', function (): void {
             now()->addHours(4),
             ['token' => 'missing-token']
         );
-        
+
         $response = $this->get($url);
-        
+
+        $response->assertNotFound();
+    });
+
+    it('returns 404 when feature is disabled', function (): void {
+        // Disable feature
+        Config::set('features.direct_download_links', false);
+
+        // Create a valid signed URL
+        $url = URL::temporarySignedRoute(
+            'direct.resolve',
+            now()->addHours(4),
+            ['token' => 'disabled-feature-token']
+        );
+
+        Cache::put('direct:link:disabled-feature-token', 'https://example.com/file.mp4', now()->addHours(4));
+
+        $response = $this->get($url);
+
         $response->assertNotFound();
     });
 
@@ -67,13 +85,13 @@ describe('Direct Download Controller', function (): void {
             now()->addHours(4),
             ['token' => 'public-token']
         );
-        
+
         // Mock the cache
         Cache::put('direct:link:public-token', 'https://public.example.com/file.mp4', now()->addHours(4));
-        
+
         // Should work even without auth
         $response = $this->get($url);
-        
+
         $response->assertRedirect('https://public.example.com/file.mp4');
     });
 
@@ -85,19 +103,19 @@ describe('Direct Download Controller', function (): void {
         ];
 
         foreach ($testUrls as $remoteUrl) {
-            $token = 'test-token-' . md5($remoteUrl);
-            
+            $token = 'test-token-'.md5($remoteUrl);
+
             $url = URL::temporarySignedRoute(
                 'direct.resolve',
                 now()->addHours(4),
                 ['token' => $token]
             );
-            
+
             // Mock the cache
             Cache::put("direct:link:{$token}", $remoteUrl, now()->addHours(4));
-            
+
             $response = $this->get($url);
-            
+
             $response->assertRedirect($remoteUrl);
         }
     });

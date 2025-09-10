@@ -17,7 +17,7 @@ describe('Create Signed Direct Link Action', function (): void {
     beforeEach(function (): void {
         // Enable the feature flag for testing
         Config::set('features.direct_download_links', true);
-        
+
         // Mock Aria2 config since it's required by the action
         app()->bind(Aria2Config::class, fn () => new Aria2Config(
             [
@@ -40,6 +40,7 @@ describe('Create Signed Direct Link Action', function (): void {
 
         app()->bind(function () use ($mockClient): JsonRpcConnector {
             $connector = new JsonRpcConnector(app(Aria2Config::class));
+
             return $connector->withMockClient($mockClient);
         });
     });
@@ -62,7 +63,7 @@ describe('Create Signed Direct Link Action', function (): void {
         // Extract token from URL
         $token = basename(parse_url($url, PHP_URL_PATH));
         $cacheKey = "direct:link:{$token}";
-        
+
         expect(Cache::has($cacheKey))->toBeTrue();
         expect(Cache::get($cacheKey))->toBeString();
     });
@@ -94,7 +95,7 @@ describe('Create Signed Direct Link Action', function (): void {
 
     it('handles feature flag correctly', function (): void {
         Config::set('features.direct_download_links', false);
-        
+
         $vod = VodInformation::fake();
 
         // This should still work since the action doesn't check the feature flag

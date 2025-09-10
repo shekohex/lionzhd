@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Actions\BatchCreateSignedDirectLinks;
-use App\Actions\CreateSignedDirectLink;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\GetGlobalOptionsRequest;
 use App\Http\Integrations\LionzTv\Responses\Episode;
@@ -17,7 +16,7 @@ describe('Batch Create Signed Direct Links Action', function (): void {
     beforeEach(function (): void {
         // Enable the feature flag for testing
         Config::set('features.direct_download_links', true);
-        
+
         // Mock Aria2 config since it's required by the action
         app()->bind(Aria2Config::class, fn () => new Aria2Config(
             [
@@ -40,6 +39,7 @@ describe('Batch Create Signed Direct Links Action', function (): void {
 
         app()->bind(function () use ($mockClient): JsonRpcConnector {
             $connector = new JsonRpcConnector(app(Aria2Config::class));
+
             return $connector->withMockClient($mockClient);
         });
     });
@@ -54,7 +54,7 @@ describe('Batch Create Signed Direct Links Action', function (): void {
         $result = BatchCreateSignedDirectLinks::run($episodes);
 
         expect($result)->toHaveCount(3);
-        
+
         // Check that all URLs are valid signed URLs
         foreach ($result as $url) {
             expect($url)->toBeString();
@@ -79,10 +79,10 @@ describe('Batch Create Signed Direct Links Action', function (): void {
         $result = BatchCreateSignedDirectLinks::run($episodes);
 
         expect($result)->toHaveCount(3);
-        
+
         // Check that order is preserved by checking cache entries
         $tokens = $result->map(fn ($url) => basename(parse_url($url, PHP_URL_PATH)));
-        
+
         // Each episode should have a unique token
         expect($tokens->unique())->toHaveCount(3);
     });
@@ -99,7 +99,7 @@ describe('Batch Create Signed Direct Links Action', function (): void {
         foreach ($result as $url) {
             $token = basename(parse_url($url, PHP_URL_PATH));
             $cacheKey = "direct:link:{$token}";
-            
+
             expect(Cache::has($cacheKey))->toBeTrue();
             expect(Cache::get($cacheKey))->toBeString();
         }

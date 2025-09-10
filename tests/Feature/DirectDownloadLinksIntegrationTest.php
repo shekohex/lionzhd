@@ -25,7 +25,7 @@ describe('Direct Download Links Integration', function (): void {
         // Extract token from URL and check cache
         $token = basename(parse_url($url, PHP_URL_PATH));
         $cacheKey = "direct:link:{$token}";
-        
+
         expect(Cache::has($cacheKey))->toBeTrue();
         expect(Cache::get($cacheKey))->toBeString();
     });
@@ -41,7 +41,7 @@ describe('Direct Download Links Integration', function (): void {
         // Extract token from URL and check cache
         $token = basename(parse_url($url, PHP_URL_PATH));
         $cacheKey = "direct:link:{$token}";
-        
+
         expect(Cache::has($cacheKey))->toBeTrue();
         expect(Cache::get($cacheKey))->toBeString();
     });
@@ -63,12 +63,12 @@ describe('Direct Download Links Integration', function (): void {
 
     it('sets cache with approximately 4 hours TTL', function (): void {
         $vod = VodInformation::fake();
-        
+
         // Test that cache entry exists
         $url = CreateSignedDirectLink::run($vod);
         $token = basename(parse_url($url, PHP_URL_PATH));
         $cacheKey = "direct:link:{$token}";
-        
+
         expect(Cache::has($cacheKey))->toBeTrue();
     });
 });

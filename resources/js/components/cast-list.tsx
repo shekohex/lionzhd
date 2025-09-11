@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 interface CastMember {
     name: string;
@@ -31,6 +31,14 @@ export default function CastList({ cast, director, className }: CastListProps) {
 
     // Add director as a cast member with a role if provided
     const allMembers = director ? [{ name: director, role: 'Director' }, ...castMembers] : castMembers;
+
+    // Mobile: show a small set with a show more toggle
+    const INITIAL_VISIBLE = 3;
+    const [expanded, setExpanded] = useState(false);
+    const visibleOnMobile = useMemo(
+        () => (expanded ? allMembers : allMembers.slice(0, INITIAL_VISIBLE)),
+        [expanded, allMembers],
+    );
 
     // Check scroll position to show/hide scroll buttons
     const handleScroll = () => {
@@ -74,10 +82,54 @@ export default function CastList({ cast, director, className }: CastListProps) {
                     </Button>
                 )}
 
-                {/* Cast Members */}
+                {/* Mobile grid (no horizontal scroll) */}
+                <div className="sm:hidden">
+                    <div className="grid grid-cols-3 gap-2">
+                        {visibleOnMobile.map((member, index) => (
+                            <motion.div
+                                key={`${member.name}-${index}`}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: 0.05 * (index % 12) }}
+                            >
+                                <div className="w-full">
+                                    <div className="bg-muted mb-1 aspect-square w-full overflow-hidden rounded-md">
+                                        {member.imageUrl ? (
+                                            <img
+                                                src={member.imageUrl}
+                                                alt={member.name}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="text-muted-foreground flex h-full w-full items-center justify-center text-base font-bold">
+                                                {member.name.charAt(0)}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <p className="line-clamp-1 text-xs font-medium">{member.name}</p>
+                                        {member.role && (
+                                            <p className="text-muted-foreground line-clamp-1 text-[10px]">{member.role}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {allMembers.length > INITIAL_VISIBLE && (
+                        <div className="mt-2 flex justify-center">
+                            <Button variant="ghost" size="sm" onClick={() => setExpanded((v) => !v)}>
+                                {expanded ? 'Show less' : `Show more (${allMembers.length - INITIAL_VISIBLE})`}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Tablet/Desktop horizontal scroller */}
                 <div
                     ref={scrollContainerRef}
-                    className="no-scrollbar flex w-full gap-4 overflow-x-auto scroll-smooth pt-1 pb-4"
+                    className="no-scrollbar hidden w-full gap-4 overflow-x-auto overflow-y-hidden pt-1 pb-4 sm:flex sm:touch-pan-x sm:overscroll-contain"
                     onScroll={handleScroll}
                 >
                     {allMembers.map((member, index) => (
@@ -89,22 +141,15 @@ export default function CastList({ cast, director, className }: CastListProps) {
                             className="flex-shrink-0"
                         >
                             <div className="w-[140px]">
-                                {/* Profile Image (placeholder if none) */}
                                 <div className="bg-muted mb-2 aspect-square w-full overflow-hidden rounded-md">
                                     {member.imageUrl ? (
-                                        <img
-                                            src={member.imageUrl}
-                                            alt={member.name}
-                                            className="h-full w-full object-cover"
-                                        />
+                                        <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
                                     ) : (
                                         <div className="text-muted-foreground flex h-full w-full items-center justify-center text-2xl font-bold">
                                             {member.name.charAt(0)}
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Name & Role */}
                                 <div>
                                     <p className="line-clamp-1 font-medium">{member.name}</p>
                                     {member.role && (

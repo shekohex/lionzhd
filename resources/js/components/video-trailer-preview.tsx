@@ -53,7 +53,7 @@ export default function VideoTrailerPreview({ trailerUrl, isOpen, onClose, class
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="bg-background/90 absolute -top-4 -right-4 z-10 rounded-full p-2 backdrop-blur-sm"
+                    className="bg-background/90 absolute right-2 top-2 z-10 rounded-full p-2 backdrop-blur-sm md:-top-4 md:-right-4"
                 >
                     <X className="h-6 w-6" />
                 </Button>

@@ -188,8 +188,8 @@ export default function SeriesInformation() {
                     />
 
                     {/* Main Content Section */}
-                    <div className="mx-auto max-w-7xl px-4 py-12">
-                        <div className="space-y-16">
+                    <div className="mx-auto max-w-7xl px-3 py-6 md:px-4 md:py-12">
+                        <div className="space-y-6 md:space-y-16">
                             {/* Episodes Section */}
                             <AnimatePresence>
                                 <motion.div

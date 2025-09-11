@@ -90,21 +90,21 @@ export default function MovieInformation() {
     // Technical details section with video/audio information
     const renderTechnicalDetails = () => {
         return (
-            <div className="border-border bg-card mt-8 rounded-lg border p-6">
-                <h3 className="mb-4 text-lg font-medium">Technical Details</h3>
+            <div className="border-border bg-card mt-6 rounded-lg border p-4 md:mt-8 md:p-6">
+                <h3 className="mb-3 text-base font-medium md:mb-4 md:text-lg">Technical Details</h3>
 
                 <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
                     <div>
                         <h4 className="text-muted-foreground mb-2 font-medium">Video</h4>
                         <dl className="space-y-1">
                             {info.video?.codecName && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Codec:</dt>
                                     <dd>{info.video.codecName.toUpperCase()}</dd>
                                 </div>
                             )}
                             {info.video?.width && info.video?.height && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Resolution:</dt>
                                     <dd>
                                         {info.video.width}×{info.video.height}
@@ -112,7 +112,7 @@ export default function MovieInformation() {
                                 </div>
                             )}
                             {info.video?.bitRate && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Bitrate:</dt>
                                     <dd>{Math.round(parseInt(info.video.bitRate) / 1000)} Kbps</dd>
                                 </div>
@@ -124,13 +124,13 @@ export default function MovieInformation() {
                         <h4 className="text-muted-foreground mb-2 font-medium">Audio</h4>
                         <dl className="space-y-1">
                             {info.audio?.codecName && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Codec:</dt>
                                     <dd>{info.audio.codecName.toUpperCase()}</dd>
                                 </div>
                             )}
                             {info.audio?.channels && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Channels:</dt>
                                     <dd>
                                         {info.audio.channelLayout
@@ -140,7 +140,7 @@ export default function MovieInformation() {
                                 </div>
                             )}
                             {info.audio?.bitRate && (
-                                <div className="flex justify-between">
+                                <div className="flex items-center justify-between gap-4">
                                     <dt className="text-muted-foreground">Bitrate:</dt>
                                     <dd>{Math.round(parseInt(info.audio.bitRate) / 1000)} Kbps</dd>
                                 </div>
@@ -194,8 +194,8 @@ export default function MovieInformation() {
                     />
 
                     {/* Main Content Section */}
-                    <div className="mx-auto max-w-7xl px-4 py-12">
-                        <div className="space-y-16">
+                    <div className="mx-auto max-w-7xl px-3 py-6 md:px-4 md:py-12">
+                        <div className="space-y-6 md:space-y-16">
                             {/* Cast & Crew Section */}
                             <AnimatePresence>
                                 <motion.div
@@ -214,8 +214,8 @@ export default function MovieInformation() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.6, delay: 0.2 }}
                                 >
-                                    <div className="flex flex-col gap-6">
-                                        <h2 className="text-xl font-semibold">Movie Details</h2>
+                                    <div className="flex flex-col gap-4 md:gap-6">
+                                        <h2 className="text-lg font-semibold md:text-xl">Movie Details</h2>
 
                                         {/* File details */}
                                         <div className="flex flex-wrap items-center gap-2">

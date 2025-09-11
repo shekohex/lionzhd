@@ -166,10 +166,10 @@ export default function EpisodeList({
 
     return (
         <div className={cn('relative w-full', className)}>
-            <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Episodes</h2>
+            <div className="mb-4 flex flex-col items-start justify-between gap-3 sm:mb-6 sm:flex-row sm:items-center">
+                <h2 className="text-lg font-semibold sm:text-xl">Episodes</h2>
 
-                <div className="flex items-center gap-4">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     {/* Download Selected button */}
                     <DropdownMenu>
                         <TooltipProvider>
@@ -224,7 +224,7 @@ export default function EpisodeList({
                             value={String(selectedSeason)}
                             onValueChange={(value) => setSelectedSeason(Number(value))}
                         >
-                            <SelectTrigger className="w-[180px]">
+                            <SelectTrigger className="w-[160px] sm:w-[180px]">
                                 <SelectValue placeholder="Select season" />
                             </SelectTrigger>
                             <SelectContent>
@@ -297,7 +297,7 @@ function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, select
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="absolute left-4 opacity-0 transition-opacity group-hover:opacity-100"
+                            className="absolute left-4 hidden opacity-0 transition-opacity group-hover:opacity-100 sm:flex"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <DownloadIcon size={24} />
@@ -319,18 +319,46 @@ function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, select
             </div>
 
             {/* Episode content */}
-            <div className="flex flex-1 flex-col">
-                <div className="mb-2 flex items-center justify-between">
-                    <h3 className="font-medium">{episode.title || `Episode ${episode.episodeNum}`}</h3>
-                    <div className="mb-2 flex items-center justify-between gap-4">
-                        <span className="text-muted-foreground text-sm">{episode.duration}</span>
+            <div className="flex min-w-0 flex-1 flex-col">
+                <div className="mb-2 flex w-full flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-4">
+                    <h3 className="min-w-0 truncate text-sm font-medium sm:text-base">
+                        {episode.title || `Episode ${episode.episodeNum}`}
+                    </h3>
+                    <div className="mb-2 flex items-center justify-between gap-3 sm:mb-0 sm:gap-4">
+                        {/* Mobile download action (always visible) */}
+                        <div className="flex sm:hidden">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label={`Download Episode ${episode.episodeNum}`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <DownloadIcon size={18} />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={onDownload}>
+                                        <DownloadIcon className="mr-2 h-4 w-4" /> Server Download
+                                    </DropdownMenuItem>
+                                    {onDirectDownload && (
+                                        <DropdownMenuItem onClick={onDirectDownload}>
+                                            <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct Download
+                                        </DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <span className="text-muted-foreground text-xs sm:text-sm">{episode.duration}</span>
                         {/* Select Checkbox to select this episode for an action */}
                         <Checkbox
                             checked={selected}
                             onCheckedChange={(checked) => {
                                 onSelected?.(checked as boolean);
                             }}
-                            className="h-4 w-4"
+                            aria-label={`Select Episode ${episode.episodeNum}`}
+                            className="h-5 w-5"
                             onClick={(e) => {
                                 e.stopPropagation();
                             }}

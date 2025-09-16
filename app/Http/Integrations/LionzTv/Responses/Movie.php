@@ -25,13 +25,13 @@ final readonly class Movie
     public static function fromJson(array $data): self
     {
         return new self(
-            $data['stream_id'],
-            $data['name'],
-            $data['added'],
-            $data['category_id'],
-            $data['container_extension'],
-            $data['custom_sid'],
-            $data['direct_source']
+            $data['stream_id'] ?? 0,
+            $data['name'] ?? '',
+            $data['added'] ?? '',
+            $data['category_id'] ?? '',
+            $data['container_extension'] ?? '',
+            $data['custom_sid'] ?? '',
+            $data['direct_source'] ?? ''
         );
     }
 

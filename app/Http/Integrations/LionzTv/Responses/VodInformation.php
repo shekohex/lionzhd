@@ -36,27 +36,27 @@ final readonly class VodInformation
      */
     public static function fromJson(int $vodId, array $data): self
     {
-        $info = $data['info'];
+        $info = $data['info'] ?? [];
 
         return new self(
             $vodId,
-            $info['movie_image'],
-            $info['tmdb_id'],
-            $info['backdrop'],
-            $info['youtube_trailer'],
-            $info['genre'],
-            $info['plot'],
-            $info['cast'],
-            $info['rating'],
-            $info['director'],
-            $info['releasedate'],
-            $info['backdrop_path'],
-            $info['duration_secs'],
-            $info['duration'],
-            VideoMetadata::fromJson($info['video']),
-            AudioMetadata::fromJson($info['audio']),
-            $info['bitrate'],
-            Movie::fromJson($data['movie_data'])
+            $info['movie_image'] ?? '',
+            $info['tmdb_id'] ?? '',
+            $info['backdrop'] ?? '',
+            $info['youtube_trailer'] ?? '',
+            $info['genre'] ?? '',
+            $info['plot'] ?? '',
+            $info['cast'] ?? '',
+            $info['rating'] ?? '0.0',
+            $info['director'] ?? '',
+            $info['releasedate'] ?? '',
+            $info['backdrop_path'] ?? [],
+            $info['duration_secs'] ?? 0,
+            $info['duration'] ?? '0:00:00',
+            VideoMetadata::fromJson($info['video'] ?? []),
+            AudioMetadata::fromJson($info['audio'] ?? []),
+            $info['bitrate'] ?? 0,
+            Movie::fromJson($data['movie_data'] ?? [])
         );
     }
 

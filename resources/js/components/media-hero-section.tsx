@@ -10,12 +10,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import WatchlistButton from '@/components/watchlist-button';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { Clapperboard, DownloadIcon, ExternalLinkIcon, InfoIcon, PlayIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface MediaHeroSectionProps {
     inMyWatchlist?: boolean;
@@ -141,212 +141,232 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                     <div className="flex h-full flex-col justify-end px-4 py-6 sm:px-6 md:px-8 md:py-10">
                         <div className="mx-auto w-full max-w-7xl">
                             <div className="max-w-3xl">
-                            {/* Title */}
-                            <motion.h1
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.6 }}
-                                className="mb-2 text-2xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
-                            >
-                                {title}
-                            </motion.h1>
-
-                            {/* Metadata bar (year, rating, duration) */}
-                            {showMetadata && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.6, delay: 0.2 }}
-                                    className="text-muted-foreground mb-3 flex flex-wrap items-center gap-3 text-sm md:text-base"
-                                >
-                                    {releaseYear && <span>{releaseYear}</span>}
-                                    {rating && (
-                                        <span className="flex items-center gap-1">
-                                            <span className="text-yellow-500">★</span> {rating}
-                                        </span>
-                                    )}
-                                    {duration && <span>{duration}</span>}
-                                </motion.div>
-                            )}
-
-                            {/* Genres as badges */}
-                            {showMetadata && genreList.length > 0 && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.6, delay: 0.3 }}
-                                    className="mb-4 flex flex-wrap gap-2"
-                                >
-                                    {genreList.map((genre, index) => (
-                                        <Badge
-                                            key={index}
-                                            variant="outline"
-                                            className="bg-background/50 backdrop-blur-sm"
-                                        >
-                                            {genre}
-                                        </Badge>
-                                    ))}
-                                </motion.div>
-                            )}
-
-                            {/* Description with show more/less toggle */}
-                            {description && (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.6, delay: 0.4 }}
-                                >
-                                    <p className="mb-4 text-sm leading-relaxed sm:mb-6 md:text-base line-clamp-3 sm:line-clamp-none">
-                                        {truncatedDescription}
-                                        {description.length > maxDescriptionLength && (
-                                            <button
-                                                onClick={() => setShowFullDescription(!showFullDescription)}
-                                                className="text-primary ml-2 font-medium hover:underline focus:outline-none"
-                                            >
-                                                {showFullDescription ? 'Show less' : 'Show more'}
-                                            </button>
-                                        )}
-                                    </p>
-                                </motion.div>
-                            )}
-
-                            {/* Action buttons */}
-                            {showActions && (
-                                <>
-                                <motion.div
+                                {/* Title */}
+                                <motion.h1
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.6, delay: 0.5 }}
-                                    className="hidden flex-wrap gap-3 sm:flex"
+                                    transition={{ duration: 0.6 }}
+                                    className="mb-2 text-2xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl"
                                 >
-                                    {/* Play button */}
-                                    <Button
-                                        size="lg"
-                                        onClick={onPlay}
-                                        className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                                    {title}
+                                </motion.h1>
+
+                                {/* Metadata bar (year, rating, duration) */}
+                                {showMetadata && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.6, delay: 0.2 }}
+                                        className="text-muted-foreground mb-3 flex flex-wrap items-center gap-3 text-sm md:text-base"
                                     >
-                                        <PlayIcon size={18} />
-                                        Play
-                                    </Button>
-
-                                    {/* Trailer button - only if trailer available */}
-                                        {trailerUrl && (
-                                            <Button size="lg" variant="secondary" onClick={() => handleTrailerClick()} className="gap-2">
-                                                <Clapperboard size={18} />
-                                                Trailer
-                                            </Button>
+                                        {releaseYear && <span>{releaseYear}</span>}
+                                        {rating && (
+                                            <span className="flex items-center gap-1">
+                                                <span className="text-yellow-500">★</span> {rating}
+                                            </span>
                                         )}
+                                        {duration && <span>{duration}</span>}
+                                    </motion.div>
+                                )}
 
-                                    {/* Download button - only if onDownload available */}
-                                    {onDownload && showDirectDownload ? (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button size="lg" variant="secondary" className="gap-2">
+                                {/* Genres as badges */}
+                                {showMetadata && genreList.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.6, delay: 0.3 }}
+                                        className="mb-4 flex flex-wrap gap-2"
+                                    >
+                                        {genreList.map((genre, index) => (
+                                            <Badge
+                                                key={index}
+                                                variant="outline"
+                                                className="bg-background/50 backdrop-blur-sm"
+                                            >
+                                                {genre}
+                                            </Badge>
+                                        ))}
+                                    </motion.div>
+                                )}
+
+                                {/* Description with show more/less toggle */}
+                                {description && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.6, delay: 0.4 }}
+                                    >
+                                        <p className="mb-4 line-clamp-3 text-sm leading-relaxed sm:mb-6 sm:line-clamp-none md:text-base">
+                                            {truncatedDescription}
+                                            {description.length > maxDescriptionLength && (
+                                                <button
+                                                    onClick={() => setShowFullDescription(!showFullDescription)}
+                                                    className="text-primary ml-2 font-medium hover:underline focus:outline-none"
+                                                >
+                                                    {showFullDescription ? 'Show less' : 'Show more'}
+                                                </button>
+                                            )}
+                                        </p>
+                                    </motion.div>
+                                )}
+
+                                {/* Action buttons */}
+                                {showActions && (
+                                    <>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.6, delay: 0.5 }}
+                                            className="hidden flex-wrap gap-3 sm:flex"
+                                        >
+                                            {/* Play button */}
+                                            <Button
+                                                size="lg"
+                                                onClick={onPlay}
+                                                className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                                            >
+                                                <PlayIcon size={18} />
+                                                Play
+                                            </Button>
+
+                                            {/* Trailer button - only if trailer available */}
+                                            {trailerUrl && (
+                                                <Button
+                                                    size="lg"
+                                                    variant="secondary"
+                                                    onClick={() => handleTrailerClick()}
+                                                    className="gap-2"
+                                                >
+                                                    <Clapperboard size={18} />
+                                                    Trailer
+                                                </Button>
+                                            )}
+
+                                            {/* Download button - only if onDownload available */}
+                                            {onDownload && showDirectDownload ? (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button size="lg" variant="secondary" className="gap-2">
+                                                            <DownloadIcon size={18} />
+                                                            Download
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem onClick={onDownload}>
+                                                            <DownloadIcon className="mr-2 h-4 w-4" />
+                                                            Server Download
+                                                        </DropdownMenuItem>
+                                                        {onDirectDownload && (
+                                                            <DropdownMenuItem onClick={onDirectDownload}>
+                                                                <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                                                Direct Download
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            ) : onDownload ? (
+                                                <Button
+                                                    size="lg"
+                                                    variant="secondary"
+                                                    onClick={onDownload}
+                                                    className="gap-2"
+                                                >
                                                     <DownloadIcon size={18} />
                                                     Download
                                                 </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={onDownload}>
-                                                    <DownloadIcon className="mr-2 h-4 w-4" />
-                                                    Server Download
-                                                </DropdownMenuItem>
-                                                {onDirectDownload && (
-                                                    <DropdownMenuItem onClick={onDirectDownload}>
-                                                        <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                                                        Direct Download
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    ) : onDownload ? (
-                                        <Button size="lg" variant="secondary" onClick={onDownload} className="gap-2">
-                                            <DownloadIcon size={18} />
-                                            Download
-                                        </Button>
-                                    ) : null}
+                                            ) : null}
 
-                                    {/* My List button with tooltip */}
-                                    <WatchlistButton
-                                        onAddToWatchlist={onAddToWatchlist}
-                                        onRemoveFromWatchlist={onRemoveFromWatchlist}
-                                        isInWatchlist={inMyWatchlist}
-                                    />
+                                            {/* My List button with tooltip */}
+                                            <WatchlistButton
+                                                onAddToWatchlist={onAddToWatchlist}
+                                                onRemoveFromWatchlist={onRemoveFromWatchlist}
+                                                isInWatchlist={inMyWatchlist}
+                                            />
 
-                                    {/* Forget Cache button - only if forget cache */}
-                                    <ForgetCacheButton onForgetCache={onForgetCache} />
-                                    {/* More Info button */}
-                                    {onMoreInfo && (
-                                        <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="secondary"
-                                                        onClick={onMoreInfo}
-                                                        className="h-10 w-10"
-                                                    >
-                                                        <InfoIcon size={18} />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>More Information</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    )}
-                                </motion.div>
+                                            {/* Forget Cache button - only if forget cache */}
+                                            <ForgetCacheButton onForgetCache={onForgetCache} />
+                                            {/* More Info button */}
+                                            {onMoreInfo && (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button
+                                                                size="icon"
+                                                                variant="secondary"
+                                                                onClick={onMoreInfo}
+                                                                className="h-10 w-10"
+                                                            >
+                                                                <InfoIcon size={18} />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>More Information</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            )}
+                                        </motion.div>
 
-                                {/* Mobile actions: icons only */}
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ duration: 0.6, delay: 0.5 }}
-                                    className="mt-2 flex items-center gap-2 sm:hidden"
-                                >
-                                    <Button
-                                        aria-label="Play"
-                                        size="icon"
-                                        onClick={onPlay}
-                                        className="bg-primary text-primary-foreground hover:bg-primary/90"
-                                    >
-                                        <PlayIcon size={18} />
-                                    </Button>
-                                    {onDownload && (
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button aria-label="Download" size="icon" variant="secondary">
-                                                    <DownloadIcon size={18} />
+                                        {/* Mobile actions: icons only */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.6, delay: 0.5 }}
+                                            className="mt-2 flex items-center gap-2 sm:hidden"
+                                        >
+                                            <Button
+                                                aria-label="Play"
+                                                size="icon"
+                                                onClick={onPlay}
+                                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                            >
+                                                <PlayIcon size={18} />
+                                            </Button>
+                                            {onDownload && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button aria-label="Download" size="icon" variant="secondary">
+                                                            <DownloadIcon size={18} />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="start">
+                                                        <DropdownMenuItem onClick={onDownload}>
+                                                            <DownloadIcon className="mr-2 h-4 w-4" /> Server Download
+                                                        </DropdownMenuItem>
+                                                        {onDirectDownload && (
+                                                            <DropdownMenuItem onClick={onDirectDownload}>
+                                                                <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct
+                                                                Download
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                            {trailerUrl && (
+                                                <Button
+                                                    aria-label="Trailer"
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    onClick={() => handleTrailerClick()}
+                                                >
+                                                    <Clapperboard size={18} />
                                                 </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={onDownload}>
-                                                    <DownloadIcon className="mr-2 h-4 w-4" /> Server Download
-                                                </DropdownMenuItem>
-                                                {onDirectDownload && (
-                                                    <DropdownMenuItem onClick={onDirectDownload}>
-                                                        <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct Download
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    )}
-                                    {trailerUrl && (
-                                        <Button aria-label="Trailer" size="icon" variant="secondary" onClick={() => handleTrailerClick()}>
-                                            <Clapperboard size={18} />
-                                        </Button>
-                                    )}
-                                    <WatchlistButton
-                                        variant="outline"
-                                        size="icon"
-                                        onAddToWatchlist={onAddToWatchlist}
-                                        onRemoveFromWatchlist={onRemoveFromWatchlist}
-                                        isInWatchlist={inMyWatchlist}
-                                    />
-                                    <ForgetCacheButton variant="outline" size="icon" onForgetCache={onForgetCache} />
-                                </motion.div>
-                                </>
-                            )}
+                                            )}
+                                            <WatchlistButton
+                                                variant="outline"
+                                                size="icon"
+                                                onAddToWatchlist={onAddToWatchlist}
+                                                onRemoveFromWatchlist={onRemoveFromWatchlist}
+                                                isInWatchlist={inMyWatchlist}
+                                            />
+                                            <ForgetCacheButton
+                                                variant="outline"
+                                                size="icon"
+                                                onForgetCache={onForgetCache}
+                                            />
+                                        </motion.div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

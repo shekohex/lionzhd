@@ -101,29 +101,39 @@ export function useInfiniteScroll<T = unknown>({
     const [error, setError] = useState<string | null>(null);
     const [allData, setAllData] = useState<T[]>(data);
     const isInitialLoad = useRef(true);
+    const lastPageRef = useRef<number>(1);
 
     // Find next page URL from links
     const nextPageUrl = links?.find((link) => link.label === 'Next »' || link.label.includes('Next'))?.url;
     const hasMore = !!nextPageUrl;
 
-    // Reset accumulated data when base data changes (e.g., filters applied)
+    // Get current page number from URL
+    const getCurrentPage = (): number => {
+        const currentPageFromUrl = new URL(window.location.href).searchParams.get('page');
+        return currentPageFromUrl ? parseInt(currentPageFromUrl, 10) : 1;
+    };
+
+    // Reset accumulated data when base data changes (e.g., filters applied or back to page 1)
     useEffect(() => {
         if (isInitialLoad.current) {
             isInitialLoad.current = false;
+            lastPageRef.current = getCurrentPage();
+            setAllData(data);
             return;
         }
 
-        // If we got new data and it's a different dataset (not an append), reset
-        const currentPageFromUrl = new URL(window.location.href).searchParams.get('page');
-        const pageNum = currentPageFromUrl ? parseInt(currentPageFromUrl, 10) : 1;
+        const currentPage = getCurrentPage();
 
-        // Reset if we're back to page 1 or if the data length suggests a fresh start
-        if (pageNum === 1 || data.length !== allData.length) {
+        // Reset if we're back to page 1 (fresh navigation or filter change)
+        if (currentPage === 1 && lastPageRef.current !== 1) {
             setAllData(data);
+            lastPageRef.current = 1;
+        } else {
+            lastPageRef.current = currentPage;
         }
-    }, [data, allData.length]);
+    }, [data]);
 
-    const loadMore = useCallback(async () => {
+    const loadMore = useCallback(() => {
         if (!nextPageUrl || isLoading || !enabled) {
             return;
         }
@@ -131,39 +141,42 @@ export function useInfiniteScroll<T = unknown>({
         setIsLoading(true);
         setError(null);
 
-        try {
-            await new Promise<void>((resolve, reject) => {
-                router.visit(nextPageUrl, {
-                    method: 'get',
-                    preserveState,
-                    preserveScroll,
-                    only,
-                    onSuccess: (page) => {
-                        const props = page.props as Record<string, { data?: T[] }>;
-                        // Extract the new data from the response
-                        const newItems = only?.[0] ? props[only[0]]?.data : data;
+        router.visit(nextPageUrl, {
+            method: 'get',
+            preserveState,
+            preserveScroll,
+            only,
+            onSuccess: (page) => {
+                const props = page.props as Record<string, { data?: T[] }>;
+                // Extract the new data from the response
+                const newItems = only?.[0] ? props[only[0]]?.data : undefined;
 
-                        if (newItems && Array.isArray(newItems)) {
-                            setAllData((prev) => [...prev, ...newItems]);
-                        }
-
-                        resolve();
-                    },
-                    onError: (errors) => {
-                        console.error('Error loading more items:', errors);
-                        setError('Failed to load more items. Please try again.');
-                        reject(new Error('Failed to load more items'));
-                    },
-                    onFinish: () => {
-                        setIsLoading(false);
-                    },
-                });
-            });
-        } catch (err) {
-            setIsLoading(false);
-            console.error('Error in loadMore:', err);
-        }
-    }, [nextPageUrl, isLoading, enabled, preserveState, preserveScroll, only, data]);
+                if (newItems && Array.isArray(newItems) && newItems.length > 0) {
+                    setAllData((prev) => {
+                        // Prevent duplicate entries by checking IDs
+                        const prevIds = new Set(
+                            prev.map((item) => {
+                                const itemWithId = item as Record<string, unknown>;
+                                return itemWithId.stream_id || itemWithId.series_id || itemWithId.id;
+                            }),
+                        );
+                        const uniqueNewItems = newItems.filter((item) => {
+                            const itemWithId = item as Record<string, unknown>;
+                            return !prevIds.has(itemWithId.stream_id || itemWithId.series_id || itemWithId.id);
+                        });
+                        return [...prev, ...uniqueNewItems];
+                    });
+                }
+            },
+            onError: (errors) => {
+                console.error('Error loading more items:', errors);
+                setError('Failed to load more items. Please try again.');
+            },
+            onFinish: () => {
+                setIsLoading(false);
+            },
+        });
+    }, [nextPageUrl, isLoading, enabled, preserveState, preserveScroll, only]);
 
     // Auto-load when scrolling near bottom
     useEffect(() => {

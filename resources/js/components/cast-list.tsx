@@ -109,7 +109,9 @@ export default function CastList({ cast, director, className }: CastListProps) {
                                     <div>
                                         <p className="line-clamp-1 text-xs font-medium">{member.name}</p>
                                         {member.role && (
-                                            <p className="text-muted-foreground line-clamp-1 text-[10px]">{member.role}</p>
+                                            <p className="text-muted-foreground line-clamp-1 text-[10px]">
+                                                {member.role}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
@@ -143,7 +145,11 @@ export default function CastList({ cast, director, className }: CastListProps) {
                             <div className="w-[140px]">
                                 <div className="bg-muted mb-2 aspect-square w-full overflow-hidden rounded-md">
                                     {member.imageUrl ? (
-                                        <img src={member.imageUrl} alt={member.name} className="h-full w-full object-cover" />
+                                        <img
+                                            src={member.imageUrl}
+                                            alt={member.name}
+                                            className="h-full w-full object-cover"
+                                        />
                                     ) : (
                                         <div className="text-muted-foreground flex h-full w-full items-center justify-center text-2xl font-bold">
                                             {member.name.charAt(0)}

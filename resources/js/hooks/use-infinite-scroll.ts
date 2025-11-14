@@ -113,15 +113,31 @@ export function useInfiniteScroll<T = unknown>({
             return;
         }
 
-        // If we got new data and it's a different dataset (not an append), reset
-        const currentPageFromUrl = new URL(window.location.href).searchParams.get('page');
-        const pageNum = currentPageFromUrl ? parseInt(currentPageFromUrl, 10) : 1;
+        // Determine current page from pagination metadata or URL
+        const currentPage =
+            links?.reduce<number | null>((page, link) => {
+                if (!link.active) {
+                    return page;
+                }
 
-        // Reset if we're back to page 1 or if the data length suggests a fresh start
-        if (pageNum === 1 || data.length !== allData.length) {
+                const parsed = parseInt(link.label, 10);
+                return Number.isNaN(parsed) ? page : parsed;
+            }, null) ??
+            (() => {
+                if (typeof window === 'undefined') {
+                    return 1;
+                }
+                const params = new URL(window.location.href).searchParams;
+                const pageParam = params.get('page');
+                const parsed = pageParam ? parseInt(pageParam, 10) : 1;
+                return Number.isNaN(parsed) ? 1 : parsed;
+            })();
+
+        // When we're back on the first page (e.g., filters/search applied), reset accumulated data
+        if (currentPage === 1) {
             setAllData(data);
         }
-    }, [data, allData.length]);
+    }, [data, links]);
 
     const loadMore = useCallback(async () => {
         if (!nextPageUrl || isLoading || !enabled) {

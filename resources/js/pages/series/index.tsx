@@ -67,7 +67,7 @@ export default function Series() {
         enabled: isMobile,
         only: ['series'],
         preserveState: true,
-        preserveScroll: false, // We handle scroll manually
+        preserveScroll: true,
     });
 
     // Use appropriate data source based on device

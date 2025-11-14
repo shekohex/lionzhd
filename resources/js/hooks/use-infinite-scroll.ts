@@ -135,8 +135,9 @@ export function useInfiniteScroll<T = unknown>({
             await new Promise<void>((resolve, reject) => {
                 router.visit(nextPageUrl, {
                     method: 'get',
-                    preserveState,
-                    preserveScroll,
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: false,
                     only,
                     onSuccess: (page) => {
                         const props = page.props as Record<string, { data?: T[] }>;
@@ -163,7 +164,7 @@ export function useInfiniteScroll<T = unknown>({
             setIsLoading(false);
             console.error('Error in loadMore:', err);
         }
-    }, [nextPageUrl, isLoading, enabled, preserveState, preserveScroll, only, data]);
+    }, [nextPageUrl, isLoading, enabled, only, data]);
 
     // Auto-load when scrolling near bottom
     useEffect(() => {

@@ -67,7 +67,6 @@ export default function Movies() {
         enabled: isMobile,
         only: ['movies'],
         preserveState: true,
-        preserveScroll: false, // We handle scroll manually
     });
 
     // Use appropriate data source based on device

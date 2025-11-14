@@ -30,11 +30,6 @@ interface UseInfiniteScrollOptions<T = unknown> {
      */
     preserveState?: boolean;
 
-    /**
-     * Whether to preserve scroll position during navigation
-     * @default false (we manage scroll manually)
-     */
-    preserveScroll?: boolean;
 
     /**
      * Only reload specific data keys
@@ -92,7 +87,6 @@ export function useInfiniteScroll<T = unknown>({
     links,
     threshold = 200,
     preserveState = true,
-    preserveScroll = false,
     only,
     enabled = true,
     scrollDebounce = 100,
@@ -132,11 +126,14 @@ export function useInfiniteScroll<T = unknown>({
         setError(null);
 
         try {
+            // Save current scroll position to maintain it during load
+            const currentScrollY = window.scrollY;
+
             await new Promise<void>((resolve, reject) => {
                 router.visit(nextPageUrl, {
                     method: 'get',
                     preserveState,
-                    preserveScroll,
+                    preserveScroll: true, // Always preserve scroll for infinite scroll
                     only,
                     onSuccess: (page) => {
                         const props = page.props as Record<string, { data?: T[] }>;
@@ -146,6 +143,11 @@ export function useInfiniteScroll<T = unknown>({
                         if (newItems && Array.isArray(newItems)) {
                             setAllData((prev) => [...prev, ...newItems]);
                         }
+
+                        // Restore scroll position after content loads
+                        requestAnimationFrame(() => {
+                            window.scrollTo(0, currentScrollY);
+                        });
 
                         resolve();
                     },
@@ -163,7 +165,7 @@ export function useInfiniteScroll<T = unknown>({
             setIsLoading(false);
             console.error('Error in loadMore:', err);
         }
-    }, [nextPageUrl, isLoading, enabled, preserveState, preserveScroll, only, data]);
+    }, [nextPageUrl, isLoading, enabled, preserveState, only, data]);
 
     // Auto-load when scrolling near bottom
     useEffect(() => {

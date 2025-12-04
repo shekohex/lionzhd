@@ -1,3 +1,4 @@
+import CategoryFilter from '@/components/category-filter';
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
 import MediaSection from '@/components/media-section';
@@ -54,6 +55,8 @@ export default function Series() {
     const { props } = usePage<SeriesPageProps>();
     const {
         series: { data: series, total },
+        categories,
+        currentCategory,
     } = props;
 
     const [isLoading, setIsLoading] = useState(true);
@@ -88,8 +91,14 @@ export default function Series() {
 
             <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <div className="flex flex-col gap-12 p-6">
+                    <CategoryFilter
+                        categories={categories}
+                        currentCategory={currentCategory}
+                        baseUrl={route('series')}
+                    />
+
                     {/* Series Section */}
-                    <MediaSection title="Latest TV Shows">
+                    <MediaSection title={currentCategory ? `${currentCategory.name} TV Shows` : "Latest TV Shows"}>
                         {isLoading ? (
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                                 {Array.from({ length: 5 }).map((_, i) => (

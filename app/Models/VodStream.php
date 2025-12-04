@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Data\VodStreamData;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
 use Spatie\LaravelData\WithData;
@@ -66,6 +67,16 @@ final class VodStream extends Model
     }
 
     /**
+     * Get the category that the VOD belongs to.
+     *
+     * @return BelongsTo<Category, $this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    /**
      * Get all watchlist entries for this VOD.
      *
      * @return MorphMany<Watchlist,$this>
@@ -84,6 +95,7 @@ final class VodStream extends Model
     {
         return [
             'stream_id' => 'integer',
+            'category_id' => 'integer',
             'rating_5based' => 'decimal:1',
             'is_adult' => 'boolean',
             'added' => 'immutable_datetime',

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Concerns\AsAction;
+use App\Http\Integrations\LionzTv\Requests\GetSeriesCategoriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
+use App\Http\Integrations\LionzTv\Requests\GetVodCategoriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\Category;
 use App\Models\Series;
 use App\Models\VodStream;
 use Illuminate\Support\Collection;
@@ -31,6 +34,15 @@ final readonly class SyncMedia
      */
     public function __invoke(): void
     {
+        // Fetch categories first
+        Log::debug('Fetching series categories from Xtream Codes API');
+        /** @var Collection<array<string, mixed>> $seriesCategories */
+        $seriesCategories = $this->connector->send(new GetSeriesCategoriesRequest)->dtoOrFail();
+
+        Log::debug('Fetching VOD categories from Xtream Codes API');
+        /** @var Collection<array<string, mixed>> $vodCategories */
+        $vodCategories = $this->connector->send(new GetVodCategoriesRequest)->dtoOrFail();
+
         // Fetch series and VOD streams
         Log::debug('Fetching series from Xtream Codes API');
         /** @var Collection<array<string, mixed>> $series */
@@ -39,11 +51,39 @@ final readonly class SyncMedia
         /** @var Collection<array<string, mixed>> $vodStreams */
         $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
 
-        DB::transaction(function () use ($series, $vodStreams): void {
+        DB::transaction(function () use ($series, $vodStreams, $seriesCategories, $vodCategories): void {
             // Remove items from search index
             Log::debug('Removing items from search index');
             VodStream::removeAllFromSearch();
             Series::removeAllFromSearch();
+
+            // Sync Categories
+            Log::debug('Syncing categories');
+            // We can truncate categories if we want a fresh start, but we should be careful if we add live categories later.
+            // For now, based on instructions "fetch all categories and store them", truncate seems appropriate to clear old data.
+            Category::query()->truncate();
+
+            $formattedSeriesCategories = $seriesCategories->map(fn ($cat) => [
+                'id' => $cat['category_id'],
+                'name' => $cat['category_name'],
+                'parent_id' => $cat['parent_id'],
+                'type' => 'series',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->toArray();
+
+            $formattedVodCategories = $vodCategories->map(fn ($cat) => [
+                'id' => $cat['category_id'],
+                'name' => $cat['category_name'],
+                'parent_id' => $cat['parent_id'],
+                'type' => 'movie',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])->toArray();
+
+            Category::insert($formattedSeriesCategories);
+            Category::insert($formattedVodCategories);
+            Log::debug('Categories synced');
 
             // Remove all existing series and VOD streams
             Log::debug('Deleting all existing series');

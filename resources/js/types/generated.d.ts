@@ -8,6 +8,12 @@ declare namespace App.Data {
     export type BatchDownloadEpisodesData = {
         selectedEpisodes: Array<App.Data.SelectedEpisodeData>;
     };
+    export type CategoryData = {
+        category_id: number;
+        category_name: string;
+        parent_id: number;
+        type: string;
+    };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;

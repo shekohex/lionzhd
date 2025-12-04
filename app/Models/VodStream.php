@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Data\VodStreamData;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
 use Spatie\LaravelData\WithData;
@@ -76,6 +77,16 @@ final class VodStream extends Model
     }
 
     /**
+     * Get the category for the VOD.
+     *
+     * @return BelongsTo<Category,$this>
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class, 'category_id', 'category_id');
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -87,6 +98,7 @@ final class VodStream extends Model
             'rating_5based' => 'decimal:1',
             'is_adult' => 'boolean',
             'added' => 'immutable_datetime',
+            'category_id' => 'integer',
         ];
     }
 }

@@ -1,3 +1,4 @@
+import CategoryFilter from '@/components/category-filter';
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
 import MediaSection from '@/components/media-section';
@@ -54,6 +55,8 @@ export default function Movies() {
     const { props } = usePage<MoviesPageProps>();
     const {
         movies: { data: movies, total },
+        categories,
+        filters,
     } = props;
 
     const [isLoading, setIsLoading] = useState(true);
@@ -89,7 +92,10 @@ export default function Movies() {
             <ErrorBoundary FallbackComponent={ErrorFallback}>
                 <div className="flex flex-col gap-12 p-6">
                     {/* Movies Section */}
-                    <MediaSection title="Latest Movies">
+                    <MediaSection
+                        title="Latest Movies"
+                        action={<CategoryFilter categories={categories} selectedCategory={filters.category} />}
+                    >
                         {isLoading ? (
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                                 {Array.from({ length: 10 }).map((_, i) => (

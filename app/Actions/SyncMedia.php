@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Actions;
 
 use App\Concerns\AsAction;
+use App\Http\Integrations\LionzTv\Requests\GetSeriesCategoriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
+use App\Http\Integrations\LionzTv\Requests\GetVodCategoriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\Category;
 use App\Models\Series;
 use App\Models\VodStream;
 use Illuminate\Support\Collection;
@@ -31,6 +34,15 @@ final readonly class SyncMedia
      */
     public function __invoke(): void
     {
+        // Fetch categories
+        Log::debug('Fetching movie categories from Xtream Codes API');
+        /** @var Collection<array<string, mixed>> $movieCategories */
+        $movieCategories = $this->connector->send(new GetVodCategoriesRequest)->dtoOrFail();
+
+        Log::debug('Fetching series categories from Xtream Codes API');
+        /** @var Collection<array<string, mixed>> $seriesCategories */
+        $seriesCategories = $this->connector->send(new GetSeriesCategoriesRequest)->dtoOrFail();
+
         // Fetch series and VOD streams
         Log::debug('Fetching series from Xtream Codes API');
         /** @var Collection<array<string, mixed>> $series */
@@ -39,19 +51,48 @@ final readonly class SyncMedia
         /** @var Collection<array<string, mixed>> $vodStreams */
         $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
 
-        DB::transaction(function () use ($series, $vodStreams): void {
+        DB::transaction(function () use ($movieCategories, $seriesCategories, $series, $vodStreams): void {
             // Remove items from search index
             Log::debug('Removing items from search index');
             VodStream::removeAllFromSearch();
             Series::removeAllFromSearch();
 
-            // Remove all existing series and VOD streams
+            // Remove all existing categories, series and VOD streams
+            Log::debug('Deleting all existing categories');
+            Category::query()->truncate();
             Log::debug('Deleting all existing series');
             Series::query()->truncate();
             Log::debug('Deleting all existing VOD streams');
             VodStream::query()->truncate();
 
-            Telescope::withoutRecording(function () use ($series, $vodStreams): void {
+            Telescope::withoutRecording(function () use ($movieCategories, $seriesCategories, $series, $vodStreams): void {
+                // Save categories
+                $movieCategories->map(fn (array $category) => [
+                    'category_id' => $category['category_id'],
+                    'category_name' => $category['category_name'],
+                    'parent_id' => $category['parent_id'],
+                    'type' => 'movie',
+                ])->chunk(1000)->each(function ($c): void {
+                    Category::query()->upsert(
+                        $c->toArray(),
+                        ['category_id', 'type'],
+                        ['category_name', 'parent_id']
+                    );
+                });
+
+                $seriesCategories->map(fn (array $category) => [
+                    'category_id' => $category['category_id'],
+                    'category_name' => $category['category_name'],
+                    'parent_id' => $category['parent_id'],
+                    'type' => 'series',
+                ])->chunk(1000)->each(function ($c): void {
+                    Category::query()->upsert(
+                        $c->toArray(),
+                        ['category_id', 'type'],
+                        ['category_name', 'parent_id']
+                    );
+                });
+                Log::debug('Saved categories');
 
                 $series->chunk(1000)->each(function ($c): void {
                     $saved = Series::query()->upsert(

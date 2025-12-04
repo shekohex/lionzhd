@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\VodStream;
 
+use App\Data\CategoryData;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,17 +21,29 @@ final class VodStreamController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(#[CurrentUser] User $user): Response
+    public function index(Request $request, #[CurrentUser] User $user): Response
     {
-        $movies = VodStream::query()
+        $query = VodStream::query()
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
-            }])
-            ->orderByDesc('added')
-            ->paginate(20);
+            }]);
+
+        if ($request->has('category')) {
+            $query->where('category_id', $request->input('category'));
+        }
+
+        $movies = $query->orderByDesc('added')
+            ->paginate(20)
+            ->withQueryString();
+
+        $categories = Category::where('type', 'movie')
+            ->orderBy('category_name')
+            ->get();
 
         return Inertia::render('movies/index', [
             'movies' => $movies,
+            'categories' => CategoryData::collect($categories),
+            'filters' => $request->only(['category']),
         ]);
     }
 

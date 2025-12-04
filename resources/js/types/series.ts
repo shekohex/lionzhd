@@ -2,6 +2,10 @@ import { SharedData } from '.';
 import Pagination from './pagination';
 export interface SeriesPageProps extends SharedData {
     series: Pagination<App.Data.SeriesData & App.Data.InWatchlistData>;
+    categories: App.Data.CategoryData[];
+    filters: {
+        category?: string;
+    };
 }
 
 export interface SeriesInformationPageProps extends SharedData {

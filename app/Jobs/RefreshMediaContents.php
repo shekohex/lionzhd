@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Actions\SyncMedia;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -48,12 +47,17 @@ final class RefreshMediaContents implements ShouldQueue, ShouldBeUnique
      */
     public function handle(): void
     {
-        try {
-            SyncMedia::run();
-        } catch (Exception $exception) {
-            $this->fail($exception);
-        } finally {
-            $this->release();
+        $this->applyMemoryLimit();
+
+        SyncMedia::run();
+    }
+
+    private function applyMemoryLimit(): void
+    {
+        $memoryLimit = (string) config('app.sync_media_memory_limit');
+
+        if ($memoryLimit !== '') {
+            ini_set('memory_limit', $memoryLimit);
         }
     }
 }

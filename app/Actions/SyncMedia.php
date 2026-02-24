@@ -10,10 +10,9 @@ use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\Series;
 use App\Models\VodStream;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Laravel\Telescope\Telescope;
+use Throwable;
 
 /**
  * Sync media content from Xtream Codes API
@@ -31,79 +30,100 @@ final readonly class SyncMedia
      */
     public function __invoke(): void
     {
-        // Fetch series and VOD streams
-        Log::debug('Fetching series from Xtream Codes API');
-        /** @var Collection<array<string, mixed>> $series */
-        $series = $this->connector->send(new GetSeriesRequest)->dtoOrFail();
-        Log::debug('Fetching VOD streams from Xtream Codes API');
-        /** @var Collection<array<string, mixed>> $vodStreams */
-        $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
+        $this->removeAllFromSearchSafely();
 
-        DB::transaction(function () use ($series, $vodStreams): void {
-            // Remove items from search index
+        Log::debug('Deleting all existing series');
+        Series::query()->delete();
+        Log::debug('Deleting all existing VOD streams');
+        VodStream::query()->delete();
+
+        Telescope::withoutRecording(function (): void {
+            Log::debug('Fetching series from Xtream Codes API');
+            /** @var array<int, array<string, mixed>> $series */
+            $series = $this->connector->send(new GetSeriesRequest)->dtoOrFail();
+
+            foreach (array_chunk($series, 1000) as $chunk) {
+                $saved = Series::query()->upsert(
+                    $chunk,
+                    ['series_id'],
+                    [
+                        'num', 'name', 'cover', 'plot', 'cast',
+                        'director', 'genre', 'releaseDate', 'last_modified',
+                        'rating', 'rating_5based', 'backdrop_path',
+                        'youtube_trailer', 'episode_run_time', 'category_id',
+                    ]
+                );
+
+                if ($saved) {
+                    Log::debug('Saved series chunk');
+                } else {
+                    Log::warning('Failed to save series chunk');
+                }
+            }
+
+            unset($series);
+            gc_collect_cycles();
+
+            Log::debug('Fetching VOD streams from Xtream Codes API');
+            /** @var array<int, array<string, mixed>> $vodStreams */
+            $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
+
+            foreach (array_chunk($vodStreams, 1000) as $chunk) {
+                $saved = VodStream::query()->upsert(
+                    $chunk,
+                    ['stream_id'],
+                    [
+                        'num',
+                        'name',
+                        'stream_type',
+                        'stream_icon',
+                        'rating',
+                        'rating_5based',
+                        'added',
+                        'is_adult',
+                        'category_id',
+                        'container_extension',
+                        'custom_sid',
+                        'direct_source',
+                    ]
+                );
+
+                if ($saved) {
+                    Log::debug('Saved VOD stream chunk');
+                } else {
+                    Log::warning('Failed to save VOD stream chunk');
+                }
+            }
+        });
+
+        $this->makeAllSearchableSafely();
+        Log::info('All media contents have been refreshed');
+    }
+
+    private function removeAllFromSearchSafely(): void
+    {
+        try {
             Log::debug('Removing items from search index');
             VodStream::removeAllFromSearch();
             Series::removeAllFromSearch();
+        } catch (Throwable $exception) {
+            Log::warning('Skipping search index cleanup', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
 
-            // Remove all existing series and VOD streams
-            Log::debug('Deleting all existing series');
-            Series::query()->truncate();
-            Log::debug('Deleting all existing VOD streams');
-            VodStream::query()->truncate();
-
-            Telescope::withoutRecording(function () use ($series, $vodStreams): void {
-
-                $series->chunk(1000)->each(function ($c): void {
-                    $saved = Series::query()->upsert(
-                        $c->toArray(),
-                        ['series_id'],
-                        [
-                            'num', 'name', 'cover', 'plot', 'cast',
-                            'director', 'genre', 'releaseDate', 'last_modified',
-                            'rating', 'rating_5based', 'backdrop_path',
-                            'youtube_trailer', 'episode_run_time', 'category_id',
-                        ]
-                    );
-                    if ($saved) {
-                        Log::debug('Saved series chunk');
-                    } else {
-                        Log::warning('Failed to save series chunk');
-                    }
-                });
-
-                $vodStreams->chunk(1000)->each(function ($c): void {
-                    $saved = VodStream::query()->upsert(
-                        $c->toArray(),
-                        ['stream_id'],
-                        [
-                            'num',
-                            'name',
-                            'stream_type',
-                            'stream_icon',
-                            'rating',
-                            'rating_5based',
-                            'added',
-                            'is_adult',
-                            'category_id',
-                            'container_extension',
-                            'custom_sid',
-                            'direct_source',
-                        ]
-                    );
-                    if ($saved) {
-                        Log::debug('Saved VOD stream chunk');
-                    } else {
-                        Log::warning('Failed to save VOD stream chunk');
-                    }
-                });
-            });
-
+    private function makeAllSearchableSafely(): void
+    {
+        try {
             Log::debug('Marking series as searchable');
             Series::makeAllSearchable(3000);
             Log::debug('Marking VOD streams as searchable');
             VodStream::makeAllSearchable(3000);
-            Log::info('All media contents have been refreshed');
-
-        });
+        } catch (Throwable $exception) {
+            Log::warning('Skipping search indexing', [
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 }

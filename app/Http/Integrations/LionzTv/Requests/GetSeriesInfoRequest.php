@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Requests;
 
+use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Http\Integrations\LionzTv\Responses\SeriesInformation;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Cacheable;
@@ -48,12 +49,12 @@ final class GetSeriesInfoRequest extends Request implements Cacheable
 
     public function cacheExpiryInSeconds(): int
     {
-        return 24 * 60 * 60; // 1-day in seconds
+        return 10 * 60;
     }
 
     protected function cacheKey(PendingRequest $pendingRequest): string
     {
-        return $this->formatCacheKey();
+        return $this->formatCacheKey($pendingRequest);
     }
 
     protected function defaultQuery(): array
@@ -64,8 +65,15 @@ final class GetSeriesInfoRequest extends Request implements Cacheable
         ];
     }
 
-    private function formatCacheKey(): string
+    private function formatCacheKey(PendingRequest $pendingRequest): string
     {
-        return 'series_info_'.$this->stream_id;
+        $scope = implode('|', [
+            $pendingRequest->getConnector()->resolveBaseUrl(),
+            (string) $pendingRequest->query()->get('username', ''),
+        ]);
+
+        $version = (int) Cache::store()->get(XtreamCodesConnector::DTO_CACHE_NAMESPACE_KEY, 0);
+
+        return sprintf('series_info:%d:%s:%d', $version, hash('xxh128', $scope), $this->stream_id);
     }
 }

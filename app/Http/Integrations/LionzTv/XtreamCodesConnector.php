@@ -16,6 +16,8 @@ final class XtreamCodesConnector extends Connector
     use AcceptsJson;
     use HasTimeout;
 
+    public const DTO_CACHE_NAMESPACE_KEY = 'xtream:dto:cache:namespace';
+
     protected int $connectTimeout = 60;
 
     protected int $requestTimeout = 120;

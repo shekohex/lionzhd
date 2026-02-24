@@ -10,6 +10,7 @@ use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\Series;
 use App\Models\VodStream;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Laravel\Telescope\Telescope;
 use Throwable;
@@ -96,8 +97,20 @@ final readonly class SyncMedia
             }
         });
 
+        $this->bustXtreamDtoCacheNamespace();
         $this->makeAllSearchableSafely();
         Log::info('All media contents have been refreshed');
+    }
+
+    private function bustXtreamDtoCacheNamespace(): void
+    {
+        $cache = Cache::store();
+        $key = XtreamCodesConnector::DTO_CACHE_NAMESPACE_KEY;
+        $version = $cache->increment($key);
+
+        if ($version === false) {
+            $cache->forever($key, ((int) $cache->get($key, 0)) + 1);
+        }
     }
 
     private function removeAllFromSearchSafely(): void

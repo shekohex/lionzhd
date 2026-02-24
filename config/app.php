@@ -125,4 +125,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'sync_media_memory_limit' => env('SYNC_MEDIA_MEMORY_LIMIT', '512M'),
+
 ];

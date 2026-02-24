@@ -4,20 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Requests;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Saloon\CachePlugin\Contracts\Cacheable;
-use Saloon\CachePlugin\Contracts\Driver;
-use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
-use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-final class GetSeriesRequest extends Request implements Cacheable
+final class GetSeriesRequest extends Request
 {
-    use HasCaching;
-
     /**
      * The HTTP method of the request
      */
@@ -34,31 +26,28 @@ final class GetSeriesRequest extends Request implements Cacheable
     /**
      * The DTO class to be used for the response
      *
-     * @return Collection<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
-    public function createDtoFromResponse(Response $response): Collection
+    public function createDtoFromResponse(Response $response): array
     {
         $data = $response->json();
 
-        /** @var Collection<array<string, mixed>> $collection */
-        $collection = collect($data);
+        if (! is_array($data)) {
+            return [];
+        }
 
-        return $collection
-            ->map(function (array $it): array {
-                $it['backdrop_path'] = json_encode($it['backdrop_path']);
+        $series = [];
 
-                return $it;
-            });
-    }
+        foreach ($data as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
 
-    public function resolveCacheDriver(): Driver
-    {
-        return new LaravelCacheDriver(Cache::store());
-    }
+            $item['backdrop_path'] = json_encode($item['backdrop_path'] ?? []);
+            $series[] = $item;
+        }
 
-    public function cacheExpiryInSeconds(): int
-    {
-        return 12 * 60 * 60; // 12 hours in seconds
+        return $series;
     }
 
     protected function defaultQuery(): array

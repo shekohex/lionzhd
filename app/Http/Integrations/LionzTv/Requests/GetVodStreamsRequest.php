@@ -4,20 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Requests;
 
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
-use Saloon\CachePlugin\Contracts\Cacheable;
-use Saloon\CachePlugin\Contracts\Driver;
-use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
-use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
 
-final class GetVodStreamsRequest extends Request implements Cacheable
+final class GetVodStreamsRequest extends Request
 {
-    use HasCaching;
-
     /**
      * The HTTP method of the request
      */
@@ -34,26 +26,27 @@ final class GetVodStreamsRequest extends Request implements Cacheable
     /**
      * The DTO class to be used for the response
      *
-     * @return Collection<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
-    public function createDtoFromResponse(Response $response): Collection
+    public function createDtoFromResponse(Response $response): array
     {
         $data = $response->json();
 
-        /** @var Collection<array<string, mixed>> $collection */
-        $collection = collect($data);
+        if (! is_array($data)) {
+            return [];
+        }
 
-        return $collection;
-    }
+        $vodStreams = [];
 
-    public function resolveCacheDriver(): Driver
-    {
-        return new LaravelCacheDriver(Cache::store());
-    }
+        foreach ($data as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
 
-    public function cacheExpiryInSeconds(): int
-    {
-        return 12 * 60 * 60; // 12 hours in seconds
+            $vodStreams[] = $item;
+        }
+
+        return $vodStreams;
     }
 
     protected function defaultQuery(): array

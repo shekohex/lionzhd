@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
-use App\Actions\SyncMedia;
 use App\Http\Controllers\Controller;
+use App\Jobs\RefreshMediaContents;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,8 +26,8 @@ final class SyncMediaController extends Controller
      */
     public function update(): RedirectResponse
     {
-        SyncMedia::run();
+        RefreshMediaContents::dispatch();
 
-        return back()->with('success', 'Media Library synced successfully.');
+        return back()->with('success', 'Media Library sync queued successfully.');
     }
 }

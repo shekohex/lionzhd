@@ -63,7 +63,7 @@ export default function SyncMediaConfig() {
                                 leave="transition ease-in-out"
                                 leaveTo="opacity-0"
                             >
-                                <p className="text-sm text-neutral-600">Synced</p>
+                                <p className="text-sm text-neutral-600">Queued</p>
                             </Transition>
                         </div>
                     </form>

@@ -8,6 +8,7 @@ use App\Actions\GetDownloadStatus;
 use App\Data\EditMediaDownloadData;
 use App\Data\MediaDownloadRefData;
 use App\Data\MediaDownloadStatusData;
+use App\Enums\UserRole;
 use App\Enums\MediaDownloadAction;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\JsonRpcException;
@@ -17,16 +18,21 @@ use App\Http\Integrations\Aria2\Requests\RemoveRequest;
 use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
 use App\Models\MediaDownloadRef;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
 final class MediaDownloadsController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $user = $request->user();
+
         $downloads = MediaDownloadRef::query()
             ->with('media')
+            ->when($user->role === UserRole::Admin, static fn ($query) => $query->with(['owner:id,name,email']))
+            ->when($user->role === UserRole::Member, static fn ($query) => $query->where('user_id', $user->id))
             ->orderByDesc('created_at')
             ->paginate(10)
             ->withQueryString();

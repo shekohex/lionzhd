@@ -88,11 +88,11 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
         Route::get('/', 'index')->name('downloads');
         Route::patch('{model}', 'edit')
             ->whereNumber('model')
-            ->middleware('can:download-operations')
+            ->middleware('can:download-operations,model')
             ->name('downloads.edit');
         Route::delete('{model}', 'destroy')
             ->whereNumber('model')
-            ->middleware('can:download-operations')
+            ->middleware('can:download-operations,model')
             ->name('downloads.destroy');
     });
 });

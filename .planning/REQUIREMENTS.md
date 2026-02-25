@@ -27,10 +27,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Download Ownership
 
-- [ ] **DOWN-01**: User can see only their own downloads in downloads pages and APIs when role is Member
-- [ ] **DOWN-02**: User can operate only on their own downloads (pause, resume, cancel, retry) when role is Member
-- [ ] **DOWN-03**: Admin can view and operate on downloads across all users
-- [ ] **DOWN-04**: Each new download is owned by the initiating user and persisted with that ownership
+- [x] **DOWN-01**: User can see only their own downloads in downloads pages and APIs when role is Member
+- [x] **DOWN-02**: User can operate only on their own downloads (pause, resume, cancel, retry) when role is Member
+- [x] **DOWN-03**: Admin can view and operate on downloads across all users
+- [x] **DOWN-04**: Each new download is owned by the initiating user and persisted with that ownership
 
 ### Auto Episodes
 
@@ -101,10 +101,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ACCS-04 | Phase 1 | Complete |
 | ACCS-05 | Phase 1 | Complete |
 | ACCS-06 | Phase 1 | Complete |
-| DOWN-01 | Phase 2 | Pending |
-| DOWN-02 | Phase 2 | Pending |
-| DOWN-03 | Phase 2 | Pending |
-| DOWN-04 | Phase 2 | Pending |
+| DOWN-01 | Phase 2 | Complete |
+| DOWN-02 | Phase 2 | Complete |
+| DOWN-03 | Phase 2 | Complete |
+| DOWN-04 | Phase 2 | Complete |
 | AUTO-01 | Phase 7 | Pending |
 | AUTO-02 | Phase 7 | Pending |
 | AUTO-03 | Phase 7 | Pending |

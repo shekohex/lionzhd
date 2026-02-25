@@ -7,7 +7,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 ## Phases
 
 - [x] **Phase 1: Access Control** - Admin/Member + Internal/External enforcement with admin-only areas locked down
-- [ ] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
+- [x] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
 - [ ] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
 - [ ] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
 - [ ] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
@@ -47,11 +47,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Persist download ownership (DB + model + DTO)
-- [ ] 02-02-PLAN.md — Own new downloads + user-scoped active-download dedupe
-- [ ] 02-03-PLAN.md — Server enforcement (gates + routes + member scoping) + tests
-- [ ] 02-04-PLAN.md — Downloads UI updates (member ops + owner visibility + confirmations)
-- [ ] 02-05-PLAN.md — Admin owner filtering UX + manual verification
+- [x] 02-01-PLAN.md — Persist download ownership (DB + model + DTO)
+- [x] 02-02-PLAN.md — Own new downloads + user-scoped active-download dedupe
+- [x] 02-03-PLAN.md — Server enforcement (gates + routes + member scoping) + tests
+- [x] 02-04-PLAN.md — Downloads UI updates (member ops + owner visibility + confirmations)
+- [x] 02-05-PLAN.md — Admin owner filtering UX + manual verification
 
 ### Phase 3: Categories Sync & Categorization Correctness
 **Goal**: Categories from Xtream (VOD + Series only) are synced and content retains correct category relationships.
@@ -112,7 +112,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Access Control | 5/5 | Complete | 2026-02-25 |
-| 2. Download Ownership & Authorization | 0/TBD | Not started | - |
+| 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
 | 3. Categories Sync & Categorization Correctness | 0/TBD | Not started | - |
 | 4. Category Browse/Filter UX | 0/TBD | Not started | - |
 | 5. Download Lifecycle Reliability | 0/TBD | Not started | - |

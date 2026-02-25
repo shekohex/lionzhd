@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -52,6 +55,14 @@ final class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user->is_super_admin) {
+            throw new AuthorizationException('Super-admin accounts cannot be deleted.');
+        }
+
+        if ($user->role === UserRole::Admin && User::query()->where('role', UserRole::Admin)->count() <= 1) {
+            throw new AuthorizationException('At least one admin account must remain.');
+        }
 
         Auth::logout();
 

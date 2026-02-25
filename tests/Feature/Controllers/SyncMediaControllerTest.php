@@ -29,3 +29,19 @@ it('forbids members from queueing media sync job from settings endpoint', functi
     $response->assertForbidden();
     Queue::assertNothingPushed();
 });
+
+it('renders inertia forbidden page for unauthorized member settings access', function (): void {
+    $user = User::factory()->memberExternal()->make();
+
+    $response = $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->patch(route('syncmedia.update'));
+
+    $response->assertForbidden();
+    $response->assertHeader('X-Inertia', 'true');
+    $response->assertJsonPath('component', 'errors/forbidden');
+    $response->assertJsonPath('props.reason', 'Admin-only');
+});

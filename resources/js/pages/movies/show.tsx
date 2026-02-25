@@ -5,6 +5,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { toast } from 'sonner';
 
 // Custom components
 import CastList from '@/components/cast-list';
@@ -32,7 +33,10 @@ export default function MovieInformation() {
     const { props } = usePage<MovieInformationPageProps>();
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { delete: forgetCache } = useForm();
-    const { info, in_watchlist } = props;
+    const { info, in_watchlist, auth } = props;
+    const isAdmin = auth.user.role === 'admin';
+    const isExternalMember = !isAdmin && auth.user.subtype === 'external';
+    const serverDownloadVisibility = isAdmin ? 'enabled' : isExternalMember ? 'disabled' : 'hidden';
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
@@ -68,6 +72,12 @@ export default function MovieInformation() {
         const url = route('movies.direct', { model: info.vodId });
         window.open(url, '_blank', 'noopener');
     }, [info.vodId]);
+
+    const handleBlockedServerDownload = useCallback(() => {
+        toast.info('Server download unavailable', {
+            description: 'Use Direct Download and contact your super-admin to request server-download access.',
+        });
+    }, []);
 
     const addToWatchlist = useCallback(() => {
         addToWatchlistCall(route('movies.watchlist', { model: info.vodId }), {
@@ -183,6 +193,13 @@ export default function MovieInformation() {
                         onDownload={handleDownload}
                         onDirectDownload={handleDirectDownload}
                         showDirectDownload={true}
+                        serverDownloadVisibility={serverDownloadVisibility}
+                        serverDownloadDisabledReason={
+                            isExternalMember
+                                ? 'External members can use Direct Download only. Contact your super-admin for access.'
+                                : undefined
+                        }
+                        onBlockedServerDownload={handleBlockedServerDownload}
                         additionalBackdrops={info.backdropPath?.slice(1) || []}
                         trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}

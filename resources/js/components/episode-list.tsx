@@ -21,6 +21,9 @@ interface EpisodeListProps {
     onDirectDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
     onDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
     onDirectDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
+    serverDownloadVisibility?: 'enabled' | 'disabled' | 'hidden';
+    serverDownloadDisabledReason?: string;
+    onServerDownloadBlocked?: () => void;
 }
 
 class SelectedEpisodes {
@@ -89,6 +92,9 @@ export default function EpisodeList({
     onDirectDownloadEpisode,
     onDownloadSelected,
     onDirectDownloadSelected,
+    serverDownloadVisibility = 'enabled',
+    serverDownloadDisabledReason,
+    onServerDownloadBlocked,
 }: EpisodeListProps) {
     // Get available season numbers and sort them
     const seasonNumbers = Object.keys(seasonsWithEpisodes)
@@ -97,6 +103,9 @@ export default function EpisodeList({
 
     const [selectedSeason, setSelectedSeason] = useState<number>(seasonNumbers.length > 0 ? seasonNumbers[0] : 0);
     const [selectedEpisodes, setSelectedEpisodes] = useState<SelectedEpisodes>(new SelectedEpisodes());
+    const showServerDownload = serverDownloadVisibility !== 'hidden' && Boolean(onDownloadEpisode || onDownloadSelected);
+    const isServerDownloadDisabled = serverDownloadVisibility === 'disabled';
+    const showDirectDownload = Boolean(onDirectDownloadEpisode || onDirectDownloadSelected);
 
     // Get episodes for the selected season
     const episodes = useMemo(
@@ -152,9 +161,14 @@ export default function EpisodeList({
 
     // Handle download selected episodes button click
     const handleDownloadSelected = useCallback(() => {
+        if (isServerDownloadDisabled) {
+            onServerDownloadBlocked?.();
+            return;
+        }
+
         const selectedEpisodesArray = selectedEpisodes.getSelectedEpisodes();
         onDownloadSelected?.(selectedEpisodesArray);
-    }, [onDownloadSelected, selectedEpisodes]);
+    }, [isServerDownloadDisabled, onDownloadSelected, onServerDownloadBlocked, selectedEpisodes]);
 
     // Handle direct download selected episodes button click
     const handleDirectDownloadSelected = useCallback(() => {
@@ -171,38 +185,54 @@ export default function EpisodeList({
 
                 <div className="flex flex-wrap items-center gap-2 sm:gap-4">
                     {/* Download Selected button */}
-                    <DropdownMenu>
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button disabled={selectedEpisodes.size === 0}>
-                                            <Download size={20} />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p className="text-sm">
-                                        {selectedEpisodes.size === 0
-                                            ? 'Select Episodes to download'
-                                            : `Download Selected (${selectedEpisodes.size})`}
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={handleDownloadSelected}>
-                                <DownloadIcon className="mr-2 h-4 w-4" />
-                                Server Download
-                            </DropdownMenuItem>
-                            {onDirectDownloadSelected && (
-                                <DropdownMenuItem onClick={handleDirectDownloadSelected}>
-                                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                                    Direct Download
-                                </DropdownMenuItem>
-                            )}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {(showServerDownload || showDirectDownload) && (
+                        <DropdownMenu>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button disabled={selectedEpisodes.size === 0}>
+                                                <Download size={20} />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p className="text-sm">
+                                            {selectedEpisodes.size === 0
+                                                ? 'Select Episodes to download'
+                                                : `Download Selected (${selectedEpisodes.size})`}
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <DropdownMenuContent>
+                                {showServerDownload && (
+                                    <DropdownMenuItem
+                                        onSelect={(event) => {
+                                            event.preventDefault();
+                                            handleDownloadSelected();
+                                        }}
+                                        className={isServerDownloadDisabled ? 'text-muted-foreground' : undefined}
+                                        title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                    >
+                                        <DownloadIcon className="mr-2 h-4 w-4" />
+                                        {isServerDownloadDisabled ? 'Server Download (restricted)' : 'Server Download'}
+                                    </DropdownMenuItem>
+                                )}
+                                {onDirectDownloadSelected && (
+                                    <DropdownMenuItem
+                                        onSelect={(event) => {
+                                            event.preventDefault();
+                                            handleDirectDownloadSelected();
+                                        }}
+                                    >
+                                        <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                        Direct Download
+                                    </DropdownMenuItem>
+                                )}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                     {/* Select All button */}
                     <TooltipProvider>
                         <Tooltip>
@@ -254,6 +284,10 @@ export default function EpisodeList({
                             onDownload={() => onDownloadEpisode?.(index, episode)}
                             onDirectDownload={() => onDirectDownloadEpisode?.(index, episode)}
                             onSelected={(isSelected) => handleEpisodeSelect(episode.episodeNum, isSelected)}
+                            showServerDownload={showServerDownload}
+                            isServerDownloadDisabled={isServerDownloadDisabled}
+                            serverDownloadDisabledReason={serverDownloadDisabledReason}
+                            onServerDownloadBlocked={onServerDownloadBlocked}
                         />
                     </motion.div>
                 ))}
@@ -271,12 +305,26 @@ export default function EpisodeList({
 interface EpisodeCardProps {
     episode: App.Http.Integrations.LionzTv.Responses.Episode;
     selected?: boolean;
+    showServerDownload: boolean;
+    isServerDownloadDisabled: boolean;
+    serverDownloadDisabledReason?: string;
+    onServerDownloadBlocked?: () => void;
     onDownload?: () => void;
     onDirectDownload?: () => void;
     onSelected?: (isSelected: boolean) => void;
 }
 
-function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, selected }: EpisodeCardProps) {
+function EpisodeCard({
+    episode,
+    showServerDownload,
+    isServerDownloadDisabled,
+    serverDownloadDisabledReason,
+    onServerDownloadBlocked,
+    onDownload,
+    onDirectDownload,
+    onSelected,
+    selected,
+}: EpisodeCardProps) {
     // Format episode number with leading zero if needed
     const formattedEpisodeNum = episode.episodeNum < 10 ? `0${episode.episodeNum}` : String(episode.episodeNum);
 
@@ -304,12 +352,30 @@ function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, select
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onClick={onDownload}>
-                            <DownloadIcon className="mr-2 h-4 w-4" />
-                            Server Download
-                        </DropdownMenuItem>
+                        {showServerDownload && (
+                            <DropdownMenuItem
+                                onSelect={(event) => {
+                                    event.preventDefault();
+                                    if (isServerDownloadDisabled) {
+                                        onServerDownloadBlocked?.();
+                                        return;
+                                    }
+                                    onDownload?.();
+                                }}
+                                className={isServerDownloadDisabled ? 'text-muted-foreground' : undefined}
+                                title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                            >
+                                <DownloadIcon className="mr-2 h-4 w-4" />
+                                {isServerDownloadDisabled ? 'Server Download (restricted)' : 'Server Download'}
+                            </DropdownMenuItem>
+                        )}
                         {onDirectDownload && (
-                            <DropdownMenuItem onClick={onDirectDownload}>
+                            <DropdownMenuItem
+                                onSelect={(event) => {
+                                    event.preventDefault();
+                                    onDirectDownload();
+                                }}
+                            >
                                 <ExternalLinkIcon className="mr-2 h-4 w-4" />
                                 Direct Download
                             </DropdownMenuItem>
@@ -339,11 +405,32 @@ function EpisodeCard({ episode, onDownload, onDirectDownload, onSelected, select
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={onDownload}>
-                                        <DownloadIcon className="mr-2 h-4 w-4" /> Server Download
-                                    </DropdownMenuItem>
+                                    {showServerDownload && (
+                                        <DropdownMenuItem
+                                            onSelect={(event) => {
+                                                event.preventDefault();
+                                                if (isServerDownloadDisabled) {
+                                                    onServerDownloadBlocked?.();
+                                                    return;
+                                                }
+                                                onDownload?.();
+                                            }}
+                                            className={isServerDownloadDisabled ? 'text-muted-foreground' : undefined}
+                                            title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                        >
+                                            <DownloadIcon className="mr-2 h-4 w-4" />
+                                            {isServerDownloadDisabled
+                                                ? 'Server Download (restricted)'
+                                                : 'Server Download'}
+                                        </DropdownMenuItem>
+                                    )}
                                     {onDirectDownload && (
-                                        <DropdownMenuItem onClick={onDirectDownload}>
+                                        <DropdownMenuItem
+                                            onSelect={(event) => {
+                                                event.preventDefault();
+                                                onDirectDownload();
+                                            }}
+                                        >
                                             <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct Download
                                         </DropdownMenuItem>
                                     )}

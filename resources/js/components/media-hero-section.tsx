@@ -42,6 +42,9 @@ export interface MediaHeroSectionProps {
     onDownload?: (...args: unknown[]) => void;
     onDirectDownload?: (...args: unknown[]) => void;
     showDirectDownload?: boolean;
+    serverDownloadVisibility?: 'enabled' | 'disabled' | 'hidden';
+    serverDownloadDisabledReason?: string;
+    onBlockedServerDownload?: () => void;
     // UI Customization
     className?: string;
     showActions?: boolean;
@@ -70,6 +73,9 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     onDownload,
     onDirectDownload,
     showDirectDownload = false,
+    serverDownloadVisibility = 'enabled',
+    serverDownloadDisabledReason,
+    onBlockedServerDownload,
     className,
     showActions = true,
     showMetadata = true,
@@ -105,6 +111,29 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
         // Attempt to open native YouTube on mobile; else fallback handler
         if (openYouTubeIfMobile(trailerUrl)) return;
         onTrailerPlay?.();
+    };
+
+    const showServerDownload = Boolean(onDownload) && serverDownloadVisibility !== 'hidden';
+    const isServerDownloadDisabled = serverDownloadVisibility === 'disabled';
+    const showDirectDownloadAction = showDirectDownload && Boolean(onDirectDownload);
+
+    const handleServerDownloadClick = () => {
+        if (isServerDownloadDisabled) {
+            onBlockedServerDownload?.();
+            return;
+        }
+
+        onDownload?.();
+    };
+
+    const handleServerDownloadSelect = (event: Event) => {
+        event.preventDefault();
+        handleServerDownloadClick();
+    };
+
+    const handleDirectDownloadSelect = (event: Event) => {
+        event.preventDefault();
+        onDirectDownload?.();
     };
 
     // Error fallback for the entire hero section
@@ -238,7 +267,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                         )}
 
                                     {/* Download button - only if onDownload available */}
-                                    {onDownload && showDirectDownload ? (
+                                    {showServerDownload && showDirectDownloadAction ? (
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button size="lg" variant="secondary" className="gap-2">
@@ -247,22 +276,43 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent>
-                                                <DropdownMenuItem onClick={onDownload}>
+                                                <DropdownMenuItem
+                                                    onSelect={handleServerDownloadSelect}
+                                                    className={isServerDownloadDisabled ? 'text-muted-foreground' : undefined}
+                                                    title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                                >
                                                     <DownloadIcon className="mr-2 h-4 w-4" />
-                                                    Server Download
+                                                    {isServerDownloadDisabled
+                                                        ? 'Server Download (restricted)'
+                                                        : 'Server Download'}
                                                 </DropdownMenuItem>
-                                                {onDirectDownload && (
-                                                    <DropdownMenuItem onClick={onDirectDownload}>
-                                                        <ExternalLinkIcon className="mr-2 h-4 w-4" />
-                                                        Direct Download
-                                                    </DropdownMenuItem>
-                                                )}
+                                                <DropdownMenuItem onSelect={handleDirectDownloadSelect}>
+                                                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                                                    Direct Download
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    ) : onDownload ? (
-                                        <Button size="lg" variant="secondary" onClick={onDownload} className="gap-2">
+                                    ) : showDirectDownloadAction ? (
+                                        <Button
+                                            size="lg"
+                                            variant="secondary"
+                                            onClick={() => onDirectDownload?.()}
+                                            className="gap-2"
+                                        >
+                                            <ExternalLinkIcon size={18} />
+                                            Direct Download
+                                        </Button>
+                                    ) : showServerDownload ? (
+                                        <Button
+                                            size="lg"
+                                            variant="secondary"
+                                            onClick={handleServerDownloadClick}
+                                            className="gap-2"
+                                            aria-disabled={isServerDownloadDisabled}
+                                            title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                        >
                                             <DownloadIcon size={18} />
-                                            Download
+                                            {isServerDownloadDisabled ? 'Download (restricted)' : 'Download'}
                                         </Button>
                                     ) : null}
 
@@ -312,7 +362,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                     >
                                         <PlayIcon size={18} />
                                     </Button>
-                                    {onDownload && (
+                                    {showServerDownload && showDirectDownloadAction ? (
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button aria-label="Download" size="icon" variant="secondary">
@@ -320,17 +370,42 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="start">
-                                                <DropdownMenuItem onClick={onDownload}>
-                                                    <DownloadIcon className="mr-2 h-4 w-4" /> Server Download
+                                                <DropdownMenuItem
+                                                    onSelect={handleServerDownloadSelect}
+                                                    className={isServerDownloadDisabled ? 'text-muted-foreground' : undefined}
+                                                    title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                                >
+                                                    <DownloadIcon className="mr-2 h-4 w-4" />
+                                                    {isServerDownloadDisabled
+                                                        ? 'Server Download (restricted)'
+                                                        : 'Server Download'}
                                                 </DropdownMenuItem>
-                                                {onDirectDownload && (
-                                                    <DropdownMenuItem onClick={onDirectDownload}>
-                                                        <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct Download
-                                                    </DropdownMenuItem>
-                                                )}
+                                                <DropdownMenuItem onSelect={handleDirectDownloadSelect}>
+                                                    <ExternalLinkIcon className="mr-2 h-4 w-4" /> Direct Download
+                                                </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                    )}
+                                    ) : showDirectDownloadAction ? (
+                                        <Button
+                                            aria-label="Direct download"
+                                            size="icon"
+                                            variant="secondary"
+                                            onClick={() => onDirectDownload?.()}
+                                        >
+                                            <ExternalLinkIcon size={18} />
+                                        </Button>
+                                    ) : showServerDownload ? (
+                                        <Button
+                                            aria-label="Download"
+                                            size="icon"
+                                            variant="secondary"
+                                            onClick={handleServerDownloadClick}
+                                            aria-disabled={isServerDownloadDisabled}
+                                            title={isServerDownloadDisabled ? serverDownloadDisabledReason : undefined}
+                                        >
+                                            <DownloadIcon size={18} />
+                                        </Button>
+                                    ) : null}
                                     {trailerUrl && (
                                         <Button aria-label="Trailer" size="icon" variant="secondary" onClick={() => handleTrailerClick()}>
                                             <Clapperboard size={18} />

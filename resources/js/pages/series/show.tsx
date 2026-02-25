@@ -5,6 +5,7 @@ import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { toast } from 'sonner';
 
 // Custom components
 import CastList from '@/components/cast-list';
@@ -30,7 +31,10 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
-    const { info, in_watchlist } = props;
+    const { info, in_watchlist, auth } = props;
+    const isAdmin = auth.user.role === 'admin';
+    const isExternalMember = !isAdmin && auth.user.subtype === 'external';
+    const serverDownloadVisibility = isAdmin ? 'enabled' : isExternalMember ? 'disabled' : 'hidden';
 
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { delete: forgetCache } = useForm();
@@ -127,6 +131,12 @@ export default function SeriesInformation() {
         [info.seriesId],
     );
 
+    const handleBlockedServerDownload = useCallback(() => {
+        toast.info('Server download unavailable', {
+            description: 'Use Direct Download and contact your super-admin to request server-download access.',
+        });
+    }, []);
+
     // Handle trailer button click
     const handleTrailerClick = useCallback(() => {
         setIsTrailerOpen(true);
@@ -203,6 +213,13 @@ export default function SeriesInformation() {
                                         onDirectDownloadEpisode={handleDirectDownloadEpisode}
                                         onDownloadSelected={handleDownloadSelectedEpisodes}
                                         onDirectDownloadSelected={handleDirectDownloadSelectedEpisodes}
+                                        serverDownloadVisibility={serverDownloadVisibility}
+                                        serverDownloadDisabledReason={
+                                            isExternalMember
+                                                ? 'External members can use Direct Download only. Contact your super-admin for access.'
+                                                : undefined
+                                        }
+                                        onServerDownloadBlocked={handleBlockedServerDownload}
                                     />
                                 </motion.div>
                             </AnimatePresence>

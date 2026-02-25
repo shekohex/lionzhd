@@ -17,6 +17,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use RuntimeException;
 
 final class UsersController extends Controller
 {
@@ -44,7 +45,19 @@ final class UsersController extends Controller
         ]);
     }
 
-    public function updateSubtype(Request $request, User $user): RedirectResponse
+    public function update(Request $request, User $user, string $operation): RedirectResponse
+    {
+        return match ($operation) {
+            'subtype' => $this->updateUserSubtype($request, $user),
+            'role' => $this->updateUserRole($request, $user),
+            'transfer-super-admin' => $this->transferSuperAdmin($user),
+            default => throw ValidationException::withMessages([
+                'operation' => 'Unsupported user operation.',
+            ]),
+        };
+    }
+
+    private function updateUserSubtype(Request $request, User $user): RedirectResponse
     {
         $validated = $request->validate([
             'subtype' => ['required', Rule::in([UserSubtype::Internal->value, UserSubtype::External->value])],
@@ -62,7 +75,7 @@ final class UsersController extends Controller
         return back()->with('success', 'User subtype updated successfully.');
     }
 
-    public function updateRole(Request $request, User $user): RedirectResponse
+    private function updateUserRole(Request $request, User $user): RedirectResponse
     {
         Gate::authorize('super-admin');
 
@@ -95,7 +108,7 @@ final class UsersController extends Controller
         return back()->with('success', 'User role updated successfully.');
     }
 
-    public function transferSuperAdmin(User $user): RedirectResponse
+    private function transferSuperAdmin(User $user): RedirectResponse
     {
         Gate::authorize('super-admin');
 
@@ -114,7 +127,7 @@ final class UsersController extends Controller
             $superAdminCount = User::query()->where('is_super_admin', true)->count();
 
             if ($superAdminCount !== 1) {
-                throw new \RuntimeException('Super-admin transfer failed to preserve a single super-admin.');
+                throw new RuntimeException('Super-admin transfer failed to preserve a single super-admin.');
             }
         });
 

@@ -23,11 +23,17 @@ Route::middleware('auth')->group(static function (): void {
 
     Route::middleware('can:admin')->group(static function (): void {
         Route::get('settings/users', [UsersController::class, 'index'])->name('users.index');
-        Route::patch('settings/users/{user}/subtype', [UsersController::class, 'updateSubtype'])->name('users.subtype.update');
+        Route::patch('settings/users/{user}/subtype', [UsersController::class, 'update'])
+            ->defaults('operation', 'subtype')
+            ->name('users.subtype.update');
 
         Route::middleware('can:super-admin')->group(static function (): void {
-            Route::patch('settings/users/{user}/role', [UsersController::class, 'updateRole'])->name('users.role.update');
-            Route::patch('settings/users/{user}/super-admin', [UsersController::class, 'transferSuperAdmin'])->name('users.super-admin.transfer');
+            Route::patch('settings/users/{user}/role', [UsersController::class, 'update'])
+                ->defaults('operation', 'role')
+                ->name('users.role.update');
+            Route::patch('settings/users/{user}/super-admin', [UsersController::class, 'update'])
+                ->defaults('operation', 'transfer-super-admin')
+                ->name('users.super-admin.transfer');
         });
 
         Route::get('settings/xtreamcodes', [XtreamCodeConfigController::class, 'edit'])->name('xtreamcodes.edit');

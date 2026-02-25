@@ -12,19 +12,19 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 1 of 7 (Access Control)
 Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 01-04-PLAN.md
+Last activity: 2026-02-25 - Completed 01-03-PLAN.md
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 4 min
-- Total execution time: 0.2 hours
+- Total execution time: 0.3 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 (Access Control) | 3 | 12 min | 4 min |
+| 1 (Access Control) | 4 | 17 min | 4 min |
 
 ## Accumulated Context
 
@@ -39,6 +39,8 @@ Progress: [██████░░░░] 60%
 | 1 | Return explicit gate deny messages for UI-facing unauthorized reasons | Ensure forbidden UX communicates exact required permission |
 | 1 | Render Inertia 403 page only for Inertia requests | Keep SPA UX consistent without altering non-Inertia response behavior |
 | 1 | Enforce download restrictions via `can:server-download` and `can:download-operations` on route definitions | Guarantee ACCS-05 and admin-only download operations at server boundary even if UI is bypassed |
+| 1 | Restrict admin promotion/demotion and super-admin transfer to super-admin while allowing all admins to toggle member subtype | Preserve governance boundaries while enabling routine subtype administration |
+| 1 | Route users mutations through a single public update action with operation defaults | Keep endpoint separation and satisfy architecture constraints on controller public methods |
 
 ### Pending Todos
 
@@ -50,6 +52,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T04:49:40Z
-Stopped at: Completed 01-04-PLAN.md
+Last session: 2026-02-25T04:52:18Z
+Stopped at: Completed 01-03-PLAN.md
 Resume file: None

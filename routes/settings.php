@@ -6,6 +6,7 @@ use App\Http\Controllers\Settings\Aria2ConfigController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SyncMediaController;
+use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\Settings\XtreamCodeConfigController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,6 +22,14 @@ Route::middleware('auth')->group(static function (): void {
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
 
     Route::middleware('can:admin')->group(static function (): void {
+        Route::get('settings/users', [UsersController::class, 'index'])->name('users.index');
+        Route::patch('settings/users/{user}/subtype', [UsersController::class, 'updateSubtype'])->name('users.subtype.update');
+
+        Route::middleware('can:super-admin')->group(static function (): void {
+            Route::patch('settings/users/{user}/role', [UsersController::class, 'updateRole'])->name('users.role.update');
+            Route::patch('settings/users/{user}/super-admin', [UsersController::class, 'transferSuperAdmin'])->name('users.super-admin.transfer');
+        });
+
         Route::get('settings/xtreamcodes', [XtreamCodeConfigController::class, 'edit'])->name('xtreamcodes.edit');
         Route::patch('settings/xtreamcodes', [XtreamCodeConfigController::class, 'update'])->name('xtreamcodes.update');
 

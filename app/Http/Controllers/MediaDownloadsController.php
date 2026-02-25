@@ -39,7 +39,11 @@ final class MediaDownloadsController extends Controller
 
         $downloadStatus = collect();
         if (! $downloads->isEmpty()) {
-            $downloadStatus = GetDownloadStatus::run($downloads->pluck('gid')->toArray());
+            try {
+                $downloadStatus = GetDownloadStatus::run($downloads->pluck('gid')->toArray());
+            } catch (JsonRpcException) {
+                $downloadStatus = collect();
+            }
         }
 
         $data = MediaDownloadRefData::collect($downloads);

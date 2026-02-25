@@ -6,14 +6,16 @@ namespace App\Actions;
 
 use App\Concerns\AsAction;
 use App\Data\MediaDownloadStatusData;
+use App\Enums\UserRole;
 use App\Http\Integrations\LionzTv\Responses\Episode;
 use App\Models\MediaDownloadRef;
 use App\Models\Series;
+use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Support\Collection;
 
 /**
- * @method static ?MediaDownloadStatusData run(VodStream|Series $media, Episode|null $episode = null)
+ * @method static ?MediaDownloadStatusData run(VodStream|Series $media, Episode|null $episode = null, User|null $user = null)
  */
 final readonly class GetActiveDownloads
 {
@@ -22,7 +24,7 @@ final readonly class GetActiveDownloads
     /**
      * Execute the action.
      */
-    public function __invoke(VodStream|Series $media, ?Episode $episode = null): ?MediaDownloadStatusData
+    public function __invoke(VodStream|Series $media, ?Episode $episode = null, ?User $user = null): ?MediaDownloadStatusData
     {
 
         $media_id = match ($media::class) {
@@ -40,6 +42,7 @@ final readonly class GetActiveDownloads
             ->where('media_type', $media::class)
             ->where('downloadable_id', $downloadable_id)
             ->when($episode, fn ($query) => $query->where('episode', $episode->episodeNum))
+            ->when($user?->role === UserRole::Member, fn ($query) => $query->where('user_id', $user->id))
             ->get();
 
         $gids = $existingDownloads->pluck('gid');

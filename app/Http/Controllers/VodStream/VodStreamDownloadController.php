@@ -31,7 +31,7 @@ final class VodStreamDownloadController extends Controller
         $vod = $client->send(new GetVodInfoRequest($model->stream_id));
         $dto = $vod->dtoOrFail();
         // Check if the user has already downloaded this stream and the download is still active
-        $firstActive = GetActiveDownloads::run($model);
+        $firstActive = GetActiveDownloads::run($model, user: $user);
         if ($firstActive) {
             return $this->downloadsRedirect($request, [
                 'downloadable_id' => $model->stream_id,

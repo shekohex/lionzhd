@@ -42,7 +42,7 @@ final class SeriesDownloadController extends Controller
             return back()->withErrors('Episode not found.');
         }
 
-        $activeDownload = GetActiveDownloads::run($model, $selectedEpisode);
+        $activeDownload = GetActiveDownloads::run($model, $selectedEpisode, $user);
 
         if ($activeDownload) {
             return $this->downloadsRedirect($request, [

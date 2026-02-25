@@ -5,27 +5,27 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 2 (Download Ownership & Authorization)
+**Current focus:** Phase 3 (Categories Sync & Categorization Correctness)
 
 ## Current Position
 
 Phase: 2 of 7 (Download Ownership & Authorization)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-02-25 - Completed 02-04-PLAN.md
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-02-25 - Completed 02-05-PLAN.md
 
-Progress: [█████████░] 90%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 9
-- Average duration: 6 min
+- Total plans completed: 10
+- Average duration: 5.9 min
 - Total execution time: 1.0 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
-| 2 (Download Ownership & Authorization) | 4 | 17 min | 4.25 min |
+| 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 
 ## Accumulated Context
 
@@ -54,6 +54,8 @@ Progress: [█████████░] 90%
 | 2 | Use `canOperate = isAdmin || isInternalMember` in downloads UI | Keep member permissions aligned with Phase 2 server authorization contract |
 | 2 | Show owner token metadata only to admins with a subtle Mine marker | Preserve member privacy while improving admin cross-user operational clarity |
 | 2 | Self-heal stale `/downloads?gid=` highlights by clearing `gid` and toasting scope loss | Prevent broken deep-link states after ownership scoping without extra server error paths |
+| 2 | Represent admin multi-owner filtering in a normalized `owners` query string | Keep chips/search filter state stable, shareable, and deterministic |
+| 2 | Forward retry `return_to` only for safe relative `/downloads` paths | Preserve filtered context after actions while blocking unsafe redirect targets |
 
 ### Pending Todos
 
@@ -65,6 +67,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T07:02:24Z
-Stopped at: Completed 02-04-PLAN.md
+Last session: 2026-02-25T07:36:54Z
+Stopped at: Completed 02-05-PLAN.md
 Resume file: None

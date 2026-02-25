@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
+use App\Enums\UserSubtype;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -27,6 +29,9 @@ final class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'subtype',
+        'is_super_admin',
     ];
 
     /**
@@ -80,6 +85,9 @@ final class User extends Authenticatable
         return [
             'email_verified_at' => 'immutable_datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
+            'subtype' => UserSubtype::class,
+            'is_super_admin' => 'boolean',
         ];
     }
 }

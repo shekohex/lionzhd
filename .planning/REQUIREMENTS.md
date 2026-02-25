@@ -1,0 +1,131 @@
+# Requirements: LionzHD Streaming Platform Enhancements
+
+**Defined:** 2026-02-25
+**Core Value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
+
+## v1 Requirements
+
+Requirements for initial release. Each maps to roadmap phases.
+
+### Discovery & Categories
+
+- [ ] **DISC-01**: User can browse movies by category using a sidebar on movies pages
+- [ ] **DISC-02**: User can browse series by category using a sidebar on series pages
+- [ ] **DISC-03**: User can filter movies to a selected category, including an explicit Uncategorized option
+- [ ] **DISC-04**: User can filter series to a selected category, including an explicit Uncategorized option
+- [ ] **DISC-05**: Admin can sync VOD and series categories from Xtream while excluding Live categories
+- [ ] **DISC-06**: User can open content that remains correctly categorized based on synced category relationships
+
+### Access Control
+
+- [ ] **ACCS-01**: First registered user is created as Admin by default
+- [ ] **ACCS-02**: Subsequent users are created as Member by default
+- [ ] **ACCS-03**: Admin can mark members as Internal or External
+- [ ] **ACCS-04**: Member cannot access admin-only areas (user management, system settings, sync/import controls, download operations, analytics/monitoring)
+- [ ] **ACCS-05**: External member can only use direct-download links and cannot use server-download actions
+- [ ] **ACCS-06**: External member cannot configure or run auto-download schedules
+
+### Download Ownership
+
+- [ ] **DOWN-01**: User can see only their own downloads in downloads pages and APIs when role is Member
+- [ ] **DOWN-02**: User can operate only on their own downloads (pause, resume, cancel, retry) when role is Member
+- [ ] **DOWN-03**: Admin can view and operate on downloads across all users
+- [ ] **DOWN-04**: Each new download is owned by the initiating user and persisted with that ownership
+
+### Auto Episodes
+
+- [ ] **AUTO-01**: User can enable automatic new-episode monitoring for a watched series
+- [ ] **AUTO-02**: User can configure an hourly monitoring schedule
+- [ ] **AUTO-03**: User can configure a daily monitoring schedule at a specific time
+- [ ] **AUTO-04**: User can configure a weekly monitoring schedule with day and time
+- [ ] **AUTO-05**: System detects new episodes by comparing Xtream episode IDs against known episode IDs for that user-series
+- [ ] **AUTO-06**: System auto-queues download of newly detected episodes and prevents duplicate queue entries for the same episode/user
+
+### Download Reliability
+
+- [ ] **RELY-01**: User can see accurate progress updates for active downloads
+- [ ] **RELY-02**: User can abort a download and see a correct terminal canceled state
+- [ ] **RELY-03**: User can resume a paused or interrupted download and continue from prior progress where possible
+- [ ] **RELY-04**: System retries transient download failures using bounded backoff rules
+- [ ] **RELY-05**: User can see actionable failure states and retry from failed states
+- [ ] **RELY-06**: Download lifecycle behavior (progress, abort, resume, retry) is covered by automated tests
+
+### Mobile Pagination
+
+- [ ] **MOBL-01**: User does not miss the last item when mobile infinite scroll crosses page boundaries
+- [ ] **MOBL-02**: User sees deterministic ordering across mobile infinite-scroll pagination
+- [ ] **MOBL-03**: Mobile infinite-scroll boundary behavior is covered by automated regression tests
+
+## v2 Requirements
+
+Deferred to future release. Tracked but not in current roadmap.
+
+### Automation Enhancements
+
+- **AUTX-01**: User can restrict auto-downloads to unplayed episodes only
+- **AUTX-02**: User can limit maximum queued episodes per series
+- **AUTX-03**: User can define per-series caps for storage or download count
+
+### External Governance
+
+- **EXTN-01**: Admin can configure quotas or rate limits for external users
+- **EXTN-02**: Admin can audit external direct-link usage history
+
+## Out of Scope
+
+Explicitly excluded. Documented to prevent scope creep.
+
+| Feature | Reason |
+|---------|--------|
+| Live categories and live playback | Product scope is currently VOD and series only |
+| Replace aria2 with a different downloader | Current decision is to harden aria2 first |
+| Mobile Load More pagination replacement | Chosen approach is to keep infinite scroll and fix boundary logic |
+| Auto-download entire libraries/series in bulk | High risk of storage and queue runaway; not needed for v1 |
+| Complex multi-role hierarchy beyond Admin/Member + Internal/External | Added complexity and testing burden without immediate value |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DISC-01 | TBD | Pending |
+| DISC-02 | TBD | Pending |
+| DISC-03 | TBD | Pending |
+| DISC-04 | TBD | Pending |
+| DISC-05 | TBD | Pending |
+| DISC-06 | TBD | Pending |
+| ACCS-01 | TBD | Pending |
+| ACCS-02 | TBD | Pending |
+| ACCS-03 | TBD | Pending |
+| ACCS-04 | TBD | Pending |
+| ACCS-05 | TBD | Pending |
+| ACCS-06 | TBD | Pending |
+| DOWN-01 | TBD | Pending |
+| DOWN-02 | TBD | Pending |
+| DOWN-03 | TBD | Pending |
+| DOWN-04 | TBD | Pending |
+| AUTO-01 | TBD | Pending |
+| AUTO-02 | TBD | Pending |
+| AUTO-03 | TBD | Pending |
+| AUTO-04 | TBD | Pending |
+| AUTO-05 | TBD | Pending |
+| AUTO-06 | TBD | Pending |
+| RELY-01 | TBD | Pending |
+| RELY-02 | TBD | Pending |
+| RELY-03 | TBD | Pending |
+| RELY-04 | TBD | Pending |
+| RELY-05 | TBD | Pending |
+| RELY-06 | TBD | Pending |
+| MOBL-01 | TBD | Pending |
+| MOBL-02 | TBD | Pending |
+| MOBL-03 | TBD | Pending |
+
+**Coverage:**
+- v1 requirements: 31 total
+- Mapped to phases: 0
+- Unmapped: 31
+
+---
+*Requirements defined: 2026-02-25*
+*Last updated: 2026-02-25 after initial definition*

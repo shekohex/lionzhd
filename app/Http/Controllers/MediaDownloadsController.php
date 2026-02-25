@@ -18,6 +18,7 @@ use App\Http\Integrations\Aria2\Requests\RemoveRequest;
 use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
 use App\Models\MediaDownloadRef;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -28,11 +29,14 @@ final class MediaDownloadsController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
+        $isAdmin = $user->role === UserRole::Admin;
+        $ownerIds = $this->parseOwnerIds($isAdmin ? $request->query('owners') : null);
 
         $downloads = MediaDownloadRef::query()
             ->with('media')
-            ->when($user->role === UserRole::Admin, static fn ($query) => $query->with(['owner:id,name,email']))
+            ->when($isAdmin, static fn ($query) => $query->with(['owner:id,name,email']))
             ->when($user->role === UserRole::Member, static fn ($query) => $query->where('user_id', $user->id))
+            ->when($isAdmin && $ownerIds !== [], static fn ($query) => $query->whereIn('user_id', $ownerIds))
             ->orderByDesc('created_at')
             ->paginate(10)
             ->withQueryString();
@@ -57,13 +61,20 @@ final class MediaDownloadsController extends Controller
             return $item;
         });
 
-        return Inertia::render('downloads', [
+        $props = [
             'downloads' => $merged,
-        ]);
+        ];
+
+        if ($isAdmin) {
+            $props['ownerOptions'] = $this->ownerOptions();
+        }
+
+        return Inertia::render('downloads', $props);
     }
 
-    public function edit(JsonRpcConnector $connector, MediaDownloadRef $model, EditMediaDownloadData $payload): RedirectResponse
+    public function edit(Request $request, JsonRpcConnector $connector, MediaDownloadRef $model, EditMediaDownloadData $payload): RedirectResponse
     {
+        $returnTo = $this->resolveReturnTo($request);
         $result = GetDownloadStatus::run([$model->gid]);
         $errors = $result->filter(fn (mixed $response) => isset($response['error']))->map(fn (array $response) => $response['error']);
 
@@ -100,19 +111,31 @@ final class MediaDownloadsController extends Controller
         if ($payload->action->isRetry() && $model->isVodStream()) {
             $model->delete();
 
-            return redirect()->route('movies.download', [
+            $parameters = [
                 'model' => $model->media_id,
-            ]);
+            ];
+
+            if ($returnTo !== null) {
+                $parameters['return_to'] = $returnTo;
+            }
+
+            return redirect()->route('movies.download', $parameters);
         }
 
         if ($payload->action->isRetry() && $model->isSeriesWithEpisode()) {
             $model->delete();
 
-            return redirect()->route('series.download.single', [
+            $parameters = [
                 'model' => $model->media_id,
                 'season' => $model->season,
                 'episode' => $model->episode,
-            ]);
+            ];
+
+            if ($returnTo !== null) {
+                $parameters['return_to'] = $returnTo;
+            }
+
+            return redirect()->route('series.download.single', $parameters);
         }
 
         return back()->with('success', 'Download status updated successfully.');
@@ -133,5 +156,50 @@ final class MediaDownloadsController extends Controller
         } catch (JsonRpcException $jsonRpcException) {
             return back()->withErrors(['action' => $jsonRpcException->getMessage()]);
         }
+    }
+
+    private function parseOwnerIds(mixed $owners): array
+    {
+        if (! is_string($owners) || $owners === '') {
+            return [];
+        }
+
+        return collect(explode(',', $owners))
+            ->map(static fn (string $id): string => trim($id))
+            ->filter(static fn (string $id): bool => $id !== '' && ctype_digit($id))
+            ->map(static fn (string $id): int => (int) $id)
+            ->filter(static fn (int $id): bool => $id > 0)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
+    private function ownerOptions(): array
+    {
+        return User::query()
+            ->select(['id', 'name', 'email'])
+            ->whereIn('id', MediaDownloadRef::query()->select('user_id')->whereNotNull('user_id')->distinct())
+            ->orderBy('name')
+            ->orderBy('id')
+            ->get()
+            ->map(static fn (User $owner): array => [
+                'id' => $owner->id,
+                'name' => $owner->name,
+                'email' => $owner->email,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function resolveReturnTo(Request $request): ?string
+    {
+        $returnTo = $request->input('return_to', $request->query('return_to'));
+
+        if (! is_string($returnTo)) {
+            return null;
+        }
+
+        return preg_match('#^/downloads(?:[/?]|$)#', $returnTo) === 1 ? $returnTo : null;
     }
 }

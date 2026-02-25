@@ -24,7 +24,7 @@ final class GetVodCategoriesRequest extends Request
     {
         $data = $response->json();
 
-        if (! is_array($data)) {
+        if (! is_array($data) || ! array_is_list($data)) {
             return [];
         }
 

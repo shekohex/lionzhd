@@ -5,28 +5,28 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 3 (Categories Sync & Categorization Correctness)
+**Current focus:** Phase 4 (Category Browse & Filter UX)
 
 ## Current Position
 
 Phase: 3 of 7 (Categories Sync & Categorization Correctness)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-25 - Completed 03-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-02-25 - Completed 03-04-PLAN.md
 
-Progress: [█████████░] 93%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 13
-- Average duration: 5.6 min
-- Total execution time: 1.21 hours
+- Total plans completed: 14
+- Average duration: 5.3 min
+- Total execution time: 1.24 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
-| 3 (Categories Sync & Categorization Correctness) | 3 | 13.5 min | 4.5 min |
+| 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
 
 ## Accumulated Context
 
@@ -64,6 +64,9 @@ Progress: [█████████░] 93%
 | 3 | Run global hard-delete cleanup only when both VOD and Series sources are apply-safe | Prevent destructive category removal from incomplete source data |
 | 3 | Require explicit force-empty flags before applying empty source payloads | Guard against accidental destructive syncs on provider zero-category responses |
 | 3 | Serialize SyncCategories job execution via cache lock and release-on-busy retry | Preserve queued dispatches while enforcing single active sync run |
+| 3 | Preflight VOD+Series category fetches in settings sync controller and block unforced empty-source dispatches | Prevent destructive empty-sync runs unless admin explicitly confirms source-specific force |
+| 3 | Re-submit sync confirmation with per-source force flags only for empty sources | Keep confirmation precise and avoid altering behavior for non-empty sources |
+| 3 | Expose category sync run history in settings with pagination and top issues | Make sync outcomes auditable without CLI access |
 
 ### Pending Todos
 
@@ -75,6 +78,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T17:26:11Z
-Stopped at: Completed 03-03-PLAN.md
+Last session: 2026-02-25T17:42:31Z
+Stopped at: Completed 03-04-PLAN.md
 Resume file: None

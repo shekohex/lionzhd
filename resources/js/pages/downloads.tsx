@@ -210,6 +210,8 @@ export default function Downloads() {
                                     <DownloadInformation
                                         download={download}
                                         highlighted={download.gid === highlightedDownload}
+                                        isAdminViewer={isAdmin}
+                                        currentUserId={auth.user.id}
                                         isReadOnly={!canOperate}
                                         readonlyReason={readonlyReason}
                                         onReadonlyAction={showReadOnlyToast}

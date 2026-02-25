@@ -1,4 +1,5 @@
 import ResponsiveImage from '@/components/responsive-image';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Link } from '@inertiajs/react';
@@ -8,6 +9,8 @@ import { Pause, Play, Redo, Trash2, X } from 'lucide-react';
 interface DownloadInformationProps {
     download: App.Data.MediaDownloadRefData;
     highlighted?: boolean;
+    isAdminViewer?: boolean;
+    currentUserId?: number;
     isReadOnly?: boolean;
     readonlyReason?: string;
     onReadonlyAction?: () => void;
@@ -21,6 +24,8 @@ interface DownloadInformationProps {
 const DownloadInformation: React.FC<DownloadInformationProps> = ({
     download,
     highlighted,
+    isAdminViewer = false,
+    currentUserId,
     isReadOnly = false,
     readonlyReason,
     onReadonlyAction,
@@ -37,6 +42,12 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
     const percentage = downloadPercentage || 0;
     const totalBytes = download.downloadStatus ? download.downloadStatus.totalLength : 0;
     const title = download.media.name;
+    const ownerLabel = download.owner
+        ? `${download.owner.name} (${download.owner.email})`
+        : download.user_id
+          ? `User #${download.user_id}`
+          : 'Unknown';
+    const isMine = currentUserId !== undefined && download.user_id === currentUserId;
     const movie = download.media_type === 'movie' ? (download.media as App.Data.VodStreamData) : null;
     const series = download.media_type === 'series' ? (download.media as App.Data.SeriesData) : null;
 
@@ -54,6 +65,20 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
         }
 
         action?.();
+    };
+
+    const handleConfirmedAction = (actionName: 'Cancel' | 'Retry', action?: () => void) => {
+        handleReadOnlyAwareAction(() => {
+            const confirmed = window.confirm(
+                `Confirm download ${actionName.toLowerCase()}?\n\nOwner: ${ownerLabel}\nTitle: ${title}\nAction: ${actionName}`,
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            action?.();
+        });
     };
 
     const formatBytes = (bytes: number, decimals: number = 2) => {
@@ -105,6 +130,14 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                 </Link>
                 <div>
                     <h3 className="font-semibold">{download.media.name}</h3>
+                    {isAdminViewer ? (
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                                Owner: {ownerLabel}
+                            </Badge>
+                            {isMine ? <span className="text-muted-foreground text-xs">Mine</span> : null}
+                        </div>
+                    ) : null}
                     {download.media_type === 'series' && download.episode !== null && download.episode !== undefined ? (
                         <p className="text-muted-foreground text-sm">
                             S{download.season}E{download.episode} - {download.media.name}
@@ -193,7 +226,7 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => handleReadOnlyAwareAction(onRetry)}
+                                        onClick={() => handleConfirmedAction('Retry', onRetry)}
                                         className={buttonClassName}
                                         aria-disabled={isReadOnly}
                                         title={isReadOnly ? readonlyReason : undefined}
@@ -234,7 +267,7 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                     <Button
                                         variant="destructive"
                                         size="icon"
-                                        onClick={() => handleReadOnlyAwareAction(onCancel)}
+                                        onClick={() => handleConfirmedAction('Cancel', onCancel)}
                                         className={isReadOnly ? 'cursor-not-allowed opacity-50' : undefined}
                                         aria-disabled={isReadOnly}
                                         title={isReadOnly ? readonlyReason : undefined}

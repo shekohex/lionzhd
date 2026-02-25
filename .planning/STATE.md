@@ -12,21 +12,21 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 3 of 7 (Categories Sync & Categorization Correctness)
 Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 03-02-PLAN.md
+Last activity: 2026-02-25 - Completed 03-01-PLAN.md
 
-Progress: [████████░░] 79%
+Progress: [█████████░] 86%
 
 ## Performance Metrics
 
-- Total plans completed: 11
-- Average duration: 5.7 min
-- Total execution time: 1.04 hours
+- Total plans completed: 12
+- Average duration: 5.5 min
+- Total execution time: 1.09 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
-| 3 (Categories Sync & Categorization Correctness) | 1 | 3 min | 3 min |
+| 3 (Categories Sync & Categorization Correctness) | 2 | 6 min | 3 min |
 
 ## Accumulated Context
 
@@ -60,6 +60,7 @@ Progress: [████████░░] 79%
 | 3 | Persist separate VOD and Series Uncategorized categories as system rows with stable provider IDs | Keep uncategorized remap behavior deterministic across re-sync cycles |
 | 3 | Use enum-backed sync run statuses (`running`, `success`, `success_with_warnings`, `failed`) in history model | Provide a stable contract for sync logic and admin history UI |
 | 3 | Standardize media DTO `category_id` as nullable string | Align contracts with provider category ID identity semantics |
+| 3 | Accept only list-shaped JSON payloads in Xtream category requests (`array_is_list`) | Prevent object-shaped responses from being misinterpreted as category collections |
 
 ### Pending Todos
 
@@ -71,6 +72,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T17:15:48Z
-Stopped at: Completed 03-02-PLAN.md
+Last session: 2026-02-25T17:16:24Z
+Stopped at: Completed 03-01-PLAN.md
 Resume file: None

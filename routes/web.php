@@ -38,7 +38,10 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
         Route::delete('{model}/watchlist', 'destroy')->whereNumber('model')->name('movies.watchlist.destroy');
     });
     Route::controller(VodStreamDownloadController::class)->prefix('movies')->group(static function (): void {
-        Route::get('{model}/download', 'create')->whereNumber('model')->name('movies.download');
+        Route::get('{model}/download', 'create')
+            ->whereNumber('model')
+            ->middleware('can:server-download')
+            ->name('movies.download');
         Route::get('{model}/direct', 'direct')->whereNumber('model')->name('movies.direct');
     });
 
@@ -59,8 +62,12 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->whereNumber('model')
             ->whereNumber('season')
             ->whereNumber('episode')
+            ->middleware('can:server-download')
             ->name('series.download.single');
-        Route::post('{model}/download', 'store')->whereNumber('model')->name('series.download.batch');
+        Route::post('{model}/download', 'store')
+            ->whereNumber('model')
+            ->middleware('can:server-download')
+            ->name('series.download.batch');
         Route::get('{model}/{season}/{episode}/direct', 'direct')
             ->whereNumber('model')
             ->whereNumber('season')
@@ -79,8 +86,14 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
 
     Route::controller(MediaDownloadsController::class)->prefix('downloads')->group(static function (): void {
         Route::get('/', 'index')->name('downloads');
-        Route::patch('{model}', 'edit')->whereNumber('model')->name('downloads.edit');
-        Route::delete('{model}', 'destroy')->whereNumber('model')->name('downloads.destroy');
+        Route::patch('{model}', 'edit')
+            ->whereNumber('model')
+            ->middleware('can:download-operations')
+            ->name('downloads.edit');
+        Route::delete('{model}', 'destroy')
+            ->whereNumber('model')
+            ->middleware('can:download-operations')
+            ->name('downloads.destroy');
     });
 });
 

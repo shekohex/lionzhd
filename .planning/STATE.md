@@ -10,23 +10,23 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 3 of 7 (Categories Sync & Categorization Correctness)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 03-01-PLAN.md
+Last activity: 2026-02-25 - Completed 03-03-PLAN.md
 
-Progress: [█████████░] 86%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 
-- Total plans completed: 12
-- Average duration: 5.5 min
-- Total execution time: 1.09 hours
+- Total plans completed: 13
+- Average duration: 5.6 min
+- Total execution time: 1.21 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
-| 3 (Categories Sync & Categorization Correctness) | 2 | 6 min | 3 min |
+| 3 (Categories Sync & Categorization Correctness) | 3 | 13.5 min | 4.5 min |
 
 ## Accumulated Context
 
@@ -61,6 +61,9 @@ Progress: [█████████░] 86%
 | 3 | Use enum-backed sync run statuses (`running`, `success`, `success_with_warnings`, `failed`) in history model | Provide a stable contract for sync logic and admin history UI |
 | 3 | Standardize media DTO `category_id` as nullable string | Align contracts with provider category ID identity semantics |
 | 3 | Accept only list-shaped JSON payloads in Xtream category requests (`array_is_list`) | Prevent object-shaped responses from being misinterpreted as category collections |
+| 3 | Run global hard-delete cleanup only when both VOD and Series sources are apply-safe | Prevent destructive category removal from incomplete source data |
+| 3 | Require explicit force-empty flags before applying empty source payloads | Guard against accidental destructive syncs on provider zero-category responses |
+| 3 | Serialize SyncCategories job execution via cache lock and release-on-busy retry | Preserve queued dispatches while enforcing single active sync run |
 
 ### Pending Todos
 
@@ -72,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T17:16:24Z
-Stopped at: Completed 03-01-PLAN.md
+Last session: 2026-02-25T17:26:11Z
+Stopped at: Completed 03-03-PLAN.md
 Resume file: None

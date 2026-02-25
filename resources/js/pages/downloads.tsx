@@ -59,22 +59,24 @@ export default function Downloads() {
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
     const pollRef = useRef(router.poll(pollingInterval, { preserveUrl: true }, { autoStart: false }));
     const isAdmin = auth.user.role === 'admin';
-    const isExternalMember = !isAdmin && auth.user.subtype === 'external';
-    const readonlyReason = !isAdmin
+    const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
+    const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
+    const canOperate = isAdmin || isInternalMember;
+    const readonlyReason = !canOperate
         ? isExternalMember
             ? 'Read-only: use Direct Download from movie/series pages and contact your super-admin for server access.'
             : 'Read-only: download operations are admin-only. Contact your super-admin for assistance.'
         : undefined;
 
     const showReadOnlyToast = useCallback(() => {
-        if (isAdmin || !readonlyReason) {
+        if (canOperate || !readonlyReason) {
             return;
         }
 
         toast.info('Downloads are read-only', {
             description: readonlyReason,
         });
-    }, [isAdmin, readonlyReason]);
+    }, [canOperate, readonlyReason]);
 
     useEffect(() => {
         pollRef.current.start();
@@ -95,17 +97,17 @@ export default function Downloads() {
     );
 
     const handleCancelDownload = useCallback((download: App.Data.MediaDownloadRefData) => {
-        if (!isAdmin) {
+        if (!canOperate) {
             showReadOnlyToast();
             return;
         }
 
         router.delete(route('downloads.destroy', { model: download.id }), { preserveScroll: true });
-    }, [isAdmin, showReadOnlyToast]);
+    }, [canOperate, showReadOnlyToast]);
 
     const handleDownloadAction = useCallback(
         (download: App.Data.MediaDownloadRefData, action: App.Enums.MediaDownloadAction) => {
-            if (!isAdmin) {
+            if (!canOperate) {
                 showReadOnlyToast();
                 return;
             }
@@ -119,7 +121,7 @@ export default function Downloads() {
                 },
             );
         },
-        [isAdmin, showReadOnlyToast],
+        [canOperate, showReadOnlyToast],
     );
 
     return (
@@ -208,7 +210,7 @@ export default function Downloads() {
                                     <DownloadInformation
                                         download={download}
                                         highlighted={download.gid === highlightedDownload}
-                                        isReadOnly={!isAdmin}
+                                        isReadOnly={!canOperate}
                                         readonlyReason={readonlyReason}
                                         onReadonlyAction={showReadOnlyToast}
                                         onPause={() => {

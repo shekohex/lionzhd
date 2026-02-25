@@ -33,8 +33,9 @@ export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
     const { info, in_watchlist, auth } = props;
     const isAdmin = auth.user.role === 'admin';
-    const isExternalMember = !isAdmin && auth.user.subtype === 'external';
-    const serverDownloadVisibility = isAdmin ? 'enabled' : isExternalMember ? 'disabled' : 'hidden';
+    const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
+    const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
+    const serverDownloadVisibility = isAdmin || isInternalMember ? 'enabled' : isExternalMember ? 'disabled' : 'hidden';
 
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { delete: forgetCache } = useForm();

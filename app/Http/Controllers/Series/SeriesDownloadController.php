@@ -18,6 +18,8 @@ use App\Http\Integrations\LionzTv\Responses\Episode;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\MediaDownloadRef;
 use App\Models\Series;
+use App\Models\User;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -29,7 +31,7 @@ final class SeriesDownloadController extends Controller
     /**
      * Trigger a download of the series.
      */
-    public function create(XtreamCodesConnector $client, Series $model, int $season, int $episode): RedirectResponse
+    public function create(#[CurrentUser] User $user, Request $request, XtreamCodesConnector $client, Series $model, int $season, int $episode): RedirectResponse
     {
 
         $series = $client->send(new GetSeriesInfoRequest($model->series_id));
@@ -43,7 +45,7 @@ final class SeriesDownloadController extends Controller
         $activeDownload = GetActiveDownloads::run($model, $selectedEpisode);
 
         if ($activeDownload) {
-            return redirect()->route('downloads', [
+            return $this->downloadsRedirect($request, [
                 'episode' => $selectedEpisode->episodeNum,
                 'downloadable_id' => $selectedEpisode->id,
                 'series_id' => $model->series_id,
@@ -54,9 +56,9 @@ final class SeriesDownloadController extends Controller
         $url = CreateXtreamcodesDownloadUrl::run($selectedEpisode);
         $gid = DownloadMedia::run($url, ['out' => CreateDownloadOut::run($dto, $selectedEpisode)]);
 
-        MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode)->saveOrFail();
+        MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode, $user)->saveOrFail();
 
-        return redirect()->route('downloads', [
+        return $this->downloadsRedirect($request, [
             'episode' => $selectedEpisode->episodeNum,
             'downloadable_id' => $selectedEpisode->id,
             'series_id' => $model->series_id,
@@ -64,7 +66,7 @@ final class SeriesDownloadController extends Controller
         ])->with('success', 'Download started.');
     }
 
-    public function store(XtreamCodesConnector $client, Series $model, BatchDownloadEpisodesData $request): RedirectResponse
+    public function store(#[CurrentUser] User $user, XtreamCodesConnector $client, Series $model, BatchDownloadEpisodesData $requestData, Request $request): RedirectResponse
     {
 
         $series = $client->send(new GetSeriesInfoRequest($model->series_id));
@@ -73,7 +75,7 @@ final class SeriesDownloadController extends Controller
         $selectedEpisodes = [];
         /** @var string[] */
         $errors = [];
-        foreach ($request->selectedEpisodes as $episode) {
+        foreach ($requestData->selectedEpisodes as $episode) {
             $selectedEpisode = $dto->seasonsWithEpisodes[$episode->season][$episode->episodeNum];
             if ($selectedEpisode === null) {
                 $errors[] = "S{$episode->season}E{$episode->episodeNum} not found.";
@@ -100,10 +102,10 @@ final class SeriesDownloadController extends Controller
             return back()->withErrors($errors->toArray());
         }
 
-        $saved = DB::transaction(function () use ($gids, $model, $selectedEpisodes): bool {
-            $gids->each(function (string $gid, int $index) use ($model, $selectedEpisodes): void {
+        $saved = DB::transaction(function () use ($gids, $model, $selectedEpisodes, $user): bool {
+            $gids->each(function (string $gid, int $index) use ($model, $selectedEpisodes, $user): void {
                 $selectedEpisode = $selectedEpisodes[$index];
-                MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode)->saveOrFail();
+                MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode, $user)->saveOrFail();
             });
 
             return true;
@@ -113,7 +115,7 @@ final class SeriesDownloadController extends Controller
             return back()->withErrors('Failed to save download references.');
         }
 
-        return redirect()->route('downloads')->with('success', 'Downloads started for selected episodes.');
+        return $this->downloadsRedirect($request)->with('success', 'Downloads started for selected episodes.');
     }
 
     /**
@@ -190,5 +192,16 @@ final class SeriesDownloadController extends Controller
             'Content-Type' => 'text/plain',
             'Content-Disposition' => 'attachment; filename="direct-links.txt"',
         ]);
+    }
+
+    private function downloadsRedirect(Request $request, array $parameters = []): RedirectResponse
+    {
+        $returnTo = $request->query('return_to');
+
+        if (is_string($returnTo) && preg_match('#^/downloads(?:[/?]|$)#', $returnTo) === 1) {
+            return redirect()->to($returnTo);
+        }
+
+        return redirect()->route('downloads', $parameters);
     }
 }

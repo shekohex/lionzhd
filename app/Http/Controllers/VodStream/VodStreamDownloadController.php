@@ -25,7 +25,7 @@ final class VodStreamDownloadController extends Controller
     /**
      * Trigger a download of the Video on demand stream.
      */
-    public function create(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): RedirectResponse
+    public function create(#[CurrentUser] User $user, Request $request, XtreamCodesConnector $client, VodStream $model): RedirectResponse
     {
 
         $vod = $client->send(new GetVodInfoRequest($model->stream_id));
@@ -33,7 +33,7 @@ final class VodStreamDownloadController extends Controller
         // Check if the user has already downloaded this stream and the download is still active
         $firstActive = GetActiveDownloads::run($model);
         if ($firstActive) {
-            return redirect()->route('downloads', [
+            return $this->downloadsRedirect($request, [
                 'downloadable_id' => $model->stream_id,
                 'gid' => $firstActive->gid,
             ]);
@@ -42,9 +42,9 @@ final class VodStreamDownloadController extends Controller
         $url = CreateXtreamcodesDownloadUrl::run($dto);
         $gid = DownloadMedia::run($url, ['out' => CreateDownloadOut::run($dto)]);
 
-        MediaDownloadRef::fromVodStream($gid, $model)->saveOrFail();
+        MediaDownloadRef::fromVodStream($gid, $model, $user)->saveOrFail();
 
-        return redirect()->route('downloads', [
+        return $this->downloadsRedirect($request, [
             'downloadable_id' => $model->stream_id,
             'gid' => $gid,
         ]);
@@ -67,5 +67,16 @@ final class VodStreamDownloadController extends Controller
         return response()->view('direct-download.start', [
             'signedUrl' => $signedUrl,
         ]);
+    }
+
+    private function downloadsRedirect(Request $request, array $parameters = []): RedirectResponse
+    {
+        $returnTo = $request->query('return_to');
+
+        if (is_string($returnTo) && preg_match('#^/downloads(?:[/?]|$)#', $returnTo) === 1) {
+            return redirect()->to($returnTo);
+        }
+
+        return redirect()->route('downloads', $parameters);
     }
 }

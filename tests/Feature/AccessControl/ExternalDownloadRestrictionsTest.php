@@ -60,18 +60,20 @@ it('forbids external members from download operations', function (string $method
     ['delete', 'downloads.destroy'],
 ]);
 
-it('forbids internal members from download operations', function (string $method, string $routeName): void {
+it('returns not found when internal members operate on non-owned downloads', function (string $method, string $routeName): void {
     $user = User::factory()->memberInternal()->create();
+    $owner = User::factory()->memberInternal()->create();
     $download = MediaDownloadRef::query()->create([
         'gid' => 'internal-gid-1',
         'media_id' => 1001,
         'media_type' => VodStream::class,
         'downloadable_id' => 1001,
+        'user_id' => $owner->id,
     ]);
 
     $response = $this->actingAs($user)->{$method}(route($routeName, ['model' => $download->id]));
 
-    $response->assertForbidden();
+    $response->assertNotFound();
 })->with([
     ['patch', 'downloads.edit'],
     ['delete', 'downloads.destroy'],

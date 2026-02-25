@@ -39,15 +39,22 @@ declare namespace App.Data {
         q?: string;
         per_page: number;
     };
+    export type MediaDownloadOwnerData = {
+        id: number;
+        name: string;
+        email: string;
+    };
     export type MediaDownloadRefData = {
         id: number;
         gid: string;
         media_id: number;
         media_type: 'movie' | 'series';
         downloadable_id: number;
+        user_id?: number;
         created_at: string;
         updated_at: string;
         media: App.Data.VodStreamData | App.Data.SeriesData;
+        owner?: App.Data.MediaDownloadOwnerData;
         downloadStatus?: App.Data.MediaDownloadStatusData;
         season?: number;
         episode?: number;
@@ -120,6 +127,8 @@ declare namespace App.Enums {
     export type MediaDownloadStatus = 'unknown' | 'active' | 'waiting' | 'paused' | 'error' | 'complete' | 'removed';
     export type MediaType = 'movie' | 'series';
     export type SearchSortby = 'popular' | 'latest' | 'rating';
+    export type UserRole = 'admin' | 'member';
+    export type UserSubtype = 'internal' | 'external';
 }
 declare namespace App.Http.Integrations.LionzTv.Responses {
     export type AudioMetadata = {

@@ -22,9 +22,11 @@ final class MediaDownloadRefData extends Data
         #[LiteralTypeScriptType('"movie"|"series"')]
         public string $media_type,
         public int $downloadable_id,
+        public ?int $user_id,
         public CarbonImmutable $created_at,
         public CarbonImmutable $updated_at,
         public VodStreamData|SeriesData $media,
+        public ?MediaDownloadOwnerData $owner = null,
         public ?MediaDownloadStatusData $downloadStatus = null,
         public ?int $season = null,
         public ?int $episode = null,

@@ -24,9 +24,16 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
   1. First registered user is Admin; subsequent users are Member by default.
   2. Admin can mark members as Internal or External.
   3. Member cannot access admin-only areas (user management, system settings, sync/import controls, download operations, analytics/monitoring).
-  4. External member can only use direct-download links and cannot use server-download actions.
-  5. External member cannot configure or run auto-download schedules.
-**Plans**: TBD
+   4. External member can only use direct-download links and cannot use server-download actions.
+   5. External member cannot configure or run auto-download schedules.
+**Plans**: 5 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Add persisted roles/subtypes + registration bootstrap
+- [ ] 01-02-PLAN.md — Gates + admin-only settings + Inertia 403 UX + prevent zero-admin
+- [ ] 01-03-PLAN.md — Admin user management UI (super-admin + Internal/External)
+- [ ] 01-04-PLAN.md — Server-side enforcement for External download restrictions
+- [ ] 01-05-PLAN.md — Frontend enforcement (badges, disabled states) + manual verification
 
 ### Phase 2: Download Ownership & Authorization
 **Goal**: Download records and operations are user-owned and enforced consistently across pages and APIs.

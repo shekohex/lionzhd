@@ -20,14 +20,20 @@ Route::middleware('auth')->group(static function (): void {
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
 
-    Route::get('settings/xtreamcodes', [XtreamCodeConfigController::class, 'edit'])->name('xtreamcodes.edit');
-    Route::patch('settings/xtreamcodes', [XtreamCodeConfigController::class, 'update'])->name('xtreamcodes.update');
+    Route::middleware('can:admin')->group(static function (): void {
+        Route::get('settings/xtreamcodes', [XtreamCodeConfigController::class, 'edit'])->name('xtreamcodes.edit');
+        Route::patch('settings/xtreamcodes', [XtreamCodeConfigController::class, 'update'])->name('xtreamcodes.update');
 
-    Route::get('settings/aria2', [Aria2ConfigController::class, 'edit'])->name('aria2.edit');
-    Route::patch('settings/aria2', [Aria2ConfigController::class, 'update'])->name('aria2.update');
+        Route::get('settings/aria2', [Aria2ConfigController::class, 'edit'])->name('aria2.edit');
+        Route::patch('settings/aria2', [Aria2ConfigController::class, 'update'])->name('aria2.update');
 
-    Route::get('settings/syncmedia', [SyncMediaController::class, 'edit'])->name('syncmedia.edit');
-    Route::patch('settings/syncmedia', [SyncMediaController::class, 'update'])->name('syncmedia.update');
+        Route::get('settings/syncmedia', [SyncMediaController::class, 'edit'])->name('syncmedia.edit');
+        Route::patch('settings/syncmedia', [SyncMediaController::class, 'update'])->name('syncmedia.update');
+    });
+
+    Route::middleware('can:auto-download-schedules')->group(static function (): void {
+        Route::get('settings/schedules', static fn () => Inertia::render('settings/schedules'))->name('schedules');
+    });
 
     Route::get('settings/appearance', static fn () => Inertia::render('settings/appearance'))->name('appearance');
 });

@@ -43,14 +43,14 @@ final class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(static fn (array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
 
     public function admin(): static
     {
-        return $this->state(static fn (array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => UserRole::Admin,
             'is_super_admin' => false,
         ]);
@@ -58,14 +58,14 @@ final class UserFactory extends Factory
 
     public function superAdmin(): static
     {
-        return $this->admin()->state(static fn (array $attributes) => [
+        return $this->admin()->state(fn (array $attributes) => [
             'is_super_admin' => true,
         ]);
     }
 
     public function memberInternal(): static
     {
-        return $this->state(static fn (array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => UserRole::Member,
             'subtype' => UserSubtype::Internal,
             'is_super_admin' => false,
@@ -74,7 +74,7 @@ final class UserFactory extends Factory
 
     public function memberExternal(): static
     {
-        return $this->state(static fn (array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'role' => UserRole::Member,
             'subtype' => UserSubtype::External,
             'is_super_admin' => false,

@@ -53,11 +53,12 @@ const FILTER_OPTIONS = {
 
 export default function Downloads() {
     const { props } = usePage<DownloadsPageProps>();
-    const [highlightedDownload] = useQueryState('gid', parseAsString);
+    const [highlightedDownload, setHighlightedDownload] = useQueryState('gid', parseAsString);
     const { downloads, auth } = props;
     const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(2000));
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
     const pollRef = useRef(router.poll(pollingInterval, { preserveUrl: true }, { autoStart: false }));
+    const missingHighlightedGidRef = useRef<string | null>(null);
     const isAdmin = auth.user.role === 'admin';
     const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
     const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
@@ -84,6 +85,32 @@ export default function Downloads() {
             pollRef.current.stop();
         };
     }, [pollingInterval]);
+
+    useEffect(() => {
+        if (!highlightedDownload) {
+            missingHighlightedGidRef.current = null;
+            return;
+        }
+
+        const highlightedDownloadExists = downloads.data.some((download) => download.gid === highlightedDownload);
+
+        if (highlightedDownloadExists) {
+            missingHighlightedGidRef.current = null;
+            return;
+        }
+
+        if (missingHighlightedGidRef.current === highlightedDownload) {
+            return;
+        }
+
+        missingHighlightedGidRef.current = highlightedDownload;
+
+        toast.info('Highlighted download cleared', {
+            description: 'This download is no longer accessible in your current scope.',
+        });
+
+        void setHighlightedDownload(null, { history: 'replace' });
+    }, [downloads.data, highlightedDownload, setHighlightedDownload]);
 
     const handlePollingIntervalChange = useCallback(
         (interval: number) => {

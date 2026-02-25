@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 2 of 7 (Download Ownership & Authorization)
 Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 02-03-PLAN.md
+Last activity: 2026-02-25 - Completed 02-02-PLAN.md
 
 Progress: [███████░░░] 70%
 
@@ -48,6 +48,9 @@ Progress: [███████░░░] 70%
 | 2 | Keep `media_download_refs.user_id` nullable in the first ownership migration | Preserve legacy rows and allow phased enforcement in later phase-2 plans |
 | 2 | Make `download-operations` model-aware and return `denyAsNotFound()` for member cross-user access | Enforce own-only operations at middleware boundary without leaking resource existence |
 | 2 | Scope `/downloads` member queries by `user_id` and pass bound model via `can:download-operations,model` | Ensure own-only list + operation enforcement is server-side and route-level consistent |
+| 2 | Accept optional `return_to` only for `/downloads` targets in server-download redirects | Preserve downloads context while preventing unsafe redirects |
+| 2 | Scope member active-download dedupe by owner `user_id` while keeping admin dedupe global | Prevent cross-user active-download redirect leakage for members |
+| 2 | Fail open on aria2 status hydration errors in downloads index | Keep downloads page available when aria2 RPC is temporarily unavailable |
 
 ### Pending Todos
 
@@ -59,6 +62,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T06:54:51Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-02-25T06:55:29Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

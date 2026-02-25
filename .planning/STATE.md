@@ -10,21 +10,21 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 1 of 7 (Access Control)
-Plan: 2 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 01-02-PLAN.md
+Last activity: 2026-02-25 - Completed 01-04-PLAN.md
 
-Progress: [████░░░░░░] 40%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
-- Total plans completed: 2
-- Average duration: 5 min
+- Total plans completed: 3
+- Average duration: 4 min
 - Total execution time: 0.2 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 (Access Control) | 2 | 10 min | 5 min |
+| 1 (Access Control) | 3 | 12 min | 4 min |
 
 ## Accumulated Context
 
@@ -38,6 +38,7 @@ Progress: [████░░░░░░] 40%
 | 1 | Centralize stable gate names in AppServiceProvider and enforce via can middleware | Keep authorization contract auditable and reusable across routes/features |
 | 1 | Return explicit gate deny messages for UI-facing unauthorized reasons | Ensure forbidden UX communicates exact required permission |
 | 1 | Render Inertia 403 page only for Inertia requests | Keep SPA UX consistent without altering non-Inertia response behavior |
+| 1 | Enforce download restrictions via `can:server-download` and `can:download-operations` on route definitions | Guarantee ACCS-05 and admin-only download operations at server boundary even if UI is bypassed |
 
 ### Pending Todos
 
@@ -49,6 +50,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T04:44:18Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-02-25T04:49:40Z
+Stopped at: Completed 01-04-PLAN.md
 Resume file: None

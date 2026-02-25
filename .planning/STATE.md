@@ -10,22 +10,23 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 3 of 7 (Categories Sync & Categorization Correctness)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-25 - Phase 2 verified complete
+Plan: 2 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-25 - Completed 03-02-PLAN.md
 
-Progress: [███░░░░░░░] 29%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
-- Total plans completed: 10
-- Average duration: 5.9 min
-- Total execution time: 1.0 hours
+- Total plans completed: 11
+- Average duration: 5.7 min
+- Total execution time: 1.04 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
+| 3 (Categories Sync & Categorization Correctness) | 1 | 3 min | 3 min |
 
 ## Accumulated Context
 
@@ -56,6 +57,9 @@ Progress: [███░░░░░░░] 29%
 | 2 | Self-heal stale `/downloads?gid=` highlights by clearing `gid` and toasting scope loss | Prevent broken deep-link states after ownership scoping without extra server error paths |
 | 2 | Represent admin multi-owner filtering in a normalized `owners` query string | Keep chips/search filter state stable, shareable, and deterministic |
 | 2 | Forward retry `return_to` only for safe relative `/downloads` paths | Preserve filtered context after actions while blocking unsafe redirect targets |
+| 3 | Persist separate VOD and Series Uncategorized categories as system rows with stable provider IDs | Keep uncategorized remap behavior deterministic across re-sync cycles |
+| 3 | Use enum-backed sync run statuses (`running`, `success`, `success_with_warnings`, `failed`) in history model | Provide a stable contract for sync logic and admin history UI |
+| 3 | Standardize media DTO `category_id` as nullable string | Align contracts with provider category ID identity semantics |
 
 ### Pending Todos
 
@@ -67,6 +71,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T12:45:00Z
-Stopped at: Phase 2 verified complete; ready for Phase 3 planning
+Last session: 2026-02-25T17:15:48Z
+Stopped at: Completed 03-02-PLAN.md
 Resume file: None

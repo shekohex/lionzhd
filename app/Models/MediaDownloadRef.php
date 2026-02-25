@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Http\Integrations\LionzTv\Responses\Episode;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
@@ -20,6 +21,7 @@ final class MediaDownloadRef extends Model
      */
     protected $fillable = [
         'gid',
+        'user_id',
         'media_id',
         'media_type',
         'downloadable_id',
@@ -30,9 +32,11 @@ final class MediaDownloadRef extends Model
     public static function fromVodStream(
         string $gid,
         VodStream $vodStream,
+        User|int|null $owner = null,
     ): self {
         return new self([
             'gid' => $gid,
+            'user_id' => self::ownerId($owner),
             'media_id' => $vodStream->stream_id,
             'media_type' => VodStream::class,
             'downloadable_id' => $vodStream->stream_id,
@@ -43,9 +47,11 @@ final class MediaDownloadRef extends Model
         string $gid,
         Series $series,
         Episode $episode,
+        User|int|null $owner = null,
     ): self {
         return new self([
             'gid' => $gid,
+            'user_id' => self::ownerId($owner),
             'media_id' => $series->series_id,
             'media_type' => Series::class,
             'downloadable_id' => $episode->id,
@@ -72,5 +78,19 @@ final class MediaDownloadRef extends Model
     public function media(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    private static function ownerId(User|int|null $owner): ?int
+    {
+        if ($owner instanceof User) {
+            return $owner->id;
+        }
+
+        return $owner;
     }
 }

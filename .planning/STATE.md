@@ -10,22 +10,22 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 2 of 7 (Download Ownership & Authorization)
-Plan: 2 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-25 - Completed 02-02-PLAN.md
+Last activity: 2026-02-25 - Completed 02-04-PLAN.md
 
-Progress: [███████░░░] 70%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
-- Total plans completed: 7
-- Average duration: 7 min
-- Total execution time: 0.8 hours
+- Total plans completed: 9
+- Average duration: 6 min
+- Total execution time: 1.0 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
-| 2 (Download Ownership & Authorization) | 2 | 9 min | 4.5 min |
+| 2 (Download Ownership & Authorization) | 4 | 17 min | 4.25 min |
 
 ## Accumulated Context
 
@@ -51,6 +51,9 @@ Progress: [███████░░░] 70%
 | 2 | Accept optional `return_to` only for `/downloads` targets in server-download redirects | Preserve downloads context while preventing unsafe redirects |
 | 2 | Scope member active-download dedupe by owner `user_id` while keeping admin dedupe global | Prevent cross-user active-download redirect leakage for members |
 | 2 | Fail open on aria2 status hydration errors in downloads index | Keep downloads page available when aria2 RPC is temporarily unavailable |
+| 2 | Use `canOperate = isAdmin || isInternalMember` in downloads UI | Keep member permissions aligned with Phase 2 server authorization contract |
+| 2 | Show owner token metadata only to admins with a subtle Mine marker | Preserve member privacy while improving admin cross-user operational clarity |
+| 2 | Self-heal stale `/downloads?gid=` highlights by clearing `gid` and toasting scope loss | Prevent broken deep-link states after ownership scoping without extra server error paths |
 
 ### Pending Todos
 
@@ -62,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T06:55:29Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-02-25T07:02:24Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None

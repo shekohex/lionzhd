@@ -5,26 +5,26 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 1 (Access Control)
+**Current focus:** Phase 2 (Download Ownership & Authorization)
 
 ## Current Position
 
 Phase: 1 of 7 (Access Control)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-02-25 - Completed 01-03-PLAN.md
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-02-25 - Completed 01-05-PLAN.md
 
-Progress: [████████░░] 80%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 4
-- Average duration: 4 min
-- Total execution time: 0.3 hours
+- Total plans completed: 5
+- Average duration: 8 min
+- Total execution time: 0.7 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 (Access Control) | 4 | 17 min | 4 min |
+| 1 (Access Control) | 5 | 40 min | 8 min |
 
 ## Accumulated Context
 
@@ -41,6 +41,8 @@ Progress: [████████░░] 80%
 | 1 | Enforce download restrictions via `can:server-download` and `can:download-operations` on route definitions | Guarantee ACCS-05 and admin-only download operations at server boundary even if UI is bypassed |
 | 1 | Restrict admin promotion/demotion and super-admin transfer to super-admin while allowing all admins to toggle member subtype | Preserve governance boundaries while enabling routine subtype administration |
 | 1 | Route users mutations through a single public update action with operation defaults | Keep endpoint separation and satisfy architecture constraints on controller public methods |
+| 1 | Keep server-download actions visible but disabled for External members while hiding them for Internal members | Make boundary reasons explicit to restricted users without adding noise for unrestricted member paths |
+| 1 | Show shell access badges only for Admin and External users | Surface permission-relevant identity state without clutter for Internal members |
 
 ### Pending Todos
 
@@ -52,6 +54,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T04:52:18Z
-Stopped at: Completed 01-03-PLAN.md
+Last session: 2026-02-25T05:21:34Z
+Stopped at: Completed 01-05-PLAN.md
 Resume file: None

@@ -1,4 +1,5 @@
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import AccessBadge from '@/components/access-badge';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { type BreadcrumbItem as BreadcrumbItemType } from '@/types';
 
@@ -9,6 +10,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <div className="flex items-center gap-2">
                     <SidebarTrigger className="-ml-1" />
                     <Breadcrumbs breadcrumbs={breadcrumbs} />
+                </div>
+                <div className="flex items-center">
+                    <AccessBadge />
                 </div>
             </header>
         </>

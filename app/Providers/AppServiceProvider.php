@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\Enums\UserRole;
 use App\Enums\UserSubtype;
 use App\Models\Aria2Config;
+use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use Carbon\CarbonImmutable;
@@ -99,13 +100,43 @@ final class AppServiceProvider extends ServiceProvider
                 : Response::deny('External-only');
         });
 
-        Gate::define('server-download', static fn (User $user): Response => $user->role === UserRole::Admin
-            ? Response::allow()
-            : Response::deny('Admin-only'));
+        Gate::define('server-download', static function (User $user): Response {
+            if ($user->role === UserRole::Admin) {
+                return Response::allow();
+            }
 
-        Gate::define('download-operations', static fn (User $user): Response => $user->role === UserRole::Admin
-            ? Response::allow()
-            : Response::deny('Admin-only'));
+            if ($user->role === UserRole::Member && $user->subtype === UserSubtype::Internal) {
+                return Response::allow();
+            }
+
+            if ($user->role === UserRole::Member && $user->subtype === UserSubtype::External) {
+                return Response::deny('External accounts cannot use server downloads. Use Direct Download instead.');
+            }
+
+            return Response::deny('Server download access is restricted to admins and internal members.');
+        });
+
+        Gate::define('download-operations', static function (User $user, MediaDownloadRef $download): Response {
+            if ($user->role === UserRole::Admin) {
+                return Response::allow();
+            }
+
+            if ($user->role !== UserRole::Member) {
+                return Response::deny('Download operations are restricted to admins and members.');
+            }
+
+            if ($user->subtype === UserSubtype::External) {
+                return Response::deny('External accounts cannot perform download operations. Use Direct Download instead.');
+            }
+
+            if ($user->subtype !== UserSubtype::Internal) {
+                return Response::deny('Download operations are restricted to internal members.');
+            }
+
+            return $download->user_id === $user->id
+                ? Response::allow()
+                : Response::denyAsNotFound();
+        });
 
         Gate::define('manage-users', static fn (User $user): Response => $user->role === UserRole::Admin
             ? Response::allow()

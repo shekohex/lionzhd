@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Settings\Aria2ConfigController;
+use App\Http\Controllers\Settings\CategorySyncRunsController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\SyncCategoriesController;
 use App\Http\Controllers\Settings\SyncMediaController;
 use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\Settings\XtreamCodeConfigController;
@@ -44,6 +46,10 @@ Route::middleware('auth')->group(static function (): void {
 
         Route::get('settings/syncmedia', [SyncMediaController::class, 'edit'])->name('syncmedia.edit');
         Route::patch('settings/syncmedia', [SyncMediaController::class, 'update'])->name('syncmedia.update');
+
+        Route::get('settings/synccategories', [SyncCategoriesController::class, 'edit'])->name('synccategories.edit');
+        Route::patch('settings/synccategories', [SyncCategoriesController::class, 'update'])->name('synccategories.update');
+        Route::get('settings/synccategories/history', [CategorySyncRunsController::class, 'index'])->name('synccategories.history');
     });
 
     Route::middleware('can:auto-download-schedules')->group(static function (): void {

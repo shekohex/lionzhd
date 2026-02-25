@@ -6,7 +6,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 
 ## Phases
 
-- [ ] **Phase 1: Access Control** - Admin/Member + Internal/External enforcement with admin-only areas locked down
+- [x] **Phase 1: Access Control** - Admin/Member + Internal/External enforcement with admin-only areas locked down
 - [ ] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
 - [ ] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
 - [ ] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
@@ -29,11 +29,11 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 **Plans**: 5 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Add persisted roles/subtypes + registration bootstrap
-- [ ] 01-02-PLAN.md — Gates + admin-only settings + Inertia 403 UX + prevent zero-admin
-- [ ] 01-03-PLAN.md — Admin user management UI (super-admin + Internal/External)
-- [ ] 01-04-PLAN.md — Server-side enforcement for External download restrictions
-- [ ] 01-05-PLAN.md — Frontend enforcement (badges, disabled states) + manual verification
+- [x] 01-01-PLAN.md — Add persisted roles/subtypes + registration bootstrap
+- [x] 01-02-PLAN.md — Gates + admin-only settings + Inertia 403 UX + prevent zero-admin
+- [x] 01-03-PLAN.md — Admin user management UI (super-admin + Internal/External)
+- [x] 01-04-PLAN.md — Server-side enforcement for External download restrictions
+- [x] 01-05-PLAN.md — Frontend enforcement (badges, disabled states) + manual verification
 
 ### Phase 2: Download Ownership & Authorization
 **Goal**: Download records and operations are user-owned and enforced consistently across pages and APIs.
@@ -104,7 +104,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Access Control | 0/TBD | Not started | - |
+| 1. Access Control | 5/5 | Complete | 2026-02-25 |
 | 2. Download Ownership & Authorization | 0/TBD | Not started | - |
 | 3. Categories Sync & Categorization Correctness | 0/TBD | Not started | - |
 | 4. Category Browse/Filter UX | 0/TBD | Not started | - |

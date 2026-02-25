@@ -93,8 +93,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DISC-02 | Phase 4 | Pending |
 | DISC-03 | Phase 4 | Pending |
 | DISC-04 | Phase 4 | Pending |
-| DISC-05 | Phase 3 | Pending |
-| DISC-06 | Phase 3 | Pending |
+| DISC-05 | Phase 3 | Complete |
+| DISC-06 | Phase 3 | Complete |
 | ACCS-01 | Phase 1 | Complete |
 | ACCS-02 | Phase 1 | Complete |
 | ACCS-03 | Phase 1 | Complete |
@@ -128,4 +128,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-25*
-*Last updated: 2026-02-25 after initial definition*
+*Last updated: 2026-02-25 after Phase 3 completion*

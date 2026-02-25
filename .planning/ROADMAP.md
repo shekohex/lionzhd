@@ -8,7 +8,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 
 - [x] **Phase 1: Access Control** - Admin/Member + Internal/External enforcement with admin-only areas locked down
 - [x] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
-- [ ] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
+- [x] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
 - [ ] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
 - [ ] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
 - [ ] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
@@ -61,7 +61,13 @@ Plans:
   1. Admin can sync VOD and series categories from Xtream while excluding Live categories.
   2. User can open content that remains correctly categorized based on synced category relationships.
   3. Re-running category sync does not break existing categorization or create obvious duplicates.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [x] 03-01-PLAN.md — Add Xtream category requests + defensive parsing tests
+- [x] 03-02-PLAN.md — Add categories/sync-run persistence + DTO alignment
+- [x] 03-03-PLAN.md — Implement core category sync correctness action + job + tests
+- [x] 03-04-PLAN.md — Expose settings sync + history UI + empty-source confirmation flow
 
 ### Phase 4: Category Browse/Filter UX
 **Goal**: Users can browse and filter movies/series by category with a sidebar-driven discovery flow.
@@ -113,7 +119,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Access Control | 5/5 | Complete | 2026-02-25 |
 | 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
-| 3. Categories Sync & Categorization Correctness | 0/TBD | Not started | - |
+| 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
 | 4. Category Browse/Filter UX | 0/TBD | Not started | - |
 | 5. Download Lifecycle Reliability | 0/TBD | Not started | - |
 | 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |

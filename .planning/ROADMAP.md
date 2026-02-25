@@ -78,7 +78,14 @@ Plans:
   2. User can browse series by category using a sidebar on series pages.
   3. User can filter movies to a selected category, including an explicit Uncategorized option.
   4. User can filter series to a selected category, including an explicit Uncategorized option.
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Shared sidebar/filter DTOs + aggregate-count sidebar builder
+- [ ] 04-02-PLAN.md — Movies backend filtering + feature tests
+- [ ] 04-03-PLAN.md — Series backend filtering + feature tests
+- [ ] 04-04-PLAN.md — Shared sidebar UI + Movies/Series page wiring (Inertia partial reload + skeletons)
+- [ ] 04-05-PLAN.md — Indexes + TS type regen + manual UX verification
 
 ### Phase 5: Download Lifecycle Reliability
 **Goal**: Server-side downloads behave reliably (progress, cancel, resume, retry) and are covered by automated tests.
@@ -120,7 +127,7 @@ Plans:
 | 1. Access Control | 5/5 | Complete | 2026-02-25 |
 | 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
-| 4. Category Browse/Filter UX | 0/TBD | Not started | - |
+| 4. Category Browse/Filter UX | 0/5 | Not started | - |
 | 5. Download Lifecycle Reliability | 0/TBD | Not started | - |
 | 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

@@ -44,7 +44,14 @@ Plans:
   2. Member can operate only on their own downloads (pause, resume, cancel, retry).
   3. Admin can view and operate on downloads across all users.
   4. Each new download is owned by the initiating user and persists with that ownership.
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Persist download ownership (DB + model + DTO)
+- [ ] 02-02-PLAN.md — Own new downloads + user-scoped active-download dedupe
+- [ ] 02-03-PLAN.md — Server enforcement (gates + routes + member scoping) + tests
+- [ ] 02-04-PLAN.md — Downloads UI updates (member ops + owner visibility + confirmations)
+- [ ] 02-05-PLAN.md — Admin owner filtering UX + manual verification
 
 ### Phase 3: Categories Sync & Categorization Correctness
 **Goal**: Categories from Xtream (VOD + Series only) are synced and content retains correct category relationships.

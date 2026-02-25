@@ -29,7 +29,7 @@ final class VodStreamData extends Data
 
     public bool $is_adult;
 
-    public ?int $category_id = null;
+    public ?string $category_id = null;
 
     public string $container_extension;
 

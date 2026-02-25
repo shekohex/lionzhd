@@ -37,6 +37,8 @@ final class SeriesData extends Data
 
     public CarbonImmutable $last_modified;
 
+    public ?string $category_id = null;
+
     public float $rating;
 
     public float $rating_5based;

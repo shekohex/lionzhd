@@ -89,42 +89,42 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-01 | TBD | Pending |
-| DISC-02 | TBD | Pending |
-| DISC-03 | TBD | Pending |
-| DISC-04 | TBD | Pending |
-| DISC-05 | TBD | Pending |
-| DISC-06 | TBD | Pending |
-| ACCS-01 | TBD | Pending |
-| ACCS-02 | TBD | Pending |
-| ACCS-03 | TBD | Pending |
-| ACCS-04 | TBD | Pending |
-| ACCS-05 | TBD | Pending |
-| ACCS-06 | TBD | Pending |
-| DOWN-01 | TBD | Pending |
-| DOWN-02 | TBD | Pending |
-| DOWN-03 | TBD | Pending |
-| DOWN-04 | TBD | Pending |
-| AUTO-01 | TBD | Pending |
-| AUTO-02 | TBD | Pending |
-| AUTO-03 | TBD | Pending |
-| AUTO-04 | TBD | Pending |
-| AUTO-05 | TBD | Pending |
-| AUTO-06 | TBD | Pending |
-| RELY-01 | TBD | Pending |
-| RELY-02 | TBD | Pending |
-| RELY-03 | TBD | Pending |
-| RELY-04 | TBD | Pending |
-| RELY-05 | TBD | Pending |
-| RELY-06 | TBD | Pending |
-| MOBL-01 | TBD | Pending |
-| MOBL-02 | TBD | Pending |
-| MOBL-03 | TBD | Pending |
+| DISC-01 | Phase 4 | Pending |
+| DISC-02 | Phase 4 | Pending |
+| DISC-03 | Phase 4 | Pending |
+| DISC-04 | Phase 4 | Pending |
+| DISC-05 | Phase 3 | Pending |
+| DISC-06 | Phase 3 | Pending |
+| ACCS-01 | Phase 1 | Pending |
+| ACCS-02 | Phase 1 | Pending |
+| ACCS-03 | Phase 1 | Pending |
+| ACCS-04 | Phase 1 | Pending |
+| ACCS-05 | Phase 1 | Pending |
+| ACCS-06 | Phase 1 | Pending |
+| DOWN-01 | Phase 2 | Pending |
+| DOWN-02 | Phase 2 | Pending |
+| DOWN-03 | Phase 2 | Pending |
+| DOWN-04 | Phase 2 | Pending |
+| AUTO-01 | Phase 7 | Pending |
+| AUTO-02 | Phase 7 | Pending |
+| AUTO-03 | Phase 7 | Pending |
+| AUTO-04 | Phase 7 | Pending |
+| AUTO-05 | Phase 7 | Pending |
+| AUTO-06 | Phase 7 | Pending |
+| RELY-01 | Phase 5 | Pending |
+| RELY-02 | Phase 5 | Pending |
+| RELY-03 | Phase 5 | Pending |
+| RELY-04 | Phase 5 | Pending |
+| RELY-05 | Phase 5 | Pending |
+| RELY-06 | Phase 5 | Pending |
+| MOBL-01 | Phase 6 | Pending |
+| MOBL-02 | Phase 6 | Pending |
+| MOBL-03 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 31 total
-- Mapped to phases: 0
-- Unmapped: 31
+- Mapped to phases: 31
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-25*

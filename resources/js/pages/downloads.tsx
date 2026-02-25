@@ -8,9 +8,10 @@ import { DownloadsPageProps } from '@/types/downloads';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDownIcon, FilterIcon, FolderOpen } from 'lucide-react';
-import { parseAsInteger, parseAsString, parseAsStringEnum, useQueryState } from 'nuqs';
+import { parseAsInteger, parseAsString, useQueryState } from 'nuqs';
 import { useCallback, useEffect, useRef } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { toast } from 'sonner';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -52,15 +53,28 @@ const FILTER_OPTIONS = {
 
 export default function Downloads() {
     const { props } = usePage<DownloadsPageProps>();
-    const [action, setAction] = useQueryState<App.Enums.MediaDownloadAction>(
-        'action',
-        parseAsStringEnum(['cancel', 'pause', 'resume', 'retry', 'remove']),
-    );
     const [highlightedDownload] = useQueryState('gid', parseAsString);
-    const { downloads } = props;
+    const { downloads, auth } = props;
     const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(2000));
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
     const pollRef = useRef(router.poll(pollingInterval, { preserveUrl: true }, { autoStart: false }));
+    const isAdmin = auth.user.role === 'admin';
+    const isExternalMember = !isAdmin && auth.user.subtype === 'external';
+    const readonlyReason = !isAdmin
+        ? isExternalMember
+            ? 'Read-only: use Direct Download from movie/series pages and contact your super-admin for server access.'
+            : 'Read-only: download operations are admin-only. Contact your super-admin for assistance.'
+        : undefined;
+
+    const showReadOnlyToast = useCallback(() => {
+        if (isAdmin || !readonlyReason) {
+            return;
+        }
+
+        toast.info('Downloads are read-only', {
+            description: readonlyReason,
+        });
+    }, [isAdmin, readonlyReason]);
 
     useEffect(() => {
         pollRef.current.start();
@@ -81,11 +95,21 @@ export default function Downloads() {
     );
 
     const handleCancelDownload = useCallback((download: App.Data.MediaDownloadRefData) => {
+        if (!isAdmin) {
+            showReadOnlyToast();
+            return;
+        }
+
         router.delete(route('downloads.destroy', { model: download.id }), { preserveScroll: true });
-    }, []);
+    }, [isAdmin, showReadOnlyToast]);
 
     const handleDownloadAction = useCallback(
-        (download: App.Data.MediaDownloadRefData) => {
+        (download: App.Data.MediaDownloadRefData, action: App.Enums.MediaDownloadAction) => {
+            if (!isAdmin) {
+                showReadOnlyToast();
+                return;
+            }
+
             router.patch(
                 route('downloads.edit', { model: download.id }),
                 { action: action },
@@ -95,7 +119,7 @@ export default function Downloads() {
                 },
             );
         },
-        [action],
+        [isAdmin, showReadOnlyToast],
     );
 
     return (
@@ -154,6 +178,12 @@ export default function Downloads() {
                     </Popover>
                 </div>
 
+                {!isAdmin && readonlyReason ? (
+                    <div className="mx-6 mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                        {readonlyReason}
+                    </div>
+                ) : null}
+
                 {downloads.data.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                         <FolderOpen className="text-muted-foreground mb-4 h-12 w-12" />
@@ -178,21 +208,20 @@ export default function Downloads() {
                                     <DownloadInformation
                                         download={download}
                                         highlighted={download.gid === highlightedDownload}
+                                        isReadOnly={!isAdmin}
+                                        readonlyReason={readonlyReason}
+                                        onReadonlyAction={showReadOnlyToast}
                                         onPause={() => {
-                                            setAction('pause');
-                                            handleDownloadAction(download);
+                                            handleDownloadAction(download, 'pause');
                                         }}
                                         onResume={() => {
-                                            setAction('resume');
-                                            handleDownloadAction(download);
+                                            handleDownloadAction(download, 'resume');
                                         }}
                                         onRetry={() => {
-                                            setAction('retry');
-                                            handleDownloadAction(download);
+                                            handleDownloadAction(download, 'retry');
                                         }}
                                         onRemove={() => {
-                                            setAction('remove');
-                                            handleDownloadAction(download);
+                                            handleDownloadAction(download, 'remove');
                                         }}
                                         onCancel={() => handleCancelDownload(download)}
                                     />

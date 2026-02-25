@@ -8,6 +8,9 @@ import { Pause, Play, Redo, Trash2, X } from 'lucide-react';
 interface DownloadInformationProps {
     download: App.Data.MediaDownloadRefData;
     highlighted?: boolean;
+    isReadOnly?: boolean;
+    readonlyReason?: string;
+    onReadonlyAction?: () => void;
     onPause?: () => void;
     onResume?: () => void;
     onRetry?: () => void;
@@ -18,6 +21,9 @@ interface DownloadInformationProps {
 const DownloadInformation: React.FC<DownloadInformationProps> = ({
     download,
     highlighted,
+    isReadOnly = false,
+    readonlyReason,
+    onReadonlyAction,
     onCancel,
     onPause,
     onResume,
@@ -37,6 +43,18 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
     const backdropUrl = movie?.stream_icon || series?.cover;
     const posterUrl = movie?.stream_icon || series?.cover;
     const additionalBackdrops = series?.backdrop_path || [];
+    const buttonClassName = isReadOnly
+        ? 'cursor-not-allowed rounded-md p-1 opacity-50 hover:bg-transparent'
+        : 'hover:bg-muted rounded-md p-1';
+
+    const handleReadOnlyAwareAction = (action?: () => void) => {
+        if (isReadOnly) {
+            onReadonlyAction?.();
+            return;
+        }
+
+        action?.();
+    };
 
     const formatBytes = (bytes: number, decimals: number = 2) => {
         if (!+bytes) return '0 Bytes';
@@ -122,6 +140,9 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                 ) : (
                     <span className="text-sm">{download.downloadStatus?.status ?? 'N/A'}</span>
                 )}
+                {isReadOnly && readonlyReason ? (
+                    <span className="text-muted-foreground max-w-xs text-right text-xs">{readonlyReason}</span>
+                ) : null}
                 <div className="flex items-center gap-2">
                     {download.downloadStatus?.status === 'active' && (
                         <TooltipProvider>
@@ -130,8 +151,10 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => onPause?.()}
-                                        className="hover:bg-muted rounded-md p-1"
+                                        onClick={() => handleReadOnlyAwareAction(onPause)}
+                                        className={buttonClassName}
+                                        aria-disabled={isReadOnly}
+                                        title={isReadOnly ? readonlyReason : undefined}
                                     >
                                         <Pause className="h-4 w-4" />
                                     </Button>
@@ -149,8 +172,10 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => onResume?.()}
-                                        className="hover:bg-muted rounded-md p-1"
+                                        onClick={() => handleReadOnlyAwareAction(onResume)}
+                                        className={buttonClassName}
+                                        aria-disabled={isReadOnly}
+                                        title={isReadOnly ? readonlyReason : undefined}
                                     >
                                         <Play className="h-4 w-4" />
                                     </Button>
@@ -168,8 +193,10 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                     <Button
                                         variant="outline"
                                         size="icon"
-                                        onClick={() => onRetry?.()}
-                                        className="hover:bg-muted rounded-md p-1"
+                                        onClick={() => handleReadOnlyAwareAction(onRetry)}
+                                        className={buttonClassName}
+                                        aria-disabled={isReadOnly}
+                                        title={isReadOnly ? readonlyReason : undefined}
                                     >
                                         <Redo className="h-4 w-4" />
                                     </Button>
@@ -186,8 +213,10 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                                 <Button
                                     variant="outline"
                                     size="icon"
-                                    onClick={() => onRemove?.()}
-                                    className="hover:bg-muted rounded-md p-1"
+                                    onClick={() => handleReadOnlyAwareAction(onRemove)}
+                                    className={buttonClassName}
+                                    aria-disabled={isReadOnly}
+                                    title={isReadOnly ? readonlyReason : undefined}
                                 >
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -202,7 +231,14 @@ const DownloadInformation: React.FC<DownloadInformationProps> = ({
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="destructive" size="icon" onClick={() => onCancel?.()}>
+                                    <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        onClick={() => handleReadOnlyAwareAction(onCancel)}
+                                        className={isReadOnly ? 'cursor-not-allowed opacity-50' : undefined}
+                                        aria-disabled={isReadOnly}
+                                        title={isReadOnly ? readonlyReason : undefined}
+                                    >
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </TooltipTrigger>

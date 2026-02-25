@@ -47,7 +47,15 @@ final class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name', 'Laravel'),
             'auth' => [
-                'user' => FacadesRequest::user()?->only('id', 'name', 'email'),
+                'user' => FacadesRequest::user()?->only(
+                    'id',
+                    'name',
+                    'email',
+                    'email_verified_at',
+                    'role',
+                    'subtype',
+                    'is_super_admin',
+                ),
             ],
             'flash' => [
                 'success' => fn () => FacadesRequest::session()->get('success'),

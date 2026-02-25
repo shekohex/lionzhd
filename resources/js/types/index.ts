@@ -37,6 +37,9 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    role: 'admin' | 'member';
+    subtype: 'internal' | 'external';
+    is_super_admin: boolean;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

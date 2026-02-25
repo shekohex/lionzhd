@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
+use App\Enums\UserSubtype;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules\Password;
@@ -32,11 +35,18 @@ final class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        $user = User::query()->create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
+        $user = DB::transaction(function () use ($request): User {
+            $isFirstUser = ! User::query()->lockForUpdate()->exists();
+
+            return User::query()->create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'role' => $isFirstUser ? UserRole::Admin : UserRole::Member,
+                'subtype' => UserSubtype::External,
+                'is_super_admin' => $isFirstUser,
+            ]);
+        });
 
         event(new Registered($user));
 

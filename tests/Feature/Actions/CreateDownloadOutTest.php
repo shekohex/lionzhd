@@ -62,7 +62,7 @@ describe('Create Download Output file', function (): void {
         expect($result)->toBe(implode(DIRECTORY_SEPARATOR, [
             'shows',
             $series->name,
-            'Season '.$episode->season,
+            'Season '.mb_str_pad((string) $episode->season, 2, '0', STR_PAD_LEFT),
             $episode->title.'.'.$episode->containerExtension,
         ]));
 

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +25,8 @@ final class PulseServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('viewPulse', fn (User $user) => $user->id === 1);
+        Gate::define('viewPulse', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
     }
 }

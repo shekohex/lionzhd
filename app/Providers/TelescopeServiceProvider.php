@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
 use App\Models\User;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\IncomingEntry;
@@ -44,7 +46,9 @@ final class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewTelescope', fn (User $user) => $user->id === 1);
+        Gate::define('viewTelescope', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
     }
 
     /**

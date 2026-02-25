@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
+use App\Enums\UserSubtype;
 use App\Models\Aria2Config;
+use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use Carbon\CarbonImmutable;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -31,7 +36,6 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
         // SQLite specific settings and optimizations
         if (DB::getDriverName() === 'sqlite') {
             try {
@@ -61,5 +65,64 @@ final class AppServiceProvider extends ServiceProvider
         // Better to disable destructive commands in production
         DB::prohibitDestructiveCommands(app()->isProduction());
 
+        Gate::define('admin', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
+
+        Gate::define('super-admin', static function (User $user): Response {
+            if ($user->role !== UserRole::Admin) {
+                return Response::deny('Admin-only');
+            }
+
+            return $user->is_super_admin
+                ? Response::allow()
+                : Response::deny('Super-admin-only');
+        });
+
+        Gate::define('member-internal', static function (User $user): Response {
+            if ($user->role !== UserRole::Member) {
+                return Response::deny('Internal-only');
+            }
+
+            return $user->subtype === UserSubtype::Internal
+                ? Response::allow()
+                : Response::deny('Internal-only');
+        });
+
+        Gate::define('member-external', static function (User $user): Response {
+            if ($user->role !== UserRole::Member) {
+                return Response::deny('External-only');
+            }
+
+            return $user->subtype === UserSubtype::External
+                ? Response::allow()
+                : Response::deny('External-only');
+        });
+
+        Gate::define('server-download', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
+
+        Gate::define('download-operations', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
+
+        Gate::define('manage-users', static fn (User $user): Response => $user->role === UserRole::Admin
+            ? Response::allow()
+            : Response::deny('Admin-only'));
+
+        Gate::define('auto-download-schedules', static function (User $user): Response {
+            if ($user->role === UserRole::Admin) {
+                return Response::allow();
+            }
+
+            if ($user->role === UserRole::Member && $user->subtype === UserSubtype::Internal) {
+                return Response::allow();
+            }
+
+            return $user->role === UserRole::Member && $user->subtype === UserSubtype::External
+                ? Response::deny('External accounts cannot perform this action')
+                : Response::deny('Internal-only');
+        });
     }
 }

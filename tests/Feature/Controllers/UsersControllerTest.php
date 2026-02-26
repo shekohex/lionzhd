@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\UserSubtype;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 
 uses(RefreshDatabase::class);
 
@@ -12,10 +14,7 @@ it('forbids members from opening users settings page', function (): void {
     $member = User::factory()->memberExternal()->create();
 
     $response = $this->actingAs($member)
-        ->withHeaders([
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])
+        ->withHeaders(usersInertiaHeaders())
         ->get(route('users.index'));
 
     $response->assertForbidden();
@@ -25,10 +24,7 @@ it('allows admins to open users settings page', function (): void {
     $admin = User::factory()->admin()->create();
 
     $response = $this->actingAs($admin)
-        ->withHeaders([
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])
+        ->withHeaders(usersInertiaHeaders())
         ->get(route('users.index'));
 
     $response->assertOk();
@@ -64,3 +60,14 @@ it('allows super-admin to toggle member subtype', function (): void {
         'subtype' => UserSubtype::Internal->value,
     ]);
 });
+
+function usersInertiaHeaders(): array
+{
+    $version = app(HandleInertiaRequests::class)->version(Request::create('/'));
+
+    return array_filter([
+        'X-Inertia' => 'true',
+        'X-Requested-With' => 'XMLHttpRequest',
+        'X-Inertia-Version' => $version,
+    ], static fn (?string $value): bool => filled($value));
+}

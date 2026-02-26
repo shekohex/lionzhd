@@ -8,6 +8,15 @@ declare namespace App.Data {
     export type BatchDownloadEpisodesData = {
         selectedEpisodes: Array<App.Data.SelectedEpisodeData>;
     };
+    export type CategoryBrowseFiltersData = {
+        category?: string;
+    };
+    export type CategorySidebarItemData = {
+        id: string;
+        name: string;
+        disabled: boolean;
+        isUncategorized: boolean;
+    };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;
@@ -93,6 +102,7 @@ declare namespace App.Data {
         backdrop_path: Array<string>;
         releaseDate: string;
         last_modified: string;
+        category_id?: string;
         rating: number;
         rating_5based: number;
         created_at: string;
@@ -108,7 +118,7 @@ declare namespace App.Data {
         rating_5based: number;
         added: string;
         is_adult: boolean;
-        category_id?: number;
+        category_id?: string;
         container_extension: string;
         custom_sid?: string;
         direct_source?: string;
@@ -123,6 +133,7 @@ declare namespace App.Data {
     };
 }
 declare namespace App.Enums {
+    export type CategorySyncRunStatus = 'running' | 'success' | 'success_with_warnings' | 'failed';
     export type MediaDownloadAction = 'pause' | 'resume' | 'cancel' | 'remove' | 'retry';
     export type MediaDownloadStatus = 'unknown' | 'active' | 'waiting' | 'paused' | 'error' | 'complete' | 'removed';
     export type MediaType = 'movie' | 'series';

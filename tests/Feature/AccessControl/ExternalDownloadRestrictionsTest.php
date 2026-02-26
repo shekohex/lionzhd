@@ -6,11 +6,13 @@ use App\Models\MediaDownloadRef;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\JsonRpcBatchRequest;
 use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Aria2Config;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -186,10 +188,7 @@ it('scopes downloads list payload to member-owned rows only', function (): void 
     ]);
 
     $response = $this->actingAs($internal)
-        ->withHeaders([
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])
+        ->withHeaders(downloadsInertiaHeaders())
         ->get(route('downloads'));
 
     $response->assertOk();
@@ -358,10 +357,7 @@ it('applies admin owner filters with newest-first ordering and owner options pay
     });
 
     $response = $this->actingAs($admin)
-        ->withHeaders([
-            'X-Inertia' => 'true',
-            'X-Requested-With' => 'XMLHttpRequest',
-        ])
+        ->withHeaders(downloadsInertiaHeaders())
         ->get(route('downloads', ['owners' => "{$ownerB->id},invalid,{$ownerA->id},{$ownerB->id}"]));
 
     $response->assertOk();
@@ -538,3 +534,14 @@ it('allows signed direct download resolution and redirects', function (): void {
 
     $response->assertRedirect($remoteUrl);
 });
+
+function downloadsInertiaHeaders(): array
+{
+    $version = app(HandleInertiaRequests::class)->version(Request::create('/'));
+
+    return array_filter([
+        'X-Inertia' => 'true',
+        'X-Requested-With' => 'XMLHttpRequest',
+        'X-Inertia-Version' => $version,
+    ], static fn (?string $value): bool => filled($value));
+}

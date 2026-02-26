@@ -60,6 +60,14 @@ declare namespace App.Data {
         media_type: 'movie' | 'series';
         downloadable_id: number;
         user_id?: number;
+        desired_paused: boolean;
+        canceled_at?: string;
+        cancel_delete_partial: boolean;
+        last_error_code?: number;
+        last_error_message?: string;
+        retry_attempt: number;
+        retry_next_at?: string;
+        download_files?: string[];
         created_at: string;
         updated_at: string;
         media: App.Data.VodStreamData | App.Data.SeriesData;

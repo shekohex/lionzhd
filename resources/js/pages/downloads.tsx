@@ -71,7 +71,7 @@ const FILTER_OPTIONS = {
         { label: 'Failed', value: 'failed' },
     ],
     pollingInterval: [
-        { label: 'Default', value: 2000 },
+        { label: 'Default', value: 5000 },
         { label: '1s', value: 1000 },
         { label: '2s', value: 2000 },
         { label: '5s', value: 5000 },
@@ -82,7 +82,7 @@ export default function Downloads() {
     const { props } = usePage<DownloadsPageProps>();
     const [highlightedDownload, setHighlightedDownload] = useQueryState('gid', parseAsString);
     const { downloads, auth, ownerOptions = [] } = props;
-    const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(2000));
+    const [pollingInterval, setPollingInterval] = useQueryState('poll', parseAsInteger.withDefault(5000));
     const [downloadStatusFilter, setDownloadStatusFilter] = useQueryState('filter', parseAsString);
     const [ownersFilter, setOwnersFilter] = useQueryState('owners', parseAsString);
     const pollRef = useRef(router.poll(pollingInterval, { preserveUrl: true }, { autoStart: false }));

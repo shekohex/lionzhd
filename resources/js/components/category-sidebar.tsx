@@ -34,6 +34,11 @@ export default function CategorySidebar({
     const categoryItems = categories ?? [];
     const hasCategories = categoryItems.length > 0;
 
+    const selectCategoryAndClose = (nextCategory: string | null) => {
+        setIsMobileSheetOpen(false);
+        onSelectCategory(nextCategory);
+    };
+
     const renderCategoryOption = ({
         id,
         label,
@@ -101,27 +106,27 @@ export default function CategorySidebar({
                 />
             ) : (
                 <div className="space-y-2">
-                    {renderCategoryOption({
-                        id: 'all-categories',
-                        label: 'All categories',
-                        selected: selectedCategory === null,
-                        disabled: false,
-                        onSelect: () => onSelectCategory(null),
-                    })}
+                     {renderCategoryOption({
+                         id: 'all-categories',
+                         label: 'All categories',
+                         selected: selectedCategory === null,
+                         disabled: false,
+                         onSelect: () => selectCategoryAndClose(null),
+                     })}
 
                     {categoryItems.map((category) => {
                         const isSelected = selectedCategory === category.id;
 
-                        return renderCategoryOption({
-                            id: category.id,
-                            label: category.name,
-                            selected: isSelected,
-                            disabled: category.disabled,
-                            onSelect: () => onSelectCategory(isSelected ? null : category.id),
-                        });
-                    })}
-                </div>
-            )}
+                         return renderCategoryOption({
+                             id: category.id,
+                             label: category.name,
+                             selected: isSelected,
+                             disabled: category.disabled,
+                             onSelect: () => selectCategoryAndClose(isSelected ? null : category.id),
+                         });
+                     })}
+                 </div>
+             )}
         </div>
     );
 
@@ -142,11 +147,14 @@ export default function CategorySidebar({
                             {title}
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="w-[90vw] sm:max-w-sm">
+                    <SheetContent
+                        side="bottom"
+                        className="h-[85vh] w-full max-w-none rounded-t-xl overflow-hidden p-0"
+                    >
                         <SheetHeader>
                             <SheetTitle>{title}</SheetTitle>
                         </SheetHeader>
-                        <div className="px-4 pb-4">{renderCategoryList()}</div>
+                        <div className="flex-1 overflow-y-auto px-4 pb-6">{renderCategoryList()}</div>
                     </SheetContent>
                 </Sheet>
             </div>

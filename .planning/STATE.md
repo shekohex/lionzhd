@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 7 (Category Browse/Filter UX)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-26 - Completed 04-03-PLAN.md
+Last activity: 2026-02-26 - Completed 04-04-PLAN.md
 
-Progress: [█████████░] 89%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 5.1 min
-- Total execution time: 1.44 hours
+- Total execution time: 1.53 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
-| 4 (Category Browse/Filter UX) | 3 | 12 min | 4 min |
+| 4 (Category Browse/Filter UX) | 4 | 17.5 min | 4.4 min |
 
 ## Accumulated Context
 
@@ -74,6 +74,8 @@ Progress: [█████████░] 89%
 | 4 | Validate Movies category IDs against `in_vod` provider IDs and redirect invalid IDs with warning flash | Prevent cross-dataset/missing-category states while preserving user feedback and fallback behavior |
 | 4 | Validate Series category IDs against `in_series` provider IDs and redirect invalid IDs with warning flash | Keep URL-driven Series filter state safe and deterministic when stale/invalid IDs are requested |
 | 4 | Preserve selected Series category across pagination links using `withQueryString()` | Ensure back/forward/next-page navigation retains active category context |
+| 4 | Keep category sidebar/sheet UI state outside keyed results subtree while remounting results by `filters.category` | Preserve mobile sheet openness across category switches while resetting per-category infinite-scroll state |
+| 4 | Use `router.reload({ only: ['movies|series','filters','categories'] })` for Retry categories | Retry against current URL-selected category without synthesizing a new navigation target |
 
 ### Pending Todos
 
@@ -85,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T01:50:53Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-02-26T01:59:04Z
+Stopped at: Completed 04-04-PLAN.md
 Resume file: None

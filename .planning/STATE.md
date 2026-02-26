@@ -5,29 +5,29 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 4 (Category Browse/Filter UX)
+**Current focus:** Phase 5 (Download Lifecycle Reliability)
 
 ## Current Position
 
 Phase: 4 of 7 (Category Browse/Filter UX)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-02-26 - Completed 04-04-PLAN.md
+Plan: 5 of 5 in current phase
+Status: Phase complete
+Last activity: 2026-02-26 - Completed 04-05-PLAN.md
 
-Progress: [█████████░] 95%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 18
+- Total plans completed: 19
 - Average duration: 5.1 min
-- Total execution time: 1.53 hours
+- Total execution time: 1.60 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
-| 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
-| 4 (Category Browse/Filter UX) | 4 | 17.5 min | 4.4 min |
+| 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
+| 4 (Category Browse/Filter UX) | 5 | 24 min | 4.8 min |
 
 ## Accumulated Context
 
@@ -76,6 +76,7 @@ Progress: [█████████░] 95%
 | 4 | Preserve selected Series category across pagination links using `withQueryString()` | Ensure back/forward/next-page navigation retains active category context |
 | 4 | Keep category sidebar/sheet UI state outside keyed results subtree while remounting results by `filters.category` | Preserve mobile sheet openness across category switches while resetting per-category infinite-scroll state |
 | 4 | Use `router.reload({ only: ['movies|series','filters','categories'] })` for Retry categories | Retry against current URL-selected category without synthesizing a new navigation target |
+| 4 | Accept orchestrator-provided approval as the completion signal for the manual smoke checkpoint in continuation mode | Non-interactive checkpoint continuation already carried explicit approval state |
 
 ### Pending Todos
 
@@ -87,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T01:59:04Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-02-26T02:09:12Z
+Stopped at: Completed 04-05-PLAN.md
 Resume file: None

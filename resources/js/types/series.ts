@@ -1,7 +1,21 @@
 import { SharedData } from '.';
 import Pagination from './pagination';
+
+export interface CategorySidebarItem {
+    id: string;
+    name: string;
+    disabled: boolean;
+    isUncategorized: boolean;
+}
+
+export interface CategoryBrowseFilters {
+    category: string | null;
+}
+
 export interface SeriesPageProps extends SharedData {
     series: Pagination<App.Data.SeriesData & App.Data.InWatchlistData>;
+    categories: CategorySidebarItem[];
+    filters: CategoryBrowseFilters;
 }
 
 export interface SeriesInformationPageProps extends SharedData {

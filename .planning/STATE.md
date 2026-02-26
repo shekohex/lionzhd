@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 7 (Category Browse/Filter UX)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-26 - Completed 04-01-PLAN.md
+Last activity: 2026-02-26 - Completed 04-02-PLAN.md
 
-Progress: [████████░░] 79%
+Progress: [████████░░] 84%
 
 ## Performance Metrics
 
-- Total plans completed: 15
-- Average duration: 5.3 min
-- Total execution time: 1.32 hours
+- Total plans completed: 16
+- Average duration: 5.2 min
+- Total execution time: 1.39 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
-| 4 (Category Browse/Filter UX) | 1 | 5 min | 5 min |
+| 4 (Category Browse/Filter UX) | 2 | 9 min | 4.5 min |
 
 ## Accumulated Context
 
@@ -70,6 +70,8 @@ Progress: [████████░░] 79%
 | 3 | Expose category sync run history in settings with pagination and top issues | Make sync outcomes auditable without CLI access |
 | 4 | Use one shared sidebar builder action keyed by MediaType for Movies and Series | Keep category-sidebar behavior consistent and avoid duplicated query/count logic |
 | 4 | Count uncategorized media as null, empty string, or system uncategorized provider ID | Preserve accurate uncategorized counts during category normalization transition |
+| 4 | Normalize blank/whitespace Movies `category` query values to null (All) | Keep URL filter semantics deterministic and avoid treating empty input as invalid category |
+| 4 | Validate Movies category IDs against `in_vod` provider IDs and redirect invalid IDs with warning flash | Prevent cross-dataset/missing-category states while preserving user feedback and fallback behavior |
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T01:44:46Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-02-26T01:51:10Z
+Stopped at: Completed 04-02-PLAN.md
 Resume file: None

@@ -9,7 +9,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 - [x] **Phase 1: Access Control** - Admin/Member + Internal/External enforcement with admin-only areas locked down
 - [x] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
 - [x] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
-- [ ] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
+- [x] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
 - [ ] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
 - [ ] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
 - [ ] **Phase 7: Auto Episodes (Schedules + Dedupe)** - Per-user series monitoring schedules detect new episodes and auto-queue without duplicates
@@ -81,11 +81,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Shared sidebar/filter DTOs + aggregate-count sidebar builder
-- [ ] 04-02-PLAN.md — Movies backend filtering + feature tests
-- [ ] 04-03-PLAN.md — Series backend filtering + feature tests
-- [ ] 04-04-PLAN.md — Shared sidebar UI + Movies/Series page wiring (Inertia partial reload + skeletons)
-- [ ] 04-05-PLAN.md — Indexes + TS type regen + manual UX verification
+ - [x] 04-01-PLAN.md — Shared sidebar/filter DTOs + aggregate-count sidebar builder
+ - [x] 04-02-PLAN.md — Movies backend filtering + feature tests
+ - [x] 04-03-PLAN.md — Series backend filtering + feature tests
+ - [x] 04-04-PLAN.md — Shared sidebar UI + Movies/Series page wiring (Inertia partial reload + skeletons)
+ - [x] 04-05-PLAN.md — Indexes + TS type regen + manual UX verification
 
 ### Phase 5: Download Lifecycle Reliability
 **Goal**: Server-side downloads behave reliably (progress, cancel, resume, retry) and are covered by automated tests.
@@ -127,7 +127,7 @@ Plans:
 | 1. Access Control | 5/5 | Complete | 2026-02-25 |
 | 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
-| 4. Category Browse/Filter UX | 0/5 | Not started | - |
+| 4. Category Browse/Filter UX | 5/5 | Complete | 2026-02-26 |
 | 5. Download Lifecycle Reliability | 0/TBD | Not started | - |
 | 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

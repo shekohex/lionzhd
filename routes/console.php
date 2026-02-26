@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Jobs\RefreshMediaContents;
+use App\Jobs\MonitorDownloads;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
@@ -22,3 +23,10 @@ Schedule::command('telescope:prune --hours=720')->dailyAt('00:00')
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Failed to prune Telescope entries'))
     ->onSuccess(fn () => Log::info('Successfully pruned Telescope entries'));
+
+Schedule::job(MonitorDownloads::class)
+    ->name('monitor-downloads')
+    ->description('Monitor aria2 downloads and schedule retries')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->sentryMonitor();

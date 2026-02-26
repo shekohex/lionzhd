@@ -27,6 +27,29 @@ final class MediaDownloadRef extends Model
         'downloadable_id',
         'season',
         'episode',
+        'desired_paused',
+        'canceled_at',
+        'cancel_delete_partial',
+        'last_error_code',
+        'last_error_message',
+        'retry_attempt',
+        'retry_next_at',
+        'download_files',
+    ];
+
+    /**
+     * the attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'desired_paused' => 'boolean',
+        'canceled_at' => 'immutable_datetime',
+        'cancel_delete_partial' => 'boolean',
+        'last_error_code' => 'integer',
+        'retry_attempt' => 'integer',
+        'retry_next_at' => 'immutable_datetime',
+        'download_files' => 'array',
     ];
 
     public static function fromVodStream(

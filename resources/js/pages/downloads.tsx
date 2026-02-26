@@ -190,14 +190,27 @@ export default function Downloads() {
         setOwnerFilter([auth.user.id]);
     }, [auth.user.id, myDownloadsOnly, setOwnerFilter]);
 
-    const handleCancelDownload = useCallback((download: App.Data.MediaDownloadRefData) => {
-        if (!canOperate) {
-            showReadOnlyToast();
-            return;
-        }
+    const handleCancelDownload = useCallback(
+        (download: App.Data.MediaDownloadRefData, deletePartial: boolean) => {
+            if (!canOperate) {
+                showReadOnlyToast();
+                return;
+            }
 
-        router.delete(route('downloads.destroy', { model: download.id }), { preserveScroll: true });
-    }, [canOperate, showReadOnlyToast]);
+            router.patch(
+                route('downloads.edit', { model: download.id }),
+                {
+                    action: 'cancel',
+                    delete_partial: deletePartial,
+                },
+                {
+                    preserveScroll: true,
+                    preserveUrl: true,
+                },
+            );
+        },
+        [canOperate, showReadOnlyToast],
+    );
 
     const handleDownloadAction = useCallback(
         (download: App.Data.MediaDownloadRefData, action: App.Enums.MediaDownloadAction) => {
@@ -394,7 +407,7 @@ export default function Downloads() {
                                         onRemove={() => {
                                             handleDownloadAction(download, 'remove');
                                         }}
-                                        onCancel={() => handleCancelDownload(download)}
+                                        onCancel={(deletePartial) => handleCancelDownload(download, deletePartial)}
                                     />
                                 </motion.div>
                             ))}

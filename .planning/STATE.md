@@ -10,24 +10,24 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 7 (Category Browse/Filter UX)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-02-26 - Completed 04-02-PLAN.md
+Last activity: 2026-02-26 - Completed 04-03-PLAN.md
 
-Progress: [████████░░] 84%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
-- Total plans completed: 16
-- Average duration: 5.2 min
-- Total execution time: 1.39 hours
+- Total plans completed: 17
+- Average duration: 5.1 min
+- Total execution time: 1.44 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
-| 4 (Category Browse/Filter UX) | 2 | 9 min | 4.5 min |
+| 4 (Category Browse/Filter UX) | 3 | 12 min | 4 min |
 
 ## Accumulated Context
 
@@ -72,6 +72,8 @@ Progress: [████████░░] 84%
 | 4 | Count uncategorized media as null, empty string, or system uncategorized provider ID | Preserve accurate uncategorized counts during category normalization transition |
 | 4 | Normalize blank/whitespace Movies `category` query values to null (All) | Keep URL filter semantics deterministic and avoid treating empty input as invalid category |
 | 4 | Validate Movies category IDs against `in_vod` provider IDs and redirect invalid IDs with warning flash | Prevent cross-dataset/missing-category states while preserving user feedback and fallback behavior |
+| 4 | Validate Series category IDs against `in_series` provider IDs and redirect invalid IDs with warning flash | Keep URL-driven Series filter state safe and deterministic when stale/invalid IDs are requested |
+| 4 | Preserve selected Series category across pagination links using `withQueryString()` | Ensure back/forward/next-page navigation retains active category context |
 
 ### Pending Todos
 
@@ -83,6 +85,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T01:51:10Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-02-26T01:50:53Z
+Stopped at: Completed 04-03-PLAN.md
 Resume file: None

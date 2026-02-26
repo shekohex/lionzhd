@@ -26,7 +26,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
   3. Member cannot access admin-only areas (user management, system settings, sync/import controls, download operations, analytics/monitoring).
    4. External member can only use direct-download links and cannot use server-download actions.
    5. External member cannot configure or run auto-download schedules.
-**Plans**: 5 plans
+**Plans**: 6 plans
 
 Plans:
 - [x] 01-01-PLAN.md — Add persisted roles/subtypes + registration bootstrap
@@ -84,8 +84,9 @@ Plans:
  - [x] 04-01-PLAN.md — Shared sidebar/filter DTOs + aggregate-count sidebar builder
  - [x] 04-02-PLAN.md — Movies backend filtering + feature tests
  - [x] 04-03-PLAN.md — Series backend filtering + feature tests
- - [x] 04-04-PLAN.md — Shared sidebar UI + Movies/Series page wiring (Inertia partial reload + skeletons)
- - [x] 04-05-PLAN.md — Indexes + TS type regen + manual UX verification
+  - [x] 04-04-PLAN.md — Shared sidebar UI + Movies/Series page wiring (Inertia partial reload + skeletons)
+  - [x] 04-05-PLAN.md — Indexes + TS type regen + manual UX verification
+  - [x] 04-06-PLAN.md — Mobile bottom sheet + close-on-select (gap closure)
 
 ### Phase 5: Download Lifecycle Reliability
 **Goal**: Server-side downloads behave reliably (progress, cancel, resume, retry) and are covered by automated tests.
@@ -127,7 +128,7 @@ Plans:
 | 1. Access Control | 5/5 | Complete | 2026-02-25 |
 | 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
-| 4. Category Browse/Filter UX | 5/5 | Complete | 2026-02-26 |
+| 4. Category Browse/Filter UX | 6/6 | Complete | 2026-02-26 |
 | 5. Download Lifecycle Reliability | 0/TBD | Not started | - |
 | 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

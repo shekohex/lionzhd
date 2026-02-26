@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Discovery & Categories
 
-- [ ] **DISC-01**: User can browse movies by category using a sidebar on movies pages
-- [ ] **DISC-02**: User can browse series by category using a sidebar on series pages
-- [ ] **DISC-03**: User can filter movies to a selected category, including an explicit Uncategorized option
-- [ ] **DISC-04**: User can filter series to a selected category, including an explicit Uncategorized option
+- [x] **DISC-01**: User can browse movies by category using a sidebar on movies pages
+- [x] **DISC-02**: User can browse series by category using a sidebar on series pages
+- [x] **DISC-03**: User can filter movies to a selected category, including an explicit Uncategorized option
+- [x] **DISC-04**: User can filter series to a selected category, including an explicit Uncategorized option
 - [ ] **DISC-05**: Admin can sync VOD and series categories from Xtream while excluding Live categories
 - [ ] **DISC-06**: User can open content that remains correctly categorized based on synced category relationships
 

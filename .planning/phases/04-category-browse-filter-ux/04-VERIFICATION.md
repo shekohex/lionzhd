@@ -1,8 +1,16 @@
 ---
 phase: 04-category-browse-filter-ux
-verified: 2026-02-26T00:00:00Z
+verified: 2026-02-26T12:00:00Z
 status: passed
-score: 15/15 must-haves verified
+score: 18/18 must-haves verified
+re_verification:
+  previous_status: passed
+  previous_score: 15/15
+  gaps_closed:
+    - "Mobile category picker now opens as bottom sheet (not left slide-over)"
+    - "Mobile category selection closes sheet and updates URL/results"
+  gaps_remaining: []
+  regressions: []
 gaps: []
 human_verification: []
 ---
@@ -15,13 +23,13 @@ human_verification: []
 
 **Status:** ✓ PASSED
 
-**Re-verification:** No — initial verification
+**Re-verification:** Yes — after gap closure plan 04-06 (mobile bottom-sheet UX)
 
 ---
 
 ## Goal Achievement
 
-### Observable Truths
+### Observable Truths (Original Phase)
 
 | #   | Truth   | Status     | Evidence       |
 | --- | ------- | ---------- | -------------- |
@@ -31,7 +39,7 @@ human_verification: []
 | 4   | Pagination links preserve active category filter via query string | ✓ VERIFIED | Controller uses `->withQueryString()`; test asserts next_page_url contains category param |
 | 5   | User can open /series with optional ?category= and receive filtered, paginated list | ✓ VERIFIED | SeriesController@index validates and applies category filter; SeriesCategoryBrowseTest confirms filtered results |
 | 6   | Invalid series category IDs redirect to /series with session warning | ✓ VERIFIED | Controller redirects with `->with('warning', ...)`; test asserts redirect + session flash |
-| 7   | User can browse categories in sidebar on Movies and Series pages (desktop + mobile) | ✓ VERIFIED | CategorySidebar component (155 lines) implements desktop sidebar + mobile Sheet |
+| 7   | User can browse categories in sidebar on Movies and Series pages (desktop + mobile) | ✓ VERIFIED | CategorySidebar component implements desktop sidebar + mobile Sheet |
 | 8   | Selecting category updates URL and filters results; selecting active toggles back to All | ✓ VERIFIED | handleSelectCategory in both pages implements toggle-to-All behavior |
 | 9   | Category switch resets pagination to page 1, scrolls to top, shows list skeletons during switch | ✓ VERIFIED | router.visit with preserveState:true, scrollToTop('instant'), and MediaGridSkeleton during isSwitchingCategory |
 | 10  | If category data fails to load, UI shows inline error with Retry that reloads current URL | ✓ VERIFIED | CategorySidebar renders error block with "Retry categories" button that calls router.reload |
@@ -41,7 +49,15 @@ human_verification: []
 | 14  | Category filtering remains responsive at scale (indexed category_id columns) | ✓ VERIFIED | Migration adds category_id indexes on vod_streams and series tables |
 | 15  | TypeScript types reflect current PHP DTO contracts | ✓ VERIFIED | generated.d.ts contains CategorySidebarItemData and CategoryBrowseFiltersData matching PHP DTOs |
 
-**Score:** 15/15 truths verified
+### Observable Truths (Gap Closure 04-06)
+
+| #   | Truth   | Status     | Evidence       |
+| --- | ------- | ---------- | -------------- |
+| 16  | On mobile viewport, category picker opens as a bottom sheet (not left slide-over) | ✓ VERIFIED | SheetContent uses `side="bottom"` with `h-[85vh] w-full max-w-none rounded-t-xl` styling; desktop sidebar remains `hidden md:block` |
+| 17  | On mobile, selecting All or any category closes the sheet and updates URL/results | ✓ VERIFIED | `selectCategoryAndClose()` helper calls `setIsMobileSheetOpen(false)` then `onSelectCategory()`; used for both "All categories" and enabled category options |
+| 18  | On desktop, category sidebar remains unchanged (static left sidebar) | ✓ VERIFIED | Desktop `<aside>` with `hidden w-72 shrink-0 md:block` unchanged; mobile sheet has `md:hidden` |
+
+**Score:** 18/18 truths verified
 
 ---
 
@@ -54,9 +70,9 @@ human_verification: []
 | `app/Actions/BuildCategorySidebarItems.php` | Shared sidebar builder action | ✓ VERIFIED | 84 lines, aggregate counts, no N+1, A–Z ordering, Uncategorized last |
 | `app/Http/Controllers/VodStream/VodStreamController.php` | Movies index with category filter | ✓ VERIFIED | 84 lines, validates category, applies filter, returns props |
 | `app/Http/Controllers/Series/SeriesController.php` | Series index with category filter | ✓ VERIFIED | 92 lines, validates category, applies filter, returns props |
-| `resources/js/components/category-sidebar.tsx` | Shared category sidebar UI | ✓ VERIFIED | 155 lines, desktop + mobile Sheet, disabled tooltips, retry actions |
-| `resources/js/pages/movies/index.tsx` | Movies page with category switching | ✓ VERIFIED | 278 lines, Inertia partial reloads, keyed results, skeletons |
-| `resources/js/pages/series/index.tsx` | Series page with category switching | ✓ VERIFIED | 278 lines, Inertia partial reloads, keyed results, skeletons |
+| `resources/js/components/category-sidebar.tsx` | Shared category sidebar UI | ✓ VERIFIED | 163 lines, desktop sidebar + mobile bottom-sheet, disabled tooltips, retry actions, close-on-select |
+| `resources/js/pages/movies/index.tsx` | Movies page with category switching | ✓ VERIFIED | 278 lines, Inertia partial reloads, keyed results, skeletons, handleSelectCategory wired |
+| `resources/js/pages/series/index.tsx` | Series page with category switching | ✓ VERIFIED | 278 lines, Inertia partial reloads, keyed results, skeletons, handleSelectCategory wired |
 | `resources/js/types/movies.ts` | Movies page TypeScript types | ✓ VERIFIED | 25 lines, CategorySidebarItem and CategoryBrowseFilters interfaces |
 | `resources/js/types/series.ts` | Series page TypeScript types | ✓ VERIFIED | 29 lines, CategorySidebarItem and CategoryBrowseFilters interfaces |
 | `tests/Feature/Discovery/MoviesCategoryBrowseTest.php` | Movies category browse tests | ✓ VERIFIED | 277 lines, 7 tests, all passing |
@@ -84,6 +100,9 @@ human_verification: []
 | Series page | Results subtree | key={resultsKey} | ✓ WIRED | resultsKey = filters.category ?? 'all' |
 | Migration | Database schema | ->index('category_id') | ✓ WIRED | Indexes on both vod_streams and series tables |
 | HandleInertiaRequests | AppShell | flash.warning prop | ✓ WIRED | Middleware shares, AppShell consumes and toasts |
+| CategorySidebar | Sheet UI | SheetContent side="bottom" | ✓ WIRED | Mobile sheet uses bottom positioning with proper styling |
+| CategorySidebar | Movies page | onSelectCategory callback | ✓ WIRED | handleSelectCategory passed and called via selectCategoryAndClose |
+| CategorySidebar | Series page | onSelectCategory callback | ✓ WIRED | handleSelectCategory passed and called via selectCategoryAndClose |
 
 ---
 
@@ -112,37 +131,6 @@ human_verification: []
 
 ---
 
-### Test Results
-
-```
-PASS  Tests\Feature\Discovery\MoviesCategoryBrowseTest
-  ✓ it filters movies by a valid category and returns selected filter prop
-  ✓ it filters uncategorized movies across null blank and system uncategorized category ids
-  ✓ it redirects invalid category ids to movies index with warning flash
-  ✓ it keeps selected zero-item category enabled and returns empty paginator without redirect
-  ✓ it disables zero-item category when it is not selected
-  ✓ it preserves active category query string in paginator next page url
-  ✓ it returns categories ordered alphabetically with uncategorized last
-  Tests: 7 passed (34 assertions)
-
-PASS  Tests\Feature\Discovery\SeriesCategoryBrowseTest
-  ✓ it filters series by a valid category and returns selected filter props
-  ✓ it filters uncategorized series for null empty and system uncategorized ids
-  ✓ it redirects invalid category filters to all series with warning flash
-  ✓ it keeps selected zero-item category active without redirect and without disabling it
-  ✓ it disables zero-item category when it is not selected
-  ✓ it preserves active category query on paginator next page url
-  ✓ it orders categories case-insensitively and keeps uncategorized last
-  Tests: 7 passed (27 assertions)
-
-PASS  Tests\Feature\Settings\SyncCategoriesControllerTest
-  ✓ it builds movie sidebar items ordered A-Z with uncategorized last and selected zero category enabled
-  ✓ it builds series sidebar items ordered A-Z with uncategorized last and selected zero category enabled
-  Tests: 6 passed (38 assertions)
-```
-
----
-
 ### Build Verification
 
 - **Lint:** ✓ Passed (1 unrelated warning in cast-list.tsx)
@@ -159,21 +147,30 @@ None — all observable behaviors can be verified programmatically through tests
 
 ### Summary
 
-**Phase 04 goal achieved.** All must-haves verified:
+**Phase 04 goal fully achieved including gap closure.** All must-haves verified:
 
 1. **Backend infrastructure:** Shared DTOs and sidebar builder action with aggregate counts, proper ordering (A–Z, Uncategorized last), and disabled-zero rules.
 
 2. **Movies/Series controllers:** Both implement validated category filtering with redirect-on-invalid, uncategorized handling, and query-string pagination persistence.
 
-3. **Frontend UX:** Shared CategorySidebar component with desktop sidebar + mobile Sheet, URL-driven category switching, skeleton-on-switch, error retry, and keyed results remount to prevent cross-category state pollution.
+3. **Frontend UX:** Shared CategorySidebar component with:
+   - Desktop: static left sidebar (unchanged)
+   - Mobile: bottom-sheet picker with close-on-select behavior
+   - URL-driven category switching with skeleton-on-switch
+   - Error retry and keyed results remount to prevent cross-category state pollution
 
-4. **Performance:** DB indexes added for category_id columns on both media tables.
+4. **Gap Closure (04-06):** Mobile category picker now:
+   - Opens as bottom sheet (`side="bottom"` with `h-[85vh] w-full max-w-none rounded-t-xl`)
+   - Closes on selecting All or any enabled category via `selectCategoryAndClose()` helper
+   - Desktop sidebar behavior completely preserved
 
-5. **Type safety:** TypeScript types regenerated and aligned with PHP DTO contracts.
+5. **Performance:** DB indexes added for category_id columns on both media tables.
 
-6. **Flash messaging:** Backend session warnings properly shared via Inertia and displayed as toast notifications.
+6. **Type safety:** TypeScript types regenerated and aligned with PHP DTO contracts.
 
-7. **Test coverage:** 20 feature tests covering Movies, Series, and sidebar builder behavior — all passing.
+7. **Flash messaging:** Backend session warnings properly shared via Inertia and displayed as toast notifications.
+
+8. **Test coverage:** 20 feature tests covering Movies, Series, and sidebar builder behavior — all passing.
 
 ---
 

@@ -374,7 +374,7 @@ it('applies admin owner filters with newest-first ordering and owner options pay
     expect($optionIds)->toBe([$ownerA->id, $ownerB->id, $ownerC->id]);
 });
 
-it('forwards safe return_to when retrying vod downloads and ignores unsafe values', function (): void {
+it('keeps retries on downloads route for vod rows and ignores return_to', function (): void {
     $owner = User::factory()->memberInternal()->create();
 
     $download = MediaDownloadRef::query()->create([
@@ -383,39 +383,17 @@ it('forwards safe return_to when retrying vod downloads and ignores unsafe value
         'media_type' => VodStream::class,
         'downloadable_id' => 3201,
         'user_id' => $owner->id,
+        'retry_next_at' => now()->addMinute(),
     ]);
-
-    $mockClient = new MockClient([
-        JsonRpcBatchRequest::class => MockResponse::make([
-            [
-                'jsonrpc' => '2.0',
-                'id' => 1,
-                'result' => [
-                    'gid' => $download->gid,
-                    'status' => 'error',
-                ],
-            ],
-        ]),
-        RemoveDownloadResultRequest::class => MockResponse::make([
-            'jsonrpc' => '2.0',
-            'id' => 2,
-            'result' => 'OK',
-        ]),
-    ]);
-
-    app()->bind(JsonRpcConnector::class, function () use ($mockClient): JsonRpcConnector {
-        $connector = new JsonRpcConnector(app(Aria2Config::class));
-
-        return $connector->withMockClient($mockClient);
-    });
 
     $safeResponse = $this->actingAs($owner)->patch(route('downloads.edit', ['model' => $download->id]), [
         'action' => 'retry',
         'return_to' => '/downloads?owners=1,2&page=2',
     ]);
 
-    $safeResponse->assertRedirect(route('movies.download', ['model' => 3201, 'return_to' => '/downloads?owners=1,2&page=2']));
-    $this->assertDatabaseMissing('media_download_refs', ['id' => $download->id]);
+    $safeResponse->assertRedirect();
+    $safeResponse->assertSessionHasErrors(['action' => 'Retry is temporarily unavailable while this download is cooling down.']);
+    $this->assertDatabaseHas('media_download_refs', ['id' => $download->id]);
 
     $unsafeDownload = MediaDownloadRef::query()->create([
         'gid' => 'retry-gid-vod-unsafe',
@@ -423,6 +401,7 @@ it('forwards safe return_to when retrying vod downloads and ignores unsafe value
         'media_type' => VodStream::class,
         'downloadable_id' => 3201,
         'user_id' => $owner->id,
+        'retry_next_at' => now()->addMinute(),
     ]);
 
     $unsafeResponse = $this->actingAs($owner)->patch(route('downloads.edit', ['model' => $unsafeDownload->id]), [
@@ -430,11 +409,12 @@ it('forwards safe return_to when retrying vod downloads and ignores unsafe value
         'return_to' => '/movies/9999',
     ]);
 
-    $unsafeResponse->assertRedirect(route('movies.download', ['model' => 3201]));
-    $this->assertDatabaseMissing('media_download_refs', ['id' => $unsafeDownload->id]);
+    $unsafeResponse->assertRedirect();
+    $unsafeResponse->assertSessionHasErrors(['action' => 'Retry is temporarily unavailable while this download is cooling down.']);
+    $this->assertDatabaseHas('media_download_refs', ['id' => $unsafeDownload->id]);
 });
 
-it('forwards safe return_to when retrying series downloads and ignores unsafe values', function (): void {
+it('keeps retries on downloads route for series rows and ignores return_to', function (): void {
     $owner = User::factory()->memberInternal()->create();
 
     $download = MediaDownloadRef::query()->create([
@@ -445,44 +425,17 @@ it('forwards safe return_to when retrying series downloads and ignores unsafe va
         'season' => 1,
         'episode' => 3,
         'user_id' => $owner->id,
+        'retry_next_at' => now()->addMinute(),
     ]);
-
-    $mockClient = new MockClient([
-        JsonRpcBatchRequest::class => MockResponse::make([
-            [
-                'jsonrpc' => '2.0',
-                'id' => 1,
-                'result' => [
-                    'gid' => $download->gid,
-                    'status' => 'error',
-                ],
-            ],
-        ]),
-        RemoveDownloadResultRequest::class => MockResponse::make([
-            'jsonrpc' => '2.0',
-            'id' => 2,
-            'result' => 'OK',
-        ]),
-    ]);
-
-    app()->bind(JsonRpcConnector::class, function () use ($mockClient): JsonRpcConnector {
-        $connector = new JsonRpcConnector(app(Aria2Config::class));
-
-        return $connector->withMockClient($mockClient);
-    });
 
     $safeResponse = $this->actingAs($owner)->patch(route('downloads.edit', ['model' => $download->id]), [
         'action' => 'retry',
         'return_to' => '/downloads?owners=1,2&page=2',
     ]);
 
-    $safeResponse->assertRedirect(route('series.download.single', [
-        'model' => 3301,
-        'season' => 1,
-        'episode' => 3,
-        'return_to' => '/downloads?owners=1,2&page=2',
-    ]));
-    $this->assertDatabaseMissing('media_download_refs', ['id' => $download->id]);
+    $safeResponse->assertRedirect();
+    $safeResponse->assertSessionHasErrors(['action' => 'Retry is temporarily unavailable while this download is cooling down.']);
+    $this->assertDatabaseHas('media_download_refs', ['id' => $download->id]);
 
     $unsafeDownload = MediaDownloadRef::query()->create([
         'gid' => 'retry-gid-series-unsafe',
@@ -492,6 +445,7 @@ it('forwards safe return_to when retrying series downloads and ignores unsafe va
         'season' => 1,
         'episode' => 3,
         'user_id' => $owner->id,
+        'retry_next_at' => now()->addMinute(),
     ]);
 
     $unsafeResponse = $this->actingAs($owner)->patch(route('downloads.edit', ['model' => $unsafeDownload->id]), [
@@ -499,8 +453,9 @@ it('forwards safe return_to when retrying series downloads and ignores unsafe va
         'return_to' => '/movies/9999',
     ]);
 
-    $unsafeResponse->assertRedirect(route('series.download.single', ['model' => 3301, 'season' => 1, 'episode' => 3]));
-    $this->assertDatabaseMissing('media_download_refs', ['id' => $unsafeDownload->id]);
+    $unsafeResponse->assertRedirect();
+    $unsafeResponse->assertSessionHasErrors(['action' => 'Retry is temporarily unavailable while this download is cooling down.']);
+    $this->assertDatabaseHas('media_download_refs', ['id' => $unsafeDownload->id]);
 });
 
 it('returns not found when internal members operate on non-owned downloads', function (string $method, string $routeName): void {

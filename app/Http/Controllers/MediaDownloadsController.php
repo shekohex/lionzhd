@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Actions\Downloads\CancelDownload;
+use App\Actions\Downloads\RetryDownload as RetryDownloadAction;
 use App\Actions\GetDownloadStatus;
 use App\Data\EditMediaDownloadData;
 use App\Data\MediaDownloadRefData;
@@ -77,8 +78,6 @@ final class MediaDownloadsController extends Controller
 
     public function edit(Request $request, JsonRpcConnector $connector, MediaDownloadRef $model, EditMediaDownloadData $payload): RedirectResponse
     {
-        $returnTo = $this->resolveReturnTo($request);
-
         if ($model->canceled_at !== null) {
             return back()->withErrors(['action' => 'This download is already canceled and cannot be modified.']);
         }
@@ -91,6 +90,20 @@ final class MediaDownloadsController extends Controller
             }
 
             return back()->with('success', 'Download canceled successfully.');
+        }
+
+        if ($payload->action->isRetry()) {
+            if ($model->retry_next_at !== null && now()->lt($model->retry_next_at)) {
+                return back()->withErrors(['action' => 'Retry is temporarily unavailable while this download is cooling down.']);
+            }
+
+            $error = RetryDownloadAction::run($model, $payload->restart_from_zero, true);
+
+            if ($error !== null) {
+                return back()->withErrors(['action' => $error]);
+            }
+
+            return back()->with('success', 'Download retried successfully.');
         }
 
         $result = GetDownloadStatus::run([$model->gid]);
@@ -111,7 +124,6 @@ final class MediaDownloadsController extends Controller
             MediaDownloadAction::Pause => new PauseRequest($model->gid),
             MediaDownloadAction::Resume => new UnPauseRequest($model->gid),
             MediaDownloadAction::Remove => new RemoveDownloadResultRequest($model->gid),
-            MediaDownloadAction::Retry => new RemoveDownloadResultRequest($model->gid),
             default => null,
         };
 
@@ -136,36 +148,6 @@ final class MediaDownloadsController extends Controller
 
         if ($payload->action->isResume()) {
             $model->forceFill(['desired_paused' => false])->save();
-        }
-
-        if ($payload->action->isRetry() && $model->isVodStream()) {
-            $model->delete();
-
-            $parameters = [
-                'model' => $model->media_id,
-            ];
-
-            if ($returnTo !== null) {
-                $parameters['return_to'] = $returnTo;
-            }
-
-            return redirect()->route('movies.download', $parameters);
-        }
-
-        if ($payload->action->isRetry() && $model->isSeriesWithEpisode()) {
-            $model->delete();
-
-            $parameters = [
-                'model' => $model->media_id,
-                'season' => $model->season,
-                'episode' => $model->episode,
-            ];
-
-            if ($returnTo !== null) {
-                $parameters['return_to'] = $returnTo;
-            }
-
-            return redirect()->route('series.download.single', $parameters);
         }
 
         return back()->with('success', 'Download status updated successfully.');
@@ -216,14 +198,4 @@ final class MediaDownloadsController extends Controller
             ->all();
     }
 
-    private function resolveReturnTo(Request $request): ?string
-    {
-        $returnTo = $request->input('return_to', $request->query('return_to'));
-
-        if (! is_string($returnTo)) {
-            return null;
-        }
-
-        return preg_match('#^/downloads(?:[/?]|$)#', $returnTo) === 1 ? $returnTo : null;
-    }
 }

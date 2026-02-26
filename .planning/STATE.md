@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 of 7 (Download Lifecycle Reliability)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-02-26 - Completed 05-01-PLAN.md
+Last activity: 2026-02-26 - Completed 05-02-PLAN.md
 
-Progress: [██████░░░░] 60%
+Progress: [██████░░░░] 63%
 
 ## Performance Metrics
 
-- Total plans completed: 21
-- Average duration: 5.0 min
-- Total execution time: 1.73 hours
+- Total plans completed: 22
+- Average duration: 5.1 min
+- Total execution time: 1.88 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -28,7 +28,7 @@ Progress: [██████░░░░] 60%
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
-| 5 (Download Lifecycle Reliability) | 1 | 2 min | 2.0 min |
+| 5 (Download Lifecycle Reliability) | 2 | 11 min | 5.5 min |
 
 ## Accumulated Context
 
@@ -81,6 +81,9 @@ Progress: [██████░░░░] 60%
 | 4 | Finalize 04-06 from checkpoint continuation by committing only plan metadata artifacts | Preserve atomic task commit history and avoid re-committing already approved code changes |
 | 5 | Persist download reliability lifecycle state on `media_download_refs` with DB-column-aligned DTO fields | Keep pause/cancel/retry/file-snapshot semantics durable and contract-stable across backend/frontend |
 | 5 | Constrain `download_files` to `string[]` in generated types via `LiteralTypeScriptType` | Prevent generated `any` drift and keep lint-clean TS contract output |
+| 5 | Set tellStatus JSON-RPC id to gid and hydrate per gid while skipping per-gid error entries | Prevent out-of-order batch responses and per-gid RPC failures from cross-wiring status rows |
+| 5 | Treat DELETE downloads as terminal cancel that persists `canceled_at` and keeps the DB row | Preserve durable canceled lifecycle state instead of deleting records |
+| 5 | Restrict delete-partial cleanup to `services.aria2.download_root` with explicit user-facing failure on out-of-root paths | Prevent unsafe file deletion outside the allowlisted download root |
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T21:54:07Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-02-26T22:06:48Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

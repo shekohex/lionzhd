@@ -13,5 +13,6 @@ final class EditMediaDownloadData extends Data
 {
     public function __construct(
         public readonly MediaDownloadAction $action,
+        public readonly bool $delete_partial = false,
     ) {}
 }

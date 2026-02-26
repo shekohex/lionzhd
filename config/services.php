@@ -50,6 +50,7 @@ return [
         'host' => env('ARIA2_RPC_HOST', 'http://localhost'),
         'port' => env('ARIA2_RPC_PORT', 6800),
         'secret' => env('ARIA2_RPC_SECRET', null),
+        'download_root' => env('ARIA2_DOWNLOAD_ROOT', storage_path('app/public/downloads')),
     ],
     /*
     |--------------------------------------------------------------------------

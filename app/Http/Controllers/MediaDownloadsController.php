@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Downloads\CancelDownload;
 use App\Actions\GetDownloadStatus;
 use App\Data\EditMediaDownloadData;
 use App\Data\MediaDownloadRefData;
@@ -14,7 +15,6 @@ use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\JsonRpcException;
 use App\Http\Integrations\Aria2\Requests\PauseRequest;
 use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
-use App\Http\Integrations\Aria2\Requests\RemoveRequest;
 use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
 use App\Models\MediaDownloadRef;
@@ -78,6 +78,21 @@ final class MediaDownloadsController extends Controller
     public function edit(Request $request, JsonRpcConnector $connector, MediaDownloadRef $model, EditMediaDownloadData $payload): RedirectResponse
     {
         $returnTo = $this->resolveReturnTo($request);
+
+        if ($model->canceled_at !== null) {
+            return back()->withErrors(['action' => 'This download is already canceled and cannot be modified.']);
+        }
+
+        if ($payload->action->isCancel()) {
+            $error = CancelDownload::run($model, $payload->delete_partial);
+
+            if ($error !== null) {
+                return back()->withErrors(['action' => $error]);
+            }
+
+            return back()->with('success', 'Download canceled successfully.');
+        }
+
         $result = GetDownloadStatus::run([$model->gid]);
         $errors = $result->filter(fn (mixed $response) => isset($response['error']))->map(fn (array $response) => $response['error']);
 
@@ -95,10 +110,14 @@ final class MediaDownloadsController extends Controller
         $req = match ($payload->action) {
             MediaDownloadAction::Pause => new PauseRequest($model->gid),
             MediaDownloadAction::Resume => new UnPauseRequest($model->gid),
-            MediaDownloadAction::Cancel => new RemoveRequest($model->gid),
             MediaDownloadAction::Remove => new RemoveDownloadResultRequest($model->gid),
             MediaDownloadAction::Retry => new RemoveDownloadResultRequest($model->gid),
+            default => null,
         };
+
+        if ($req === null) {
+            return back()->withErrors(['action' => 'Unsupported download action.']);
+        }
 
         /** @var JsonRpcResponse $response */
         $response = $connector->send($req)->dtoOrFail();
@@ -109,6 +128,14 @@ final class MediaDownloadsController extends Controller
         // Other actions that we need to take.
         if ($payload->action->isRemove()) {
             $model->delete();
+        }
+
+        if ($payload->action->isPause()) {
+            $model->forceFill(['desired_paused' => true])->save();
+        }
+
+        if ($payload->action->isResume()) {
+            $model->forceFill(['desired_paused' => false])->save();
         }
 
         if ($payload->action->isRetry() && $model->isVodStream()) {
@@ -144,21 +171,15 @@ final class MediaDownloadsController extends Controller
         return back()->with('success', 'Download status updated successfully.');
     }
 
-    public function destroy(JsonRpcConnector $connector, MediaDownloadRef $model): RedirectResponse
+    public function destroy(MediaDownloadRef $model): RedirectResponse
     {
-        $model->delete();
-        $req = new RemoveDownloadResultRequest($model->gid);
-        try {
-            /** @var JsonRpcResponse $response */
-            $response = $connector->send($req);
-            if ($response->hasError()) {
-                return back()->withErrors(['action' => $response->errorMessage()]);
-            }
+        $error = CancelDownload::run($model, false);
 
-            return back()->with('success', 'Download removed successfully.');
-        } catch (JsonRpcException $jsonRpcException) {
-            return back()->withErrors(['action' => $jsonRpcException->getMessage()]);
+        if ($error !== null) {
+            return back()->withErrors(['action' => $error]);
         }
+
+        return back()->with('success', 'Download canceled successfully.');
     }
 
     private function parseOwnerIds(mixed $owners): array

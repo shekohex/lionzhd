@@ -10,23 +10,24 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 4 of 7 (Category Browse/Filter UX)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-25 - Phase 3 verified complete
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-02-26 - Completed 04-01-PLAN.md
 
-Progress: [████░░░░░░] 43%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: 5.3 min
-- Total execution time: 1.24 hours
+- Total execution time: 1.32 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1 (Access Control) | 5 | 40 min | 8 min |
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 15.3 min | 3.8 min |
+| 4 (Category Browse/Filter UX) | 1 | 5 min | 5 min |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Progress: [████░░░░░░] 43%
 | 3 | Preflight VOD+Series category fetches in settings sync controller and block unforced empty-source dispatches | Prevent destructive empty-sync runs unless admin explicitly confirms source-specific force |
 | 3 | Re-submit sync confirmation with per-source force flags only for empty sources | Keep confirmation precise and avoid altering behavior for non-empty sources |
 | 3 | Expose category sync run history in settings with pagination and top issues | Make sync outcomes auditable without CLI access |
+| 4 | Use one shared sidebar builder action keyed by MediaType for Movies and Series | Keep category-sidebar behavior consistent and avoid duplicated query/count logic |
+| 4 | Count uncategorized media as null, empty string, or system uncategorized provider ID | Preserve accurate uncategorized counts during category normalization transition |
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-25T17:50:00Z
-Stopped at: Phase 3 verified complete; ready for Phase 4 planning
+Last session: 2026-02-26T01:44:46Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None

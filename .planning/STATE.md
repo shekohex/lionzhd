@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 5 of 7 (Download Lifecycle Reliability)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-02-26 - Completed 04-06-PLAN.md (Phase 4 gap closure)
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-02-26 - Completed 05-01-PLAN.md
 
-Progress: [██████░░░░] 57%
+Progress: [██████░░░░] 60%
 
 ## Performance Metrics
 
-- Total plans completed: 20
-- Average duration: 5.1 min
-- Total execution time: 1.70 hours
+- Total plans completed: 21
+- Average duration: 5.0 min
+- Total execution time: 1.73 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -28,6 +28,7 @@ Progress: [██████░░░░] 57%
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
+| 5 (Download Lifecycle Reliability) | 1 | 2 min | 2.0 min |
 
 ## Accumulated Context
 
@@ -78,6 +79,8 @@ Progress: [██████░░░░] 57%
 | 4 | Use `router.reload({ only: ['movies|series','filters','categories'] })` for Retry categories | Retry against current URL-selected category without synthesizing a new navigation target |
 | 4 | Accept orchestrator-provided approval as the completion signal for the manual smoke checkpoint in continuation mode | Non-interactive checkpoint continuation already carried explicit approval state |
 | 4 | Finalize 04-06 from checkpoint continuation by committing only plan metadata artifacts | Preserve atomic task commit history and avoid re-committing already approved code changes |
+| 5 | Persist download reliability lifecycle state on `media_download_refs` with DB-column-aligned DTO fields | Keep pause/cancel/retry/file-snapshot semantics durable and contract-stable across backend/frontend |
+| 5 | Constrain `download_files` to `string[]` in generated types via `LiteralTypeScriptType` | Prevent generated `any` drift and keep lint-clean TS contract output |
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T05:15:06Z
-Stopped at: Completed 04-06-PLAN.md
+Last session: 2026-02-26T21:54:07Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None

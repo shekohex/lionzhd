@@ -2,7 +2,7 @@ import { SearchOverlay } from '@/components/search-overlay';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface AppShellProps {
@@ -14,6 +14,7 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
     const { auth, errors: rawErrors, flash: rawFlash } = usePage<SharedData>().props;
     const errors = useMemo(() => rawErrors, [rawErrors]);
     const flash = useMemo(() => rawFlash, [rawFlash]);
+    const lastWarningMessageRef = useRef<string | null>(null);
     const isAuthenticated = auth.user !== null;
 
     // Sidebar state
@@ -46,7 +47,8 @@ export function AppShell({ children, variant = 'header' }: AppShellProps) {
             });
         }
 
-        if (flash.warning) {
+        if (flash.warning && flash.warning !== lastWarningMessageRef.current) {
+            lastWarningMessageRef.current = flash.warning;
             toast.warning(flash.warning, {
                 description: 'There was a warning during the operation.',
                 duration: 3000,

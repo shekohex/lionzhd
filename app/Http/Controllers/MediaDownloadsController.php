@@ -44,7 +44,10 @@ final class MediaDownloadsController extends Controller
         $downloadStatus = collect();
         if (! $downloads->isEmpty()) {
             try {
-                $downloadStatus = GetDownloadStatus::run($downloads->pluck('gid')->toArray());
+                $downloadStatus = GetDownloadStatus::run(
+                    $downloads->pluck('gid')->toArray(),
+                    ['gid', 'status', 'totalLength', 'completedLength', 'downloadSpeed', 'errorCode', 'errorMessage', 'dir', 'files'],
+                );
             } catch (JsonRpcException) {
                 $downloadStatus = collect();
             }
@@ -54,7 +57,7 @@ final class MediaDownloadsController extends Controller
 
         $merged = $data->through(function (MediaDownloadRefData $item) use ($downloadStatus): MediaDownloadRefData {
             $status = $downloadStatus->firstWhere('gid', $item->gid);
-            if ($status) {
+            if ($status && ! isset($status['error'])) {
                 return $item->withDownloadStatus(MediaDownloadStatusData::from($status));
             }
 

@@ -44,6 +44,7 @@ final readonly class GetDownloadStatus
         return $response->results()->map(function (array $response) {
             if (isset($response['error'])) {
                 return [
+                    'gid' => (string) ($response['id'] ?? ''),
                     'error' => $response['error']['message'] ?? 'Unknown error',
                 ];
             }

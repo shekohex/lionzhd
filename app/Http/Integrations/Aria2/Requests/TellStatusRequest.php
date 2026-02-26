@@ -28,7 +28,7 @@ final class TellStatusRequest extends JsonRpcRequest
      */
     public function __construct(string $gid, array $keys = [])
     {
-        parent::__construct('tellStatus', $keys !== [] ? [$gid, $keys] : [$gid]);
+        parent::__construct('tellStatus', $keys !== [] ? [$gid, $keys] : [$gid], false, $gid);
     }
 
     /**

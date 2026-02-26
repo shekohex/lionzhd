@@ -52,7 +52,9 @@ final readonly class GetActiveDownloads
         }
 
         /** @var Collection<int, MediaDownloadStatusData> */
-        $activeDownloads = GetDownloadStatus::run($gids->toArray())->map(fn (array $response) => MediaDownloadStatusData::from($response));
+        $activeDownloads = GetDownloadStatus::run($gids->toArray())
+            ->reject(static fn (array $response): bool => isset($response['error']))
+            ->map(static fn (array $response): MediaDownloadStatusData => MediaDownloadStatusData::from($response));
 
         return $activeDownloads->firstWhere(fn ($download) => $download->status->downloadedOrDownloading());
 

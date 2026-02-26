@@ -29,9 +29,7 @@ final class MonitorDownloads implements ShouldQueue, ShouldBeUnique
 
     public int $tries = 1;
 
-    public function __construct(private readonly JsonRpcConnector $connector) {}
-
-    public function handle(): void
+    public function handle(JsonRpcConnector $connector): void
     {
         $downloads = MediaDownloadRef::query()
             ->whereNull('canceled_at')
@@ -54,7 +52,7 @@ final class MonitorDownloads implements ShouldQueue, ShouldBeUnique
             }
 
             $this->persistDownloadFilesSnapshot($download, $status);
-            $this->enforceStickyPause($download, $status);
+            $this->enforceStickyPause($download, $status, $connector);
             $this->processErrorStatus($download, $status);
         }
     }
@@ -86,7 +84,7 @@ final class MonitorDownloads implements ShouldQueue, ShouldBeUnique
     /**
      * @param  array<string, mixed>  $status
      */
-    private function enforceStickyPause(MediaDownloadRef $download, array $status): void
+    private function enforceStickyPause(MediaDownloadRef $download, array $status, JsonRpcConnector $connector): void
     {
         if (! $download->desired_paused) {
             return;
@@ -99,7 +97,7 @@ final class MonitorDownloads implements ShouldQueue, ShouldBeUnique
         }
 
         try {
-            $this->connector->send(new PauseRequest($download->gid))->dtoOrFail();
+            $connector->send(new PauseRequest($download->gid))->dtoOrFail();
         } catch (JsonRpcException) {
         }
     }

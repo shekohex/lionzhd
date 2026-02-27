@@ -67,7 +67,7 @@ final class VodStreamController extends Controller
                 ->first(['added', 'stream_id']);
 
             if ($snapshot !== null) {
-                $asOf = $snapshot->added;
+                $asOf = $snapshot->getRawOriginal('added');
                 $asOfId = (int) $snapshot->stream_id;
             }
         }

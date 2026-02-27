@@ -61,7 +61,7 @@ final class SeriesController extends Controller
                 ->first(['last_modified', 'series_id']);
 
             if ($snapshot !== null) {
-                $asOf = $snapshot->last_modified;
+                $asOf = $snapshot->getRawOriginal('last_modified');
                 $asOfId = (int) $snapshot->series_id;
             }
         }

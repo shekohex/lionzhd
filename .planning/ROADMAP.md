@@ -114,7 +114,12 @@ Plans:
   1. User does not miss the last item when mobile infinite scroll crosses page boundaries.
   2. User sees deterministic ordering across mobile infinite-scroll pagination.
   3. Mobile infinite-scroll boundary behavior is covered by automated regression tests.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Server pagination determinism + snapshot cutoff + regression tests
+- [ ] 06-02-PLAN.md — Mobile infinite-scroll hook + page wiring + restore/error UX
+- [ ] 06-03-PLAN.md — Manual mobile infinite-scroll smoke verification checkpoint
 
 ### Phase 7: Auto Episodes (Schedules + Dedupe)
 **Goal**: Users can schedule per-series monitoring that detects new episodes and auto-queues downloads without duplicates.
@@ -136,5 +141,5 @@ Plans:
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
 | 4. Category Browse/Filter UX | 6/6 | Complete | 2026-02-26 |
 | 5. Download Lifecycle Reliability | 4/4 | Complete | 2026-02-27 |
-| 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |
+| 6. Mobile Infinite-Scroll Pagination | 0/3 | Not started | - |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

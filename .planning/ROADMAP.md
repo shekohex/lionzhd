@@ -11,7 +11,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 - [x] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
 - [x] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
 - [x] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
-- [ ] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
+- [x] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
 - [ ] **Phase 7: Auto Episodes (Schedules + Dedupe)** - Per-user series monitoring schedules detect new episodes and auto-queue without duplicates
 
 ## Phase Details
@@ -117,9 +117,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Server pagination determinism + snapshot cutoff + regression tests
-- [ ] 06-02-PLAN.md — Mobile infinite-scroll hook + page wiring + restore/error UX
-- [ ] 06-03-PLAN.md — Manual mobile infinite-scroll smoke verification checkpoint
+- [x] 06-01-PLAN.md — Server pagination determinism + snapshot cutoff + regression tests
+- [x] 06-02-PLAN.md — Mobile infinite-scroll hook + page wiring + restore/error UX
+- [x] 06-03-PLAN.md — Manual mobile infinite-scroll smoke verification checkpoint
 
 ### Phase 7: Auto Episodes (Schedules + Dedupe)
 **Goal**: Users can schedule per-series monitoring that detects new episodes and auto-queues downloads without duplicates.
@@ -141,5 +141,5 @@ Plans:
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
 | 4. Category Browse/Filter UX | 6/6 | Complete | 2026-02-26 |
 | 5. Download Lifecycle Reliability | 4/4 | Complete | 2026-02-27 |
-| 6. Mobile Infinite-Scroll Pagination | 0/3 | Not started | - |
+| 6. Mobile Infinite-Scroll Pagination | 3/3 | Complete | 2026-02-27 |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

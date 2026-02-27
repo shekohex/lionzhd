@@ -52,9 +52,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Mobile Pagination
 
-- [ ] **MOBL-01**: User does not miss the last item when mobile infinite scroll crosses page boundaries
-- [ ] **MOBL-02**: User sees deterministic ordering across mobile infinite-scroll pagination
-- [ ] **MOBL-03**: Mobile infinite-scroll boundary behavior is covered by automated regression tests
+- [x] **MOBL-01**: User does not miss the last item when mobile infinite scroll crosses page boundaries
+- [x] **MOBL-02**: User sees deterministic ordering across mobile infinite-scroll pagination
+- [x] **MOBL-03**: Mobile infinite-scroll boundary behavior is covered by automated regression tests
 
 ## v2 Requirements
 
@@ -117,9 +117,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | RELY-04 | Phase 5 | Complete |
 | RELY-05 | Phase 5 | Complete |
 | RELY-06 | Phase 5 | Complete |
-| MOBL-01 | Phase 6 | Pending |
-| MOBL-02 | Phase 6 | Pending |
-| MOBL-03 | Phase 6 | Pending |
+| MOBL-01 | Phase 6 | Complete |
+| MOBL-02 | Phase 6 | Complete |
+| MOBL-03 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 31 total
@@ -128,4 +128,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-25*
-*Last updated: 2026-02-27 after Phase 5 completion*
+*Last updated: 2026-02-27 after Phase 6 completion*

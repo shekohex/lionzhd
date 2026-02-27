@@ -14,7 +14,7 @@ import type { PendingVisit } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { TvIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 const container = {
@@ -82,11 +82,13 @@ function SeriesResults({
     onResetToAllCategories,
 }: SeriesResultsProps) {
     const hasSeries = series.total > 0;
+    const rememberKey = `Series/InfiniteScroll:${selectedCategory ?? 'all'}`;
 
     const infiniteScroll = useInfiniteScroll({
         data: series.data,
         currentPage: series.current_page,
         nextPageUrl: series.next_page_url,
+        rememberKey,
         enabled: isMobile,
         only: ['series'],
         preserveState: true,
@@ -188,28 +190,41 @@ export default function Series() {
     const isMobile = useIsMobile();
     const [isSwitchingCategory, setIsSwitchingCategory] = useState(false);
     const [categoryLoadError, setCategoryLoadError] = useState<string | null>(null);
+    const categoryVisitCancelToken = useRef<{ cancel: () => void } | null>(null);
 
     const selectedCategory = filters.category ?? null;
     const resultsKey = selectedCategory ?? 'all';
 
     const handleCategoryVisitFinish = (visit: PendingVisit) => {
         setIsSwitchingCategory(false);
+        categoryVisitCancelToken.current = null;
 
         if (!visit.completed && !visit.cancelled && !visit.interrupted) {
             setCategoryLoadError(CATEGORY_LOAD_ERROR_MESSAGE);
         }
     };
 
+    useEffect(() => {
+        return () => {
+            categoryVisitCancelToken.current?.cancel();
+            categoryVisitCancelToken.current = null;
+        };
+    }, []);
+
     const handleSelectCategory = (nextCategory: string | null) => {
         const category = nextCategory === selectedCategory ? null : nextCategory;
+        categoryVisitCancelToken.current?.cancel();
 
-        scrollToTop('instant');
+        scrollToTop('smooth');
 
         router.visit(category ? route('series', { category }) : route('series'), {
             method: 'get',
             only: ['series', 'filters', 'categories'],
             preserveState: true,
             preserveScroll: false,
+            onCancelToken: (token) => {
+                categoryVisitCancelToken.current = token as { cancel: () => void };
+            },
             onStart: () => {
                 setIsSwitchingCategory(true);
                 setCategoryLoadError(null);
@@ -230,6 +245,9 @@ export default function Series() {
 
         router.reload({
             only: ['series', 'filters', 'categories'],
+            onCancelToken: (token) => {
+                categoryVisitCancelToken.current = token as { cancel: () => void };
+            },
             onStart: () => {
                 setIsSwitchingCategory(true);
                 setCategoryLoadError(null);

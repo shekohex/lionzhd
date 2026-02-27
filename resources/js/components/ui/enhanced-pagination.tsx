@@ -30,7 +30,6 @@ interface EnhancedPaginationProps {
         hasMore: boolean;
         error: string | null;
         loadMore: () => void;
-        clearError: () => void;
     };
     /**
      * Whether to show the load more button on mobile instead of auto-loading
@@ -46,14 +45,12 @@ function InfiniteScrollLoader({
     hasMore, 
     error, 
     onLoadMore, 
-    onClearError,
     showLoadMoreButton = false
 }: {
     isLoading: boolean;
     hasMore: boolean;
     error: string | null;
     onLoadMore: () => void;
-    onClearError: () => void;
     showLoadMoreButton?: boolean;
 }) {
     if (error) {
@@ -65,7 +62,7 @@ function InfiniteScrollLoader({
                 <Button 
                     variant="outline" 
                     size="sm" 
-                    onClick={onClearError}
+                    onClick={onLoadMore}
                     className="px-6"
                 >
                     Try Again
@@ -156,7 +153,6 @@ export function EnhancedPagination({
                     hasMore={infiniteScroll.hasMore}
                     error={infiniteScroll.error}
                     onLoadMore={infiniteScroll.loadMore}
-                    onClearError={infiniteScroll.clearError}
                     showLoadMoreButton={showLoadMoreButton}
                 />
             </div>

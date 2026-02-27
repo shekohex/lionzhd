@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 5 (Download Lifecycle Reliability)
+**Current focus:** Phase 6 (Mobile Infinite-Scroll Pagination)
 
 ## Current Position
 
 Phase: 5 of 7 (Download Lifecycle Reliability)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-02-26 - Completed 05-03-PLAN.md
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-02-27 - Completed 05-04-PLAN.md
 
-Progress: [███████░░░] 66%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 23
+- Total plans completed: 24
 - Average duration: 5.3 min
-- Total execution time: 2.01 hours
+- Total execution time: 2.10 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -28,7 +28,7 @@ Progress: [███████░░░] 66%
 | 2 (Download Ownership & Authorization) | 5 | 19 min | 3.8 min |
 | 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
-| 5 (Download Lifecycle Reliability) | 3 | 19 min | 6.3 min |
+| 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 
 ## Accumulated Context
 
@@ -86,6 +86,9 @@ Progress: [███████░░░] 66%
 | 5 | Restrict delete-partial cleanup to `services.aria2.download_root` with explicit user-facing failure on out-of-root paths | Prevent unsafe file deletion outside the allowlisted download root |
 | 5 | Schedule monitor-driven retries with delayed queue execution and deterministic backoff while reducing aria2 internal retries to one attempt | Keep retry policy app-owned, bounded, and active without UI polling |
 | 5 | Run manual retry in place with cooldown gating and optional restart-from-zero cleanup | Preserve lifecycle metadata/UI visibility while preventing cooldown bypass |
+| 5 | Default downloads polling interval to 5000ms | Align reliability UX freshness with lower churn and stable page behavior |
+| 5 | Render skeleton placeholders when status hydration is unavailable | Avoid stale progress numbers and preserve user trust in displayed lifecycle state |
+| 5 | Use cancel dialog with optional delete-partial payload and terminal canceled rows | Keep destructive intent explicit and maintain clear no-further-actions terminal UX |
 
 ### Pending Todos
 
@@ -97,6 +100,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-26T22:38:22Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-02-27T00:20:08Z
+Stopped at: Completed 05-04-PLAN.md
 Resume file: None

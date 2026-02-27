@@ -22,15 +22,22 @@ export default function CastList({ cast, director, className }: CastListProps) {
     const [canScrollRight, setCanScrollRight] = useState(true);
 
     // Parse cast string if needed
-    const castMembers: CastMember[] = Array.isArray(cast)
-        ? cast
-        : cast
-              ?.split(',')
-              .map((name) => ({ name: name.trim() }))
-              .filter((member) => member.name) || [];
+    const castMembers: CastMember[] = useMemo(
+        () =>
+            Array.isArray(cast)
+                ? cast
+                : cast
+                      ?.split(',')
+                      .map((name) => ({ name: name.trim() }))
+                      .filter((member) => member.name) || [],
+        [cast],
+    );
 
     // Add director as a cast member with a role if provided
-    const allMembers = director ? [{ name: director, role: 'Director' }, ...castMembers] : castMembers;
+    const allMembers = useMemo(
+        () => (director ? [{ name: director, role: 'Director' }, ...castMembers] : castMembers),
+        [director, castMembers],
+    );
 
     // Mobile: show a small set with a show more toggle
     const INITIAL_VISIBLE = 3;

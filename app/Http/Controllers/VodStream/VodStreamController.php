@@ -29,6 +29,8 @@ final class VodStreamController extends Controller
     {
         $requestedCategoryId = trim((string) $request->query('category', ''));
         $categoryId = $requestedCategoryId === '' ? null : $requestedCategoryId;
+        $asOf = $this->resolveAsOf($request);
+        $asOfId = $this->resolveAsOfId($request);
 
         $allowedCategoryIds = Category::query()
             ->where('in_vod', true)
@@ -39,7 +41,7 @@ final class VodStreamController extends Controller
             return to_route('movies')->with('warning', 'Category not found. Showing all categories.');
         }
 
-        $movies = VodStream::query()
+        $moviesQuery = VodStream::query()
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             }])
@@ -56,9 +58,37 @@ final class VodStreamController extends Controller
                 }
 
                 $query->where('category_id', $categoryId);
-            })
+            });
+
+        if ($asOf === null || $asOfId === null) {
+            $snapshot = (clone $moviesQuery)
+                ->orderByDesc('added')
+                ->orderByDesc('stream_id')
+                ->first(['added', 'stream_id']);
+
+            if ($snapshot !== null) {
+                $asOf = $snapshot->added;
+                $asOfId = (int) $snapshot->stream_id;
+            }
+        }
+
+        if ($asOf !== null && $asOfId !== null) {
+            $moviesQuery->where(static function (Builder $query) use ($asOf, $asOfId): void {
+                $query
+                    ->where('added', '<', $asOf)
+                    ->orWhere(static function (Builder $sameTimestampQuery) use ($asOf, $asOfId): void {
+                        $sameTimestampQuery
+                            ->where('added', '=', $asOf)
+                            ->where('stream_id', '<=', $asOfId);
+                    });
+            });
+        }
+
+        $movies = $moviesQuery
             ->orderByDesc('added')
+            ->orderByDesc('stream_id')
             ->paginate(20)
+            ->appends(['as_of' => $asOf, 'as_of_id' => $asOfId])
             ->withQueryString();
 
         return Inertia::render('movies/index', [
@@ -66,6 +96,36 @@ final class VodStreamController extends Controller
             'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId),
             'categories' => fn () => BuildCategorySidebarItems::run(MediaType::Movie, $categoryId),
         ]);
+    }
+
+    private function resolveAsOf(Request $request): ?string
+    {
+        $asOf = $request->query('as_of');
+
+        if (! is_string($asOf)) {
+            return null;
+        }
+
+        $trimmed = trim($asOf);
+
+        return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function resolveAsOfId(Request $request): ?int
+    {
+        $asOfId = $request->query('as_of_id');
+
+        if (! is_scalar($asOfId)) {
+            return null;
+        }
+
+        if (! is_numeric((string) $asOfId)) {
+            return null;
+        }
+
+        $resolved = (int) $asOfId;
+
+        return $resolved > 0 ? $resolved : null;
     }
 
     /**

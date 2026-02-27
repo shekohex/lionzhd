@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 6 of 7 (Mobile Infinite-Scroll Pagination)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-02-27 - Completed 06-01-PLAN.md
+Last activity: 2026-02-27 - Completed 06-02-PLAN.md
 
-Progress: [█████████░] 93%
+Progress: [█████████░] 96%
 
 ## Performance Metrics
 
-- Total plans completed: 25
+- Total plans completed: 26
 - Average duration: 5.2 min
-- Total execution time: 2.16 hours
+- Total execution time: 2.26 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -29,7 +29,7 @@ Progress: [█████████░] 93%
 | 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
-| 6 (Mobile Infinite-Scroll Pagination) | 1 | 3 min | 3.0 min |
+| 6 (Mobile Infinite-Scroll Pagination) | 2 | 9 min | 4.5 min |
 
 ## Accumulated Context
 
@@ -92,6 +92,9 @@ Progress: [█████████░] 93%
 | 5 | Use cancel dialog with optional delete-partial payload and terminal canceled rows | Keep destructive intent explicit and maintain clear no-further-actions terminal UX |
 | 6 | Apply snapshot pagination contract with `as_of` + `as_of_id` and id tie-break ordering on movies/series browse endpoints | Prevent offset boundary skips/duplicates under timestamp ties and between-request inserts |
 | 6 | Use raw persisted timestamp strings when deriving snapshot cutoffs | Keep cutoff comparisons aligned with stored string timestamp format and avoid empty result regressions |
+| 6 | Use paginator `current_page` + `next_page_url` contract in mobile infinite-scroll hook | Eliminate link-label parsing and keep appends deterministic from Laravel paginator metadata |
+| 6 | Persist category-scoped infinite-scroll state via `router.remember`/`router.restore` keys | Restore per-category loaded items, paused/error state, and exact scroll position in-session |
+| 6 | Gate autoload on near-bottom transition with one in-flight and single auto-retry-before-pause | Enforce locked UX: no chain-load, bounded retry, explicit manual recovery after failures |
 
 ### Pending Todos
 
@@ -103,6 +106,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-27T16:06:00Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-02-27T16:09:14Z
+Stopped at: Completed 06-02-PLAN.md
 Resume file: None

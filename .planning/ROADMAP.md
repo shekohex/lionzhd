@@ -130,7 +130,7 @@ Plans:
   2. User can configure an hourly, daily-at-time, or weekly day+time monitoring schedule.
   3. System detects new episodes by comparing Xtream episode IDs against known episode IDs for that user-series.
   4. System auto-queues download of newly detected episodes and prevents duplicate queue entries for the same episode/user.
-**Plans**: 11 plans
+**Plans**: 12 plans
 
 Plans:
 - [ ] 07-01-PLAN.md — Allow GET schedules page for all (visible-but-disabled UX)
@@ -140,7 +140,8 @@ Plans:
 - [ ] 07-05-PLAN.md — Add dispatcher + scan jobs and scheduler wiring
 - [ ] 07-06-PLAN.md — Implement scan/diff/queue with dedupe + cap + tests
 - [ ] 07-07-PLAN.md — Add HTTP endpoints + access control for monitoring
-- [ ] 07-10-PLAN.md — Add DTOs + request validation + TS types + series show wiring
+- [ ] 07-10-PLAN.md — Add request validation + explicit 422 coverage for monitoring mutations
+- [ ] 07-12-PLAN.md — Add monitoring DTOs + typed props + TS type generation
 - [ ] 07-11-PLAN.md — Add explicit recent-only backfill on enable (no auto-run)
 - [ ] 07-08-PLAN.md — Series detail monitoring UX + schedule editor (checkpoint)
 - [ ] 07-09-PLAN.md — Central monitoring management page in settings/schedules (checkpoint)

@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 6 (Mobile Infinite-Scroll Pagination)
+**Current focus:** Phase 7 (Auto Episodes (Schedules + Dedupe))
 
 ## Current Position
 
 Phase: 6 of 7 (Mobile Infinite-Scroll Pagination)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-27 - Completed 06-02-PLAN.md
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-02-27 - Completed 06-03-PLAN.md
 
-Progress: [█████████░] 96%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 26
-- Average duration: 5.2 min
-- Total execution time: 2.26 hours
+- Total plans completed: 27
+- Average duration: 5.1 min
+- Total execution time: 2.28 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -29,7 +29,7 @@ Progress: [█████████░] 96%
 | 3 (Categories Sync & Categorization Correctness) | 4 | 13 min | 3.2 min |
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
-| 6 (Mobile Infinite-Scroll Pagination) | 2 | 9 min | 4.5 min |
+| 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
 
 ## Accumulated Context
 
@@ -95,6 +95,8 @@ Progress: [█████████░] 96%
 | 6 | Use paginator `current_page` + `next_page_url` contract in mobile infinite-scroll hook | Eliminate link-label parsing and keep appends deterministic from Laravel paginator metadata |
 | 6 | Persist category-scoped infinite-scroll state via `router.remember`/`router.restore` keys | Restore per-category loaded items, paused/error state, and exact scroll position in-session |
 | 6 | Gate autoload on near-bottom transition with one in-flight and single auto-retry-before-pause | Enforce locked UX: no chain-load, bounded retry, explicit manual recovery after failures |
+| 6 | Accept continuation checkpoint approval as completion signal for 06-03 manual smoke verification | Preserve checkpoint semantics in continuation mode without repeating user verification steps |
+| 6 | Auto-fix blocking exhaustive-deps lint warning during 06-03 verification | Keep mandatory lint gate green before phase finalization |
 
 ### Pending Todos
 
@@ -106,6 +108,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-27T16:09:14Z
-Stopped at: Completed 06-02-PLAN.md
+Last session: 2026-02-27T16:16:34Z
+Stopped at: Completed 06-03-PLAN.md
 Resume file: None

@@ -85,11 +85,12 @@ function MoviesResults({
 
     const infiniteScroll = useInfiniteScroll({
         data: movies.data,
-        links: movies.links || [],
+        currentPage: movies.current_page,
+        nextPageUrl: movies.next_page_url,
         enabled: isMobile,
         only: ['movies'],
         preserveState: true,
-        preserveScroll: false,
+        preserveScroll: true,
     });
 
     const displayedMovies = isMobile ? infiniteScroll.allData : movies.data;

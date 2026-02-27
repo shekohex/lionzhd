@@ -3,185 +3,235 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { isNearBottom, onScroll } from '../lib/scroll-utils';
 
 interface UseInfiniteScrollOptions<T = unknown> {
-    /**
-     * Current page data from Inertia
-     */
     data: T[];
-
-    /**
-     * Pagination links from Laravel
-     */
-    links: Array<{ url?: string; label: string; active: boolean }>;
-
-    /**
-     * Base URL for pagination (e.g., '/movies', '/series')
-     */
-    baseUrl?: string;
-
-    /**
-     * Distance from bottom to trigger loading (in pixels)
-     * @default 200
-     */
+    currentPage: number;
+    nextPageUrl: string | null;
     threshold?: number;
-
-    /**
-     * Whether to preserve state during navigation
-     * @default true
-     */
     preserveState?: boolean;
-
-    /**
-     * Whether to preserve scroll position during navigation
-     * @default false (we manage scroll manually)
-     */
     preserveScroll?: boolean;
-
-    /**
-     * Only reload specific data keys
-     * @default ['movies'] or ['series']
-     */
     only?: string[];
-
-    /**
-     * Whether infinite scroll is enabled
-     * @default true
-     */
     enabled?: boolean;
-
-    /**
-     * Debounce delay for scroll events (ms)
-     * @default 100
-     */
     scrollDebounce?: number;
+    replace?: boolean;
 }
 
 interface UseInfiniteScrollReturn<T = unknown> {
-    /**
-     * Whether we're currently loading more items
-     */
     isLoading: boolean;
-
-    /**
-     * Whether there are more items to load
-     */
     hasMore: boolean;
-
-    /**
-     * Error message if loading failed
-     */
     error: string | null;
-
-    /**
-     * Manually trigger loading more items
-     */
     loadMore: () => void;
-
-    /**
-     * Reset error state
-     */
     clearError: () => void;
-
-    /**
-     * All accumulated data items
-     */
     allData: T[];
+}
+
+interface PaginationPayload<T> {
+    data: T[];
+    current_page: number;
+    next_page_url: string | null;
+}
+
+interface CancelToken {
+    cancel: () => void;
+}
+
+function normalizePage(value: number): number {
+    if (!Number.isFinite(value) || value < 1) {
+        return 1;
+    }
+
+    return Math.floor(value);
 }
 
 export function useInfiniteScroll<T = unknown>({
     data,
-    links,
+    currentPage,
+    nextPageUrl,
     threshold = 200,
     preserveState = true,
-    preserveScroll = false,
+    preserveScroll = true,
     only,
     enabled = true,
     scrollDebounce = 100,
-}: Omit<UseInfiniteScrollOptions<T>, 'baseUrl'>): UseInfiniteScrollReturn<T> {
+    replace = true,
+}: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isAutoPaused, setIsAutoPaused] = useState(false);
     const [allData, setAllData] = useState<T[]>(data);
-    const isInitialLoad = useRef(true);
+    const cancelTokenRef = useRef<CancelToken | null>(null);
+    const inFlightRef = useRef(false);
+    const retryPendingRef = useRef(false);
+    const previousNearBottomRef = useRef(false);
+    const pagesRef = useRef<Map<number, T[]>>(new Map([[normalizePage(currentPage), data]]));
 
-    // Find next page URL from links
-    const nextPageUrl = links?.find((link) => link.label === 'Next »' || link.label.includes('Next'))?.url;
     const hasMore = !!nextPageUrl;
 
-    // Reset accumulated data when base data changes (e.g., filters applied)
+    const mergePages = useCallback((pages: Map<number, T[]>) => {
+        const orderedPages = Array.from(pages.keys()).sort((a, b) => a - b);
+        setAllData(orderedPages.flatMap((page) => pages.get(page) ?? []));
+    }, []);
+
     useEffect(() => {
-        if (isInitialLoad.current) {
-            isInitialLoad.current = false;
-            return;
-        }
+        const normalizedCurrentPage = normalizePage(currentPage);
+        const currentPages = pagesRef.current;
+        const loadedPageNumbers = Array.from(currentPages.keys());
 
-        // If we got new data and it's a different dataset (not an append), reset
-        const currentPageFromUrl = new URL(window.location.href).searchParams.get('page');
-        const pageNum = currentPageFromUrl ? parseInt(currentPageFromUrl, 10) : 1;
-
-        // Reset if we're back to page 1 or if the data length suggests a fresh start
-        if (pageNum === 1 || data.length !== allData.length) {
+        if (loadedPageNumbers.length === 0) {
+            pagesRef.current = new Map([[normalizedCurrentPage, data]]);
             setAllData(data);
-        }
-    }, [data, allData.length]);
-
-    const loadMore = useCallback(async () => {
-        if (!nextPageUrl || isLoading || !enabled) {
             return;
         }
 
-        setIsLoading(true);
-        setError(null);
+        const minLoadedPage = Math.min(...loadedPageNumbers);
+        const maxLoadedPage = Math.max(...loadedPageNumbers);
+        const shouldResetPages = normalizedCurrentPage < minLoadedPage || normalizedCurrentPage > maxLoadedPage + 1 || (normalizedCurrentPage === 1 && maxLoadedPage > 1);
 
-        try {
-            await new Promise<void>((resolve, reject) => {
-                router.visit(nextPageUrl, {
-                    method: 'get',
-                    preserveState,
-                    preserveScroll,
-                    only,
-                    onSuccess: (page) => {
-                        const props = page.props as Record<string, { data?: T[] }>;
-                        // Extract the new data from the response
-                        const newItems = only?.[0] ? props[only[0]]?.data : data;
+        if (shouldResetPages) {
+            cancelTokenRef.current?.cancel();
+            cancelTokenRef.current = null;
+            inFlightRef.current = false;
+            retryPendingRef.current = false;
+            pagesRef.current = new Map([[normalizedCurrentPage, data]]);
+            setAllData(data);
+            setError(null);
+            setIsAutoPaused(false);
+            return;
+        }
 
-                        if (newItems && Array.isArray(newItems)) {
-                            setAllData((prev) => [...prev, ...newItems]);
-                        }
+        const nextPages = new Map(currentPages);
+        nextPages.set(normalizedCurrentPage, data);
+        pagesRef.current = nextPages;
+        mergePages(nextPages);
+    }, [currentPage, data, mergePages]);
 
-                        resolve();
-                    },
-                    onError: (errors) => {
-                        console.error('Error loading more items:', errors);
-                        setError('Failed to load more items. Please try again.');
-                        reject(new Error('Failed to load more items'));
-                    },
-                    onFinish: () => {
-                        setIsLoading(false);
-                    },
-                });
+    const extractPayload = useCallback(
+        (props: Record<string, unknown>): PaginationPayload<T> | null => {
+            const onlyKey = only?.[0];
+            if (!onlyKey) {
+                return null;
+            }
+
+            const rawPayload = props[onlyKey];
+            if (!rawPayload || typeof rawPayload !== 'object') {
+                return null;
+            }
+
+            const payload = rawPayload as Partial<PaginationPayload<T>>;
+            if (!Array.isArray(payload.data) || typeof payload.current_page !== 'number') {
+                return null;
+            }
+
+            return {
+                data: payload.data,
+                current_page: payload.current_page,
+                next_page_url: typeof payload.next_page_url === 'string' || payload.next_page_url === null ? payload.next_page_url : null,
+            };
+        },
+        [only],
+    );
+
+    const loadMoreInternal = useCallback(
+        (mode: 'auto' | 'manual', hasRetried: boolean = false) => {
+            if (!enabled || !nextPageUrl || inFlightRef.current) {
+                return;
+            }
+
+            if (mode === 'auto' && (isAutoPaused || error !== null)) {
+                return;
+            }
+
+            if (mode === 'manual') {
+                setError(null);
+                setIsAutoPaused(false);
+            }
+
+            inFlightRef.current = true;
+            retryPendingRef.current = false;
+            setIsLoading(true);
+
+            router.visit(nextPageUrl, {
+                method: 'get',
+                only,
+                preserveState,
+                preserveScroll,
+                replace,
+                onCancelToken: (token) => {
+                    cancelTokenRef.current = token as CancelToken;
+                },
+                onSuccess: (page) => {
+                    const payload = extractPayload(page.props as Record<string, unknown>);
+                    if (!payload) {
+                        return;
+                    }
+
+                    const normalizedPayloadPage = normalizePage(payload.current_page);
+                    const nextPages = new Map(pagesRef.current);
+                    nextPages.set(normalizedPayloadPage, payload.data);
+                    pagesRef.current = nextPages;
+                    mergePages(nextPages);
+                    setError(null);
+                    setIsAutoPaused(false);
+                },
+                onError: () => {
+                    if (mode === 'auto' && !hasRetried) {
+                        retryPendingRef.current = true;
+                        return;
+                    }
+
+                    setError('Failed to load more items. Please try again.');
+                    setIsAutoPaused(true);
+                },
+                onFinish: () => {
+                    inFlightRef.current = false;
+                    cancelTokenRef.current = null;
+                    setIsLoading(false);
+
+                    if (retryPendingRef.current) {
+                        retryPendingRef.current = false;
+                        loadMoreInternal(mode, true);
+                    }
+                },
             });
-        } catch (err) {
-            setIsLoading(false);
-            console.error('Error in loadMore:', err);
-        }
-    }, [nextPageUrl, isLoading, enabled, preserveState, preserveScroll, only, data]);
+        },
+        [enabled, error, extractPayload, isAutoPaused, mergePages, nextPageUrl, only, preserveScroll, preserveState, replace],
+    );
 
-    // Auto-load when scrolling near bottom
     useEffect(() => {
-        if (!enabled || !hasMore) {
+        if (!enabled || !hasMore || isAutoPaused || error !== null) {
             return;
         }
+
+        previousNearBottomRef.current = isNearBottom(threshold);
 
         const cleanup = onScroll(() => {
-            if (isNearBottom(threshold) && !isLoading && hasMore) {
-                loadMore();
+            const nearBottom = isNearBottom(threshold);
+            const hasTransitionedToNearBottom = !previousNearBottomRef.current && nearBottom;
+            previousNearBottomRef.current = nearBottom;
+
+            if (hasTransitionedToNearBottom) {
+                loadMoreInternal('auto');
             }
         }, scrollDebounce);
 
         return cleanup;
-    }, [enabled, hasMore, isLoading, loadMore, threshold, scrollDebounce]);
+    }, [enabled, error, hasMore, isAutoPaused, loadMoreInternal, scrollDebounce, threshold]);
+
+    useEffect(() => {
+        return () => {
+            cancelTokenRef.current?.cancel();
+            cancelTokenRef.current = null;
+            inFlightRef.current = false;
+            retryPendingRef.current = false;
+        };
+    }, []);
+
+    const loadMore = useCallback(() => {
+        loadMoreInternal('manual');
+    }, [loadMoreInternal]);
 
     const clearError = useCallback(() => {
         setError(null);
+        setIsAutoPaused(false);
     }, []);
 
     return {

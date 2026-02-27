@@ -44,7 +44,7 @@ export default interface Pagination<T> {
     /**
      * The URL of the next page, if available.
      */
-    next_page_url: string;
+    next_page_url: string | null;
 
     /**
      * The base path for the pagination URLs.

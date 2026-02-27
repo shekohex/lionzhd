@@ -85,11 +85,12 @@ function SeriesResults({
 
     const infiniteScroll = useInfiniteScroll({
         data: series.data,
-        links: series.links || [],
+        currentPage: series.current_page,
+        nextPageUrl: series.next_page_url,
         enabled: isMobile,
         only: ['series'],
         preserveState: true,
-        preserveScroll: false,
+        preserveScroll: true,
     });
 
     const displayedSeries = isMobile ? infiniteScroll.allData : series.data;

@@ -10,7 +10,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 - [x] **Phase 2: Download Ownership & Authorization** - Downloads are owned, private, and role-correct across UI and APIs
 - [x] **Phase 3: Categories Sync & Categorization Correctness** - Admin syncs categories (excluding Live) and content stays correctly categorized
 - [x] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
-- [ ] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
+- [x] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
 - [ ] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
 - [ ] **Phase 7: Auto Episodes (Schedules + Dedupe)** - Per-user series monitoring schedules detect new episodes and auto-queue without duplicates
 
@@ -98,7 +98,13 @@ Plans:
   3. User can resume a paused or interrupted download and continue from prior progress where possible.
   4. Failed downloads show actionable failure states and can be retried; transient failures are retried automatically with bounded backoff rules.
   5. Download lifecycle behavior (progress, abort, resume, retry) is covered by automated tests.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [x] 05-01-PLAN.md — Persist download reliability lifecycle fields (DB + DTO + TS types)
+- [x] 05-02-PLAN.md — Persisted cancel + sticky pause semantics + safe delete-partial + tests
+- [x] 05-03-PLAN.md — Auto-retry with bounded exponential backoff (monitor+retry jobs) + cooldown enforcement + tests
+- [x] 05-04-PLAN.md — Downloads UI reliability UX (progress/cancel/retry) + manual smoke checkpoint
 
 ### Phase 6: Mobile Infinite-Scroll Pagination
 **Goal**: Mobile infinite scroll pagination is correct, deterministic, and regression-tested.
@@ -129,6 +135,6 @@ Plans:
 | 2. Download Ownership & Authorization | 5/5 | Complete | 2026-02-25 |
 | 3. Categories Sync & Categorization Correctness | 4/4 | Complete | 2026-02-25 |
 | 4. Category Browse/Filter UX | 6/6 | Complete | 2026-02-26 |
-| 5. Download Lifecycle Reliability | 0/TBD | Not started | - |
+| 5. Download Lifecycle Reliability | 4/4 | Complete | 2026-02-27 |
 | 6. Mobile Infinite-Scroll Pagination | 0/TBD | Not started | - |
 | 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |

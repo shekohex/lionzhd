@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models\AutoEpisodes;
 
+use App\Enums\AutoEpisodes\MonitorScheduleType;
+use App\Enums\AutoEpisodes\SeriesMonitorRunStatus;
 use App\Models\Series;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -42,11 +44,13 @@ final class SeriesMonitor extends Model
      */
     protected $casts = [
         'enabled' => 'boolean',
+        'schedule_type' => MonitorScheduleType::class,
         'schedule_weekly_days' => 'array',
         'monitored_seasons' => 'array',
         'per_run_cap' => 'integer',
         'next_run_at' => 'immutable_datetime',
         'last_attempt_at' => 'immutable_datetime',
+        'last_attempt_status' => SeriesMonitorRunStatus::class,
         'last_successful_check_at' => 'immutable_datetime',
         'run_now_available_at' => 'immutable_datetime',
     ];

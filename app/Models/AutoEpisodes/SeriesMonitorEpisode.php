@@ -13,6 +13,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 final class SeriesMonitorEpisode extends Model
 {
+    public const string STATE_PENDING = 'pending';
+
+    public const string STATE_FAILED = 'failed';
+
+    public const string STATE_SKIPPED = 'skipped';
+
+    public const string STATE_QUEUED = 'queued';
+
+    public const string STATE_DOWNLOADED = 'downloaded';
+
+    public const string STATE_CANCELED = 'canceled';
+
     /**
      * @var list<string>
      */

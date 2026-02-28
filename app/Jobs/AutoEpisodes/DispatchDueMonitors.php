@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\AutoEpisodes;
 
+use App\Enums\AutoEpisodes\SeriesMonitorRunTrigger;
 use App\Models\AutoEpisodes\SeriesMonitor;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,7 +38,7 @@ final class DispatchDueMonitors implements ShouldQueue, ShouldBeUnique
             ->pluck('series_monitors.id');
 
         foreach ($dueMonitorIds as $monitorId) {
-            RunMonitorScan::dispatch((int) $monitorId);
+            RunMonitorScan::dispatch((int) $monitorId, SeriesMonitorRunTrigger::Scheduled);
         }
     }
 }

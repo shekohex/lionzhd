@@ -93,6 +93,35 @@ it('accepts valid store payloads and persists monitor schedule settings', functi
         ->and($monitor->next_run_at)->not->toBeNull();
 });
 
+it('accepts daily store payload when weekly days is an empty list', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $series = seriesMonitorValidationCreateSeries();
+    seriesMonitorValidationCreateWatchlist($user, $series);
+
+    $response = $this->actingAs($user)->post(route('series.monitoring.store', ['model' => $series->series_id]), [
+        'timezone' => 'UTC',
+        'schedule_type' => MonitorScheduleType::Daily->value,
+        'schedule_daily_time' => seriesMonitorValidationPresetTime(),
+        'schedule_weekly_days' => [],
+        'schedule_weekly_time' => null,
+        'monitored_seasons' => [2, 1, 1],
+        'per_run_cap' => 7,
+    ]);
+
+    $response->assertRedirect()->assertSessionHasNoErrors();
+
+    $monitor = SeriesMonitor::query()->where('user_id', $user->id)->where('series_id', $series->series_id)->firstOrFail();
+
+    expect($monitor->timezone)->toBe('UTC')
+        ->and($monitor->schedule_type)->toBe(MonitorScheduleType::Daily)
+        ->and($monitor->schedule_daily_time)->toBe(seriesMonitorValidationPresetTime())
+        ->and($monitor->schedule_weekly_days)->toBe([])
+        ->and($monitor->schedule_weekly_time)->toBeNull()
+        ->and($monitor->monitored_seasons)->toBe([1, 2])
+        ->and($monitor->per_run_cap)->toBe(7)
+        ->and($monitor->next_run_at)->not->toBeNull();
+});
+
 it('accepts empty monitored seasons as monitor all seasons on store', function (): void {
     $user = User::factory()->memberInternal()->create();
     $series = seriesMonitorValidationCreateSeries();

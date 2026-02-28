@@ -25,7 +25,7 @@ final class StoreSeriesMonitorRequest extends FormRequest
             'timezone' => ['required', 'timezone'],
             'schedule_type' => ['required', Rule::in(array_map(static fn (MonitorScheduleType $type): string => $type->value, MonitorScheduleType::cases()))],
             'schedule_daily_time' => ['nullable', 'string', Rule::in($presetTimes)],
-            'schedule_weekly_days' => ['nullable', 'array', 'list', 'min:1'],
+            'schedule_weekly_days' => ['nullable', 'array', 'list'],
             'schedule_weekly_days.*' => ['integer', 'between:0,6'],
             'schedule_weekly_time' => ['nullable', 'string', Rule::in($presetTimes)],
             'monitored_seasons' => ['present', 'array', 'list'],

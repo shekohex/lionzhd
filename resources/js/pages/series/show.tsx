@@ -3,11 +3,15 @@ import { type BreadcrumbItem } from '@/types';
 import type { SeriesInformationPageProps } from '@/types/series';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { toast } from 'sonner';
 
 // Custom components
+import MonitoringCard from '@/components/auto-episodes/monitoring-card';
+import ScheduleEditorDialog, {
+    type ScheduleEditorSubmitPayload,
+} from '@/components/auto-episodes/schedule-editor-dialog';
 import CastList from '@/components/cast-list';
 import EpisodeList from '@/components/episode-list';
 import MediaHeroSection from '@/components/media-hero-section';
@@ -31,17 +35,47 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
-    const { info, in_watchlist, auth } = props;
+    const { info, in_watchlist, auth, monitor, preset_times, backfill_preset_counts, run_now_cooldown_seconds } = props;
     const isAdmin = auth.user.role === 'admin';
     const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
     const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
+    const canManageMonitoring = isAdmin || isInternalMember;
+    const monitoringLockedReason = isExternalMember
+        ? 'External members can view monitoring status only. Contact your super-admin to enable schedule controls.'
+        : 'Monitoring controls are unavailable for your account.';
     const serverDownloadVisibility = isAdmin || isInternalMember ? 'enabled' : isExternalMember ? 'disabled' : 'hidden';
 
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { delete: forgetCache } = useForm();
+    const [scheduleEditorOpen, setScheduleEditorOpen] = useState(false);
+    const [scheduleEditorMode, setScheduleEditorMode] = useState<'enable' | 'edit'>('enable');
+    const [monitoringProcessing, setMonitoringProcessing] = useState(false);
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+
+    const availableSeasons = useMemo(
+        () =>
+            Object.keys(info.seasonsWithEpisodes)
+                .map((season) => Number.parseInt(season, 10))
+                .filter((season) => Number.isInteger(season) && season > 0)
+                .sort((a, b) => a - b),
+        [info.seasonsWithEpisodes],
+    );
+
+    const runNowCooldownLabel = useMemo(() => {
+        if (run_now_cooldown_seconds >= 3600) {
+            const hours = Math.floor(run_now_cooldown_seconds / 3600);
+            const minutes = Math.ceil((run_now_cooldown_seconds % 3600) / 60);
+            return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+        }
+
+        if (run_now_cooldown_seconds >= 60) {
+            return `${Math.ceil(run_now_cooldown_seconds / 60)}m`;
+        }
+
+        return `${Math.max(1, run_now_cooldown_seconds)}s`;
+    }, [run_now_cooldown_seconds]);
 
     // Get release year from full date
     const releaseYear = info.releaseDate ? new Date(info.releaseDate).getFullYear() : null;
@@ -160,6 +194,143 @@ export default function SeriesInformation() {
     const handleForgetCache = useCallback(() => {
         forgetCache(route('series.cache', { model: info.seriesId }), { preserveScroll: true, preserveState: false });
     }, [forgetCache, info.seriesId]);
+
+    const handleBlockedMonitoringAction = useCallback(() => {
+        toast.info('Monitoring controls are locked', {
+            description: monitoringLockedReason,
+        });
+    }, [monitoringLockedReason]);
+
+    const openScheduleEditor = useCallback(
+        (mode: 'enable' | 'edit') => {
+            if (!canManageMonitoring || monitoringProcessing) {
+                handleBlockedMonitoringAction();
+                return;
+            }
+
+            if (mode === 'enable' && !in_watchlist) {
+                toast.info('Add to watchlist first', {
+                    description: 'Monitoring can only be enabled for watchlisted series.',
+                });
+                return;
+            }
+
+            setScheduleEditorMode(mode);
+            setScheduleEditorOpen(true);
+        },
+        [canManageMonitoring, handleBlockedMonitoringAction, in_watchlist, monitoringProcessing],
+    );
+
+    const handleMonitoringSubmit = useCallback(
+        (payload: ScheduleEditorSubmitPayload) => {
+            if (!canManageMonitoring || monitoringProcessing) {
+                handleBlockedMonitoringAction();
+                return;
+            }
+
+            setMonitoringProcessing(true);
+
+            if (scheduleEditorMode === 'enable') {
+                let backfillTriggered = false;
+
+                router.post(route('series.monitoring.store', { model: info.seriesId }), payload.monitor, {
+                    preserveScroll: true,
+                    preserveState: true,
+                    onSuccess: () => {
+                        setScheduleEditorOpen(false);
+
+                        if (typeof payload.backfill_count === 'number' && payload.backfill_count > 0) {
+                            backfillTriggered = true;
+
+                            router.post(
+                                route('series.monitoring.backfill', { model: info.seriesId }),
+                                {
+                                    backfill_count: payload.backfill_count,
+                                },
+                                {
+                                    preserveScroll: true,
+                                    preserveState: true,
+                                    onFinish: () => {
+                                        setMonitoringProcessing(false);
+                                    },
+                                },
+                            );
+                        }
+                    },
+                    onFinish: () => {
+                        if (!backfillTriggered) {
+                            setMonitoringProcessing(false);
+                        }
+                    },
+                });
+
+                return;
+            }
+
+            router.patch(route('series.monitoring.update', { model: info.seriesId }), payload.monitor, {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => {
+                    setScheduleEditorOpen(false);
+                },
+                onFinish: () => {
+                    setMonitoringProcessing(false);
+                },
+            });
+        },
+        [
+            canManageMonitoring,
+            handleBlockedMonitoringAction,
+            info.seriesId,
+            monitoringProcessing,
+            scheduleEditorMode,
+        ],
+    );
+
+    const handleDisableMonitoring = useCallback(
+        (removeFromWatchlist: boolean) => {
+            if (!canManageMonitoring || monitoringProcessing) {
+                handleBlockedMonitoringAction();
+                return;
+            }
+
+            setMonitoringProcessing(true);
+
+            router.delete(route('series.monitoring.destroy', { model: info.seriesId }), {
+                data: {
+                    remove_from_watchlist: removeFromWatchlist,
+                },
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => {
+                    setMonitoringProcessing(false);
+                },
+            });
+        },
+        [canManageMonitoring, handleBlockedMonitoringAction, info.seriesId, monitoringProcessing],
+    );
+
+    const handleRunNow = useCallback(() => {
+        if (!canManageMonitoring || monitoringProcessing) {
+            handleBlockedMonitoringAction();
+            return;
+        }
+
+        setMonitoringProcessing(true);
+
+        router.post(
+            route('series.monitoring.run-now', { model: info.seriesId }),
+            {},
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onFinish: () => {
+                    setMonitoringProcessing(false);
+                },
+            },
+        );
+    }, [canManageMonitoring, handleBlockedMonitoringAction, info.seriesId, monitoringProcessing]);
+
     // Define breadcrumbs for navigation
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -201,7 +372,6 @@ export default function SeriesInformation() {
                     {/* Main Content Section */}
                     <div className="mx-auto max-w-7xl px-3 py-6 md:px-4 md:py-12">
                         <div className="space-y-6 md:space-y-16">
-                            {/* Episodes Section */}
                             <AnimatePresence>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
@@ -225,7 +395,28 @@ export default function SeriesInformation() {
                                 </motion.div>
                             </AnimatePresence>
 
-                            {/* Cast & Crew Section */}
+                            <AnimatePresence>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.6, delay: 0.1 }}
+                                    className="space-y-3"
+                                >
+                                    <MonitoringCard
+                                        monitor={monitor}
+                                        inWatchlist={in_watchlist}
+                                        canManage={canManageMonitoring}
+                                        disabledReason={monitoringLockedReason}
+                                        processing={monitoringProcessing}
+                                        onEnable={() => openScheduleEditor('enable')}
+                                        onEdit={() => openScheduleEditor('edit')}
+                                        onRunNow={handleRunNow}
+                                        onDisable={handleDisableMonitoring}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Run now cooldown: {runNowCooldownLabel}</p>
+                                </motion.div>
+                            </AnimatePresence>
+
                             <AnimatePresence>
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
@@ -238,7 +429,20 @@ export default function SeriesInformation() {
                         </div>
                     </div>
 
-                    {/* Trailer Video Modal */}
+                    <ScheduleEditorDialog
+                        open={scheduleEditorOpen}
+                        onOpenChange={setScheduleEditorOpen}
+                        mode={scheduleEditorMode}
+                        monitor={monitor}
+                        availableSeasons={availableSeasons}
+                        presetTimes={preset_times}
+                        backfillPresetCounts={backfill_preset_counts}
+                        disabled={!canManageMonitoring}
+                        disabledReason={!canManageMonitoring ? monitoringLockedReason : undefined}
+                        submitting={monitoringProcessing}
+                        onSubmit={handleMonitoringSubmit}
+                    />
+
                     <VideoTrailerPreview
                         trailerUrl={info.youtubeTrailer}
                         isOpen={isTrailerOpen}

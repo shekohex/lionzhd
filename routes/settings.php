@@ -52,9 +52,7 @@ Route::middleware('auth')->group(static function (): void {
         Route::get('settings/synccategories/history', [CategorySyncRunsController::class, 'index'])->name('synccategories.history');
     });
 
-    Route::middleware('can:auto-download-schedules')->group(static function (): void {
-        Route::get('settings/schedules', static fn () => Inertia::render('settings/schedules'))->name('schedules');
-    });
+    Route::get('settings/schedules', static fn () => Inertia::render('settings/schedules'))->name('schedules');
 
     Route::get('settings/appearance', static fn () => Inertia::render('settings/appearance'))->name('appearance');
 });

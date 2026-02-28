@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 1 of 12 in current phase
+Plan: 2 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-01-PLAN.md
+Last activity: 2026-02-28 - Completed 07-02-PLAN.md
 
-Progress: [███████░░░] 72%
+Progress: [███████░░░] 74%
 
 ## Performance Metrics
 
-- Total plans completed: 28
+- Total plans completed: 29
 - Average duration: 4.9 min
-- Total execution time: 2.30 hours
+- Total execution time: 2.37 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [███████░░░] 72%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 1 | 1 min | 1.0 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 2 | 5 min | 2.5 min |
 
 ## Accumulated Context
 
@@ -100,6 +100,8 @@ Progress: [███████░░░] 72%
 | 6 | Auto-fix blocking exhaustive-deps lint warning during 06-03 verification | Keep mandatory lint gate green before phase finalization |
 | 7 | Allow GET `/settings/schedules` for all authenticated users while keeping mutation gating for later plans | Enable visible-but-disabled monitoring UX for External members without broadening action permissions |
 | 7 | Validate schedules page visibility through role/subtype Inertia assertions (external/internal/admin) | Keep access contract explicit and regression-safe for future mutation route work |
+| 7 | Enforce one monitor per user-series with `unique(user_id, series_id)` in `series_monitors` | Prevent accidental duplicate monitor configs for the same series/user |
+| 7 | Persist known episode identity/state in `series_monitor_episodes` with `unique(monitor_id, episode_id)` | Provide deterministic dedupe base for scan diffing and queue-state tracking |
 
 ### Pending Todos
 
@@ -111,6 +113,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:00:54Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-02-28T14:03:03Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None

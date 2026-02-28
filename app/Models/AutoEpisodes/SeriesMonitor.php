@@ -74,4 +74,20 @@ final class SeriesMonitor extends Model
     {
         return $this->hasMany(SeriesMonitorEpisode::class, 'monitor_id');
     }
+
+    /**
+     * @return HasMany<SeriesMonitorRun,$this>
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(SeriesMonitorRun::class, 'monitor_id');
+    }
+
+    /**
+     * @return HasMany<SeriesMonitorEvent,$this>
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(SeriesMonitorEvent::class, 'monitor_id');
+    }
 }

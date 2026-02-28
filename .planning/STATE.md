@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 4 of 12 in current phase
+Plan: 5 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-03-PLAN.md
+Last activity: 2026-02-28 - Completed 07-05-PLAN.md
 
-Progress: [████████░░] 79%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
-- Total plans completed: 31
+- Total plans completed: 32
 - Average duration: 4.8 min
-- Total execution time: 2.49 hours
+- Total execution time: 2.56 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [████████░░] 79%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 4 | 12 min | 3.0 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 5 | 16 min | 3.2 min |
 
 ## Accumulated Context
 
@@ -104,6 +104,8 @@ Progress: [████████░░] 79%
 | 7 | Persist known episode identity/state in `series_monitor_episodes` with `unique(monitor_id, episode_id)` | Provide deterministic dedupe base for scan diffing and queue-state tracking |
 | 7 | Use string-backed enums for monitor run trigger/status and event type casts | Keep persisted DB values stable while exposing typed run/event state in models |
 | 7 | Validate daily and weekly schedule times against `config('auto_episodes.preset_times')` and use deterministic preset fallback | Keep persisted schedule math aligned with preset-based UX and predictable defaults |
+| 7 | Join users in due-monitor dispatcher query and skip monitors for paused users | Enforce global user pause semantics at queue dispatch boundary |
+| 7 | Serialize per-monitor scans with `Cache::lock("auto:episodes:monitor:{id}")` in `RunMonitorScan` | Prevent overlapping scans for the same monitor across workers |
 
 ### Pending Todos
 
@@ -115,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:10:31Z
-Stopped at: Completed 07-03-PLAN.md
+Last session: 2026-02-28T14:18:08Z
+Stopped at: Completed 07-05-PLAN.md
 Resume file: None

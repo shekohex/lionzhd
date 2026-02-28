@@ -2,11 +2,18 @@
 
 ## What This Is
 
-LionzHD is an existing Laravel + Inertia app for personal/team use that syncs Xtream Codes VOD and series catalogs, lets users browse content, and manages downloads. This milestone extends it into a more production-ready multi-user streaming companion with category-based discovery, permissioned access, user-scoped download ownership, and reliable automation around watchlists and episode downloads.
+LionzHD is a Laravel + Inertia streaming companion for Xtream VOD and Series catalogs. It now supports production-ready multi-user usage with category-based discovery, permissioned access control, user-owned downloads, hardened download lifecycle behavior, and per-user auto-episodes monitoring.
 
 ## Core Value
 
 Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
+
+## Current State
+
+- Latest shipped milestone: **v1** (2026-02-28)
+- Shipped scope: access control, ownership and authorization, categories sync + browse UX, lifecycle reliability, mobile pagination correctness, auto-episodes scheduling/dedupe
+- Delivery size: 7 phases, 39 plans, 99 tasks
+- Archive: `.planning/milestones/v1-ROADMAP.md` and `.planning/milestones/v1-REQUIREMENTS.md`
 
 ## Requirements
 
@@ -17,19 +24,23 @@ Users can quickly find the right movie/series and reliably get their own downloa
 - ✓ Add movies/series/episodes to a watchlist — existing
 - ✓ Start downloads through aria2 and monitor status from the app — existing
 - ✓ Generate signed direct download links for media — existing
+- ✓ Fetch VOD and series categories from Xtream (exclude Live), store categories, and map movies/series to categories — v1
+- ✓ Add sidebar category browsing/filtering in both movies and series pages — v1
+- ✓ Add role model: first registered user is Admin, all others default to Member — v1
+- ✓ Add Member subtype: Internal vs External; External users can use direct links only, cannot schedule downloads — v1
+- ✓ Restrict admin-only areas: user management, system settings, sync/import controls, download operations, analytics/monitoring — v1
+- ✓ Scope download records and views per user so members only see their own downloads — v1
+- ✓ Add watchlist automation for series: per-user schedules (hourly, daily at time, weekly day+time) via jobs/queues — v1
+- ✓ Detect new episodes by comparing Xtream episode IDs and auto-download when enabled — v1
+- ✓ Fix download progress/abort/resume reliability while keeping aria2 and add lifecycle tests — v1
+- ✓ Fix mobile infinite-scroll boundary bug where last item can be skipped during page transition — v1
 
 ### Active
 
-- [ ] Fetch VOD and series categories from Xtream (exclude Live), store categories, and map movies/series to categories
-- [ ] Add sidebar category browsing/filtering in both movies and series pages
-- [ ] Add role model: first registered user is Admin, all others default to Member
-- [ ] Add Member subtype: Internal vs External; External users can use direct links only, cannot schedule downloads
-- [ ] Restrict admin-only areas: user management, system settings, sync/import controls, download operations, analytics/monitoring
-- [ ] Scope download records and views per user so members only see their own downloads
-- [ ] Add watchlist automation for series: per-user schedules (hourly, daily at time, weekly day+time) via jobs/queues
-- [ ] Detect new episodes by comparing Xtream episode IDs and auto-download when enabled
-- [ ] Fix download progress/abort/resume reliability while keeping aria2 and add lifecycle tests
-- [ ] Fix mobile infinite-scroll boundary bug where last item can be skipped during page transition
+- [ ] Add automation controls for unplayed-only and capped queueing per series
+- [ ] Add external governance controls (quotas/rate limits + direct-link usage audit trail)
+- [ ] Close remaining operational hardening debt from manual smoke checklists (reliability/mobile)
+- [ ] Define next milestone roadmap and acceptance criteria
 
 ### Out of Scope
 
@@ -39,7 +50,7 @@ Users can quickly find the right movie/series and reliably get their own downloa
 
 ## Context
 
-This is a brownfield Laravel 12 monolith with Inertia React frontend, Saloon integrations, and action-based application services. Xtream Codes is the primary media source, with categories currently not modeled for browsing. Downloads currently rely on aria2 and have lifecycle edge cases (progress, abort, resume). Existing codebase mapping already exists in `.planning/codebase/` and confirms established patterns for sync, watchlist, downloads, jobs, and UI pages.
+This is a brownfield Laravel 12 monolith with Inertia React frontend, Saloon integrations, and action-based application services. Xtream categories are now modeled and surfaced in browsing UX. Download lifecycle reliability is implemented with persisted lifecycle state and retry policy. Auto-episodes scheduling and dedupe queueing are live with monitoring activity visibility.
 
 Reference API source used for this milestone:
 - Xtream player API reference: https://raw.githubusercontent.com/gtaman92/XtreamCodesExtendAPI/refs/heads/master/player_api.php
@@ -55,15 +66,22 @@ Reference API source used for this milestone:
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Category UX uses sidebar categories | Faster scanning/filtering for large catalogs and aligned with streaming UX | — Pending |
-| Category filtering ships for both movies and series in v1 | Avoid fragmented discovery experience | — Pending |
-| Member subtype is Internal + External | Need policy controls without introducing extra top-level role complexity | — Pending |
-| External members are direct-link only and cannot schedule downloads | Enforce stricter resource/control boundaries for external users | — Pending |
-| Download visibility is strictly user-scoped for members | Multi-user correctness and privacy | — Pending |
-| Auto-download scheduling is per-user and calendar-like | Users need flexible cadence control (hourly/daily/weekly at specific times) | — Pending |
-| New episode detection uses Xtream episode IDs | Most deterministic signal for newly available episodes | — Pending |
-| Keep aria2 and harden lifecycle behavior | Reduce risk of engine migration while solving current reliability issues | — Pending |
-| Keep infinite scroll on mobile and fix boundary logic | Preserve UX while addressing missed-item bug | — Pending |
+| Category UX uses sidebar categories | Faster scanning/filtering for large catalogs and aligned with streaming UX | ✓ Shipped in v1 |
+| Category filtering ships for both movies and series in v1 | Avoid fragmented discovery experience | ✓ Shipped in v1 |
+| Member subtype is Internal + External | Need policy controls without introducing extra top-level role complexity | ✓ Shipped in v1 |
+| External members are direct-link only and cannot schedule downloads | Enforce stricter resource/control boundaries for external users | ✓ Shipped in v1 |
+| Download visibility is strictly user-scoped for members | Multi-user correctness and privacy | ✓ Shipped in v1 |
+| Auto-download scheduling is per-user and calendar-like | Users need flexible cadence control (hourly/daily/weekly at specific times) | ✓ Shipped in v1 |
+| New episode detection uses Xtream episode IDs | Most deterministic signal for newly available episodes | ✓ Shipped in v1 |
+| Keep aria2 and harden lifecycle behavior | Reduce risk of engine migration while solving current reliability issues | ✓ Shipped in v1 |
+| Keep infinite scroll on mobile and fix boundary logic | Preserve UX while addressing missed-item bug | ✓ Shipped in v1 |
+
+## Next Milestone Goals
+
+1. Expand automation controls (unplayed-only, queue caps, storage/download caps).
+2. Add governance and observability for External users.
+3. Convert manual smoke-check recommendations into automated or scripted validation where practical.
+4. Define and execute v1.x roadmap scope.
 
 ---
-*Last updated: 2026-02-25 after initialization*
+*Last updated: 2026-02-28 after v1 milestone completion*

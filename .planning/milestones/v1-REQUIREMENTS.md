@@ -1,3 +1,13 @@
+# Requirements Archive: v1 Streaming Platform Enhancements
+
+**Archived:** 2026-02-28
+**Status:** SHIPPED
+
+This is the archived requirements specification for v1.
+For current requirements, create a fresh `.planning/REQUIREMENTS.md` in the next milestone.
+
+---
+
 # Requirements: LionzHD Streaming Platform Enhancements
 
 **Defined:** 2026-02-25
@@ -13,17 +23,17 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DISC-02**: User can browse series by category using a sidebar on series pages
 - [x] **DISC-03**: User can filter movies to a selected category, including an explicit Uncategorized option
 - [x] **DISC-04**: User can filter series to a selected category, including an explicit Uncategorized option
-- [ ] **DISC-05**: Admin can sync VOD and series categories from Xtream while excluding Live categories
-- [ ] **DISC-06**: User can open content that remains correctly categorized based on synced category relationships
+- [x] **DISC-05**: Admin can sync VOD and series categories from Xtream while excluding Live categories
+- [x] **DISC-06**: User can open content that remains correctly categorized based on synced category relationships
 
 ### Access Control
 
-- [ ] **ACCS-01**: First registered user is created as Admin by default
-- [ ] **ACCS-02**: Subsequent users are created as Member by default
-- [ ] **ACCS-03**: Admin can mark members as Internal or External
-- [ ] **ACCS-04**: Member cannot access admin-only areas (user management, system settings, sync/import controls, download operations, analytics/monitoring)
-- [ ] **ACCS-05**: External member can only use direct-download links and cannot use server-download actions
-- [ ] **ACCS-06**: External member cannot configure or run auto-download schedules
+- [x] **ACCS-01**: First registered user is created as Admin by default
+- [x] **ACCS-02**: Subsequent users are created as Member by default
+- [x] **ACCS-03**: Admin can mark members as Internal or External
+- [x] **ACCS-04**: Member cannot access admin-only areas (user management, system settings, sync/import controls, download operations, analytics/monitoring)
+- [x] **ACCS-05**: External member can only use direct-download links and cannot use server-download actions
+- [x] **ACCS-06**: External member cannot configure or run auto-download schedules
 
 ### Download Ownership
 
@@ -43,12 +53,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Download Reliability
 
-- [ ] **RELY-01**: User can see accurate progress updates for active downloads
-- [ ] **RELY-02**: User can abort a download and see a correct terminal canceled state
-- [ ] **RELY-03**: User can resume a paused or interrupted download and continue from prior progress where possible
-- [ ] **RELY-04**: System retries transient download failures using bounded backoff rules
-- [ ] **RELY-05**: User can see actionable failure states and retry from failed states
-- [ ] **RELY-06**: Download lifecycle behavior (progress, abort, resume, retry) is covered by automated tests
+- [x] **RELY-01**: User can see accurate progress updates for active downloads
+- [x] **RELY-02**: User can abort a download and see a correct terminal canceled state
+- [x] **RELY-03**: User can resume a paused or interrupted download and continue from prior progress where possible
+- [x] **RELY-04**: System retries transient download failures using bounded backoff rules
+- [x] **RELY-05**: User can see actionable failure states and retry from failed states
+- [x] **RELY-06**: Download lifecycle behavior (progress, abort, resume, retry) is covered by automated tests
 
 ### Mobile Pagination
 
@@ -58,7 +68,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ## v2 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Deferred to future release.
 
 ### Automation Enhancements
 
@@ -71,24 +81,10 @@ Deferred to future release. Tracked but not in current roadmap.
 - **EXTN-01**: Admin can configure quotas or rate limits for external users
 - **EXTN-02**: Admin can audit external direct-link usage history
 
-## Out of Scope
-
-Explicitly excluded. Documented to prevent scope creep.
-
-| Feature | Reason |
-|---------|--------|
-| Live categories and live playback | Product scope is currently VOD and series only |
-| Replace aria2 with a different downloader | Current decision is to harden aria2 first |
-| Mobile Load More pagination replacement | Chosen approach is to keep infinite scroll and fix boundary logic |
-| Auto-download entire libraries/series in bulk | High risk of storage and queue runaway; not needed for v1 |
-| Complex multi-role hierarchy beyond Admin/Member + Internal/External | Added complexity and testing burden without immediate value |
-
 ## Traceability
 
-Which phases cover which requirements. Updated during roadmap creation.
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
+| Requirement | Phase | Final Status |
+|-------------|-------|--------------|
 | DISC-01 | Phase 4 | Complete |
 | DISC-02 | Phase 4 | Complete |
 | DISC-03 | Phase 4 | Complete |
@@ -121,11 +117,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | MOBL-02 | Phase 6 | Complete |
 | MOBL-03 | Phase 6 | Complete |
 
-**Coverage:**
-- v1 requirements: 31 total
-- Mapped to phases: 31
-- Unmapped: 0
+---
+
+## Milestone Summary
+
+**Shipped:** 31 of 31 v1 requirements
+**Adjusted:** None
+**Dropped:** None
 
 ---
-*Requirements defined: 2026-02-25*
-*Last updated: 2026-02-28 after Phase 7 completion*
+*Archived: 2026-02-28 as part of v1 milestone completion*

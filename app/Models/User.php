@@ -84,6 +84,8 @@ final class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'immutable_datetime',
+            'auto_episodes_paused_at' => 'immutable_datetime',
+            'auto_episodes_last_seen_at' => 'immutable_datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'subtype' => UserSubtype::class,

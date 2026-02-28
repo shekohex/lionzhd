@@ -15,6 +15,8 @@ final class MonitoringPageController extends Controller
 {
     public function index(#[CurrentUser] User $user): Response
     {
+        $user->refresh();
+
         $monitors = SeriesMonitor::query()
             ->where('user_id', $user->id)
             ->with(['series:series_id,name,cover'])

@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 5 of 12 in current phase
+Plan: 6 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-05-PLAN.md
+Last activity: 2026-02-28 - Completed 07-06-PLAN.md
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
-- Total plans completed: 32
-- Average duration: 4.8 min
-- Total execution time: 2.56 hours
+- Total plans completed: 33
+- Average duration: 5.0 min
+- Total execution time: 2.73 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [████████░░] 82%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 5 | 16 min | 3.2 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 6 | 26 min | 4.3 min |
 
 ## Accumulated Context
 
@@ -106,6 +106,9 @@ Progress: [████████░░] 82%
 | 7 | Validate daily and weekly schedule times against `config('auto_episodes.preset_times')` and use deterministic preset fallback | Keep persisted schedule math aligned with preset-based UX and predictable defaults |
 | 7 | Join users in due-monitor dispatcher query and skip monitors for paused users | Enforce global user pause semantics at queue dispatch boundary |
 | 7 | Serialize per-monitor scans with `Cache::lock("auto:episodes:monitor:{id}")` in `RunMonitorScan` | Prevent overlapping scans for the same monitor across workers |
+| 7 | Normalize Xtream episode IDs to unsigned 32-bit integers before queue lock/DB operations | Prevent invalid/overflow IDs from creating unsafe `media_download_refs` entries |
+| 7 | Treat first non-backfill scan as baseline and mark discovered episodes as `skipped` | Avoid unintended historical auto-backfill while still establishing known-episode state |
+| 7 | Forward trigger/options through `RunMonitorScan` into scan action | Preserve scheduled/manual/backfill semantics for run persistence and queue behavior |
 
 ### Pending Todos
 
@@ -117,6 +120,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:18:08Z
-Stopped at: Completed 07-05-PLAN.md
+Last session: 2026-02-28T14:31:14Z
+Stopped at: Completed 07-06-PLAN.md
 Resume file: None

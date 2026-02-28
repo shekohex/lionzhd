@@ -6,14 +6,16 @@ use App\Models\User;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Http\Request;
 
-it('forbids external members from schedules settings', function (): void {
+it('allows external members to access schedules settings', function (): void {
     $user = User::factory()->memberExternal()->make();
 
     $response = $this->actingAs($user)
         ->withHeaders(schedulesInertiaHeaders())
         ->get('/settings/schedules');
 
-    $response->assertForbidden();
+    $response->assertOk();
+    $response->assertHeader('X-Inertia', 'true');
+    $response->assertJsonPath('component', 'settings/schedules');
 });
 
 it('allows internal members to access schedules settings', function (): void {

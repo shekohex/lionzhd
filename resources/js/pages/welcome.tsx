@@ -82,6 +82,7 @@ export default function Welcome() {
                                         {/* Gradient overlay for text readability */}
                                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/10" />
                                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+                                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-black/45 to-transparent dark:from-black/60 dark:via-black/30" />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -96,9 +97,9 @@ export default function Welcome() {
                                 </Link>
                             </div>
 
-                            <nav className="relative z-50 space-x-2">
+                            <nav className="relative z-50 space-x-2 rounded-full bg-black/30 p-1 backdrop-blur-md">
                                 {isAuthenticated ? (
-                                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2">
+                                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
                                         <Link href={route('discover')} className="text-primary-foreground">
                                             Discover
                                         </Link>
@@ -109,13 +110,13 @@ export default function Welcome() {
                                             asChild
                                             size="lg"
                                             variant="secondary"
-                                            className="border-border text-primary gap-2 bg-white/10 backdrop-blur-md hover:bg-white/20"
+                                            className="gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:border-border dark:bg-white/10 dark:text-primary dark:hover:bg-white/20"
                                         >
-                                            <Link href={route('login')} className="text-primary">
+                                            <Link href={route('login')} className="text-white dark:text-primary">
                                                 Log in
                                             </Link>
                                         </Button>
-                                        <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2">
+                                        <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
                                             <Link href={route('register')} className="text-primary-foreground">
                                                 Register
                                             </Link>
@@ -135,7 +136,7 @@ export default function Welcome() {
                                 transition={{ delay: 0.2, duration: 0.8 }}
                             >
                                 <TextScramble
-                                    className="text-primary mb-2 font-mono text-lg tracking-widest uppercase"
+                                    className="mb-2 font-mono text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] dark:text-primary"
                                     as="p"
                                     speed={0.01}
                                     trigger={isTrigger}
@@ -145,11 +146,11 @@ export default function Welcome() {
                                     Unlimited Entertainment
                                 </TextScramble>
 
-                                <h1 className="text-primary mb-6 text-4xl leading-tight font-bold md:text-5xl lg:text-6xl">
+                                <h1 className="mb-6 text-4xl leading-tight font-bold text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)] md:text-5xl lg:text-6xl dark:text-primary">
                                     {featuredMedia[activeBg].name}
                                 </h1>
 
-                                <div className="text-muted-foreground mb-4 flex items-center gap-4 text-sm">
+                                <div className="mb-4 flex items-center gap-4 text-sm text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)] dark:text-muted-foreground">
                                     <span>{featuredMedia[activeBg].year ?? 'N/A'}</span>
                                     <span className="flex items-center">
                                         <Star className="mr-1 h-4 w-4 text-yellow-500" />
@@ -157,12 +158,12 @@ export default function Welcome() {
                                     </span>
                                 </div>
 
-                                <p className="text-muted-foreground mb-8 max-w-lg">
+                                <p className="mb-8 max-w-lg text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)] dark:text-muted-foreground">
                                     {featuredMedia[activeBg].description}
                                 </p>
 
                                 <div className="flex flex-wrap gap-4">
-                                    <Button size="lg" className="bg-primary hover:bg-primary/90 gap-2">
+                                    <Button size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
                                         <PlayCircle className="h-5 w-5" />
                                         <Link
                                             href={
@@ -179,10 +180,10 @@ export default function Welcome() {
                                     <Button
                                         size="lg"
                                         variant="outline"
-                                        className="border-border text-primary gap-2 bg-white/10 backdrop-blur-md hover:bg-white/20"
+                                        className="gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:border-border dark:bg-white/10 dark:text-primary dark:hover:bg-white/20"
                                     >
                                         <SearchIcon className="h-5 w-5" />
-                                        <Link href={route('discover')} className="text-primary">
+                                        <Link href={route('discover')} className="text-white dark:text-primary">
                                             Explore Library
                                         </Link>
                                     </Button>

@@ -8,6 +8,7 @@ use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringBackfillController;
 use App\Http\Controllers\AutoEpisodes\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Series\SeriesCacheController;
 use App\Http\Controllers\Series\SeriesController;
@@ -97,6 +98,10 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
         ->whereNumber('model')
         ->middleware('can:auto-download-schedules')
         ->name('series.monitoring.run-now');
+    Route::post('series/{model}/monitoring/backfill', [SeriesMonitoringBackfillController::class, 'store'])
+        ->whereNumber('model')
+        ->middleware('can:auto-download-schedules')
+        ->name('series.monitoring.backfill');
 
     Route::controller(WatchlistController::class)->prefix('watchlist')->group(static function (): void {
         Route::get('/', 'index')->name('watchlist');

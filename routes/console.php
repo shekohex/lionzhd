@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\AutoEpisodes\DispatchDueMonitors;
 use App\Jobs\RefreshMediaContents;
 use App\Jobs\MonitorDownloads;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,13 @@ Schedule::command('telescope:prune --hours=720')->dailyAt('00:00')
 Schedule::job(MonitorDownloads::class)
     ->name('monitor-downloads')
     ->description('Monitor aria2 downloads and schedule retries')
+    ->everyMinute()
+    ->withoutOverlapping()
+    ->sentryMonitor();
+
+Schedule::job(DispatchDueMonitors::class)
+    ->name('auto-episodes-dispatch')
+    ->description('Dispatch due series monitoring scans')
     ->everyMinute()
     ->withoutOverlapping()
     ->sentryMonitor();

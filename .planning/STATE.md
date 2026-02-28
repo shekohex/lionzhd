@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 10 of 12 in current phase
+Plan: 11 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-10-PLAN.md
+Last activity: 2026-02-28 - Completed 07-08-PLAN.md
 
-Progress: [█████████░] 95%
+Progress: [█████████░] 97%
 
 ## Performance Metrics
 
-- Total plans completed: 37
-- Average duration: 5.3 min
-- Total execution time: 3.29 hours
+- Total plans completed: 38
+- Average duration: 5.4 min
+- Total execution time: 3.39 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [█████████░] 95%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 10 | 59 min | 5.9 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 11 | 65 min | 5.9 min |
 
 ## Accumulated Context
 
@@ -118,6 +118,9 @@ Progress: [█████████░] 95%
 | 7 | Route schedules bulk-apply through invokable `BulkApplySeriesMonitoringPresetController` | Satisfy architecture public-method constraints while preserving existing bulk-apply behavior |
 | 7 | Use `present|array|list` for store `monitored_seasons` validation | Preserve monitor-all (`[]`) semantics while still requiring the field in payload shape |
 | 7 | Assert 403 gate precedence and 422 field validation semantics in monitoring mutation feature tests | Lock role-based access and validation behavior together to avoid regression drift |
+| 7 | Reuse one schedule editor submit contract for both enable and edit flows on series detail | Keep monitoring payload handling consistent while reducing duplicate UI wiring |
+| 7 | Dispatch optional backfill only after successful enable and explicit user opt-in from dialog | Preserve no-implicit-backfill semantics and keep first-enable behavior intentional |
+| 7 | Guard External-member monitoring actions in UI while showing disabled controls with explanation | Maintain visible-but-locked UX contract without emitting unauthorized mutation requests |
 
 ### Pending Todos
 
@@ -129,6 +132,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:59:29Z
-Stopped at: Completed 07-10-PLAN.md
+Last session: 2026-02-28T15:17:14Z
+Stopped at: Completed 07-08-PLAN.md
 Resume file: None

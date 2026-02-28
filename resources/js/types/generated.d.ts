@@ -31,6 +31,8 @@ declare namespace App.Data {
     };
     export type EditMediaDownloadData = {
         action: App.Enums.MediaDownloadAction;
+        delete_partial: boolean;
+        restart_from_zero: boolean;
     };
     export type FeaturedMediaData = {
         movies: Array<App.Data.VodStreamData>;
@@ -148,6 +150,12 @@ declare namespace App.Enums {
     export type SearchSortby = 'popular' | 'latest' | 'rating';
     export type UserRole = 'admin' | 'member';
     export type UserSubtype = 'internal' | 'external';
+}
+declare namespace App.Enums.AutoEpisodes {
+    export type MonitorScheduleType = 'hourly' | 'daily' | 'weekly';
+    export type SeriesMonitorEventType = 'queued' | 'duplicate' | 'deferred' | 'skipped' | 'error';
+    export type SeriesMonitorRunStatus = 'running' | 'success' | 'failed' | 'success_with_warnings';
+    export type SeriesMonitorRunTrigger = 'scheduled' | 'manual' | 'backfill';
 }
 declare namespace App.Http.Integrations.LionzTv.Responses {
     export type AudioMetadata = {

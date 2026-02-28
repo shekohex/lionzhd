@@ -12,15 +12,15 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
 Plan: 4 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-04-PLAN.md
+Last activity: 2026-02-28 - Completed 07-03-PLAN.md
 
-Progress: [████████░░] 77%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
-- Total plans completed: 30
+- Total plans completed: 31
 - Average duration: 4.8 min
-- Total execution time: 2.42 hours
+- Total execution time: 2.49 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [████████░░] 77%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 3 | 8 min | 2.7 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 4 | 12 min | 3.0 min |
 
 ## Accumulated Context
 
@@ -103,6 +103,7 @@ Progress: [████████░░] 77%
 | 7 | Enforce one monitor per user-series with `unique(user_id, series_id)` in `series_monitors` | Prevent accidental duplicate monitor configs for the same series/user |
 | 7 | Persist known episode identity/state in `series_monitor_episodes` with `unique(monitor_id, episode_id)` | Provide deterministic dedupe base for scan diffing and queue-state tracking |
 | 7 | Use string-backed enums for monitor run trigger/status and event type casts | Keep persisted DB values stable while exposing typed run/event state in models |
+| 7 | Validate daily and weekly schedule times against `config('auto_episodes.preset_times')` and use deterministic preset fallback | Keep persisted schedule math aligned with preset-based UX and predictable defaults |
 
 ### Pending Todos
 
@@ -114,6 +115,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:09:48Z
-Stopped at: Completed 07-04-PLAN.md
+Last session: 2026-02-28T14:10:31Z
+Stopped at: Completed 07-03-PLAN.md
 Resume file: None

@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 9 of 12 in current phase
+Plan: 10 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-12-PLAN.md
+Last activity: 2026-02-28 - Completed 07-10-PLAN.md
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 95%
 
 ## Performance Metrics
 
-- Total plans completed: 36
-- Average duration: 5.1 min
-- Total execution time: 3.07 hours
+- Total plans completed: 37
+- Average duration: 5.3 min
+- Total execution time: 3.29 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [█████████░] 92%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 9 | 46 min | 5.1 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 10 | 59 min | 5.9 min |
 
 ## Accumulated Context
 
@@ -116,6 +116,8 @@ Progress: [█████████░] 92%
 | 7 | Return settings/schedules props through `MonitoringPageData` with monitor/event/config payloads | Stabilize monitoring page backend→frontend contract via DTO serialization + generated TS types |
 | 7 | Include series/show monitoring props as `SeriesMonitorData|null` plus shared presets/cooldown values | Keep series detail monitoring state typed and aligned with schedules management config |
 | 7 | Route schedules bulk-apply through invokable `BulkApplySeriesMonitoringPresetController` | Satisfy architecture public-method constraints while preserving existing bulk-apply behavior |
+| 7 | Use `present|array|list` for store `monitored_seasons` validation | Preserve monitor-all (`[]`) semantics while still requiring the field in payload shape |
+| 7 | Assert 403 gate precedence and 422 field validation semantics in monitoring mutation feature tests | Lock role-based access and validation behavior together to avoid regression drift |
 
 ### Pending Todos
 
@@ -127,6 +129,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:57:36Z
-Stopped at: Completed 07-12-PLAN.md
+Last session: 2026-02-28T14:59:29Z
+Stopped at: Completed 07-10-PLAN.md
 Resume file: None

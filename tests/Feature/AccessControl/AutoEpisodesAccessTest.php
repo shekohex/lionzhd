@@ -3,9 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\AutoEpisodes\MonitorScheduleType;
+use App\Enums\AutoEpisodes\SeriesMonitorRunTrigger;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Jobs\AutoEpisodes\RunMonitorScan;
 use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Series;
 use App\Models\User;
@@ -14,6 +16,7 @@ use App\Models\XtreamCodesConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -87,6 +90,48 @@ it('allows internal members and admins to hit monitoring mutation endpoints', fu
     }
 })->with(['internal', 'admin']);
 
+it('does not auto-dispatch backfill on enable or update and dispatches only via explicit endpoint', function (string $role): void {
+    Queue::fake();
+
+    $user = $role === 'admin'
+        ? User::factory()->admin()->create()
+        : User::factory()->memberInternal()->create();
+
+    $series = createAutoEpisodesSeries();
+    createAutoEpisodesWatchlist($user, $series);
+
+    $this->actingAs($user)->post(route('series.monitoring.store', ['model' => $series->series_id]), [
+        'timezone' => 'UTC',
+        'schedule_type' => MonitorScheduleType::Hourly->value,
+        'monitored_seasons' => [1, 2],
+    ])->assertStatus(302);
+
+    $this->actingAs($user)->patch(route('series.monitoring.update', ['model' => $series->series_id]), [
+        'timezone' => 'UTC',
+        'schedule_type' => MonitorScheduleType::Hourly->value,
+        'monitored_seasons' => [1, 2],
+    ])->assertStatus(302);
+
+    Queue::assertNotPushed(RunMonitorScan::class);
+
+    $monitor = SeriesMonitor::query()
+        ->where('user_id', $user->id)
+        ->where('series_id', $series->series_id)
+        ->firstOrFail();
+
+    $backfillCount = (int) (config('auto_episodes.backfill_preset_counts.0') ?? 1);
+
+    $this->actingAs($user)->post(route('series.monitoring.backfill', ['model' => $series->series_id]), [
+        'backfill_count' => $backfillCount,
+    ])->assertStatus(302);
+
+    Queue::assertPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($monitor, $backfillCount): bool {
+        return $scanJob->monitorId === $monitor->id
+            && $scanJob->trigger === SeriesMonitorRunTrigger::Backfill
+            && ($scanJob->options['backfill_count'] ?? null) === $backfillCount;
+    });
+})->with(['internal', 'admin']);
+
 it('applies can auto download schedules middleware to all monitoring mutation routes', function (string $routeName): void {
     $route = app('router')->getRoutes()->getByName($routeName);
 
@@ -97,6 +142,7 @@ it('applies can auto download schedules middleware to all monitoring mutation ro
     'series.monitoring.update',
     'series.monitoring.destroy',
     'series.monitoring.run-now',
+    'series.monitoring.backfill',
     'schedules.bulk-apply',
     'schedules.pause',
 ]);
@@ -107,6 +153,7 @@ function autoEpisodesAccessMutationEndpoints(): array
         ['post', 'series.monitoring.store'],
         ['patch', 'series.monitoring.update'],
         ['post', 'series.monitoring.run-now'],
+        ['post', 'series.monitoring.backfill'],
         ['delete', 'series.monitoring.destroy'],
         ['patch', 'schedules.bulk-apply'],
         ['patch', 'schedules.pause'],
@@ -131,6 +178,9 @@ function sendAutoEpisodesMutationRequest(
             'monitored_seasons' => [1, 2],
         ],
         'series.monitoring.destroy' => ['remove_from_watchlist' => false],
+        'series.monitoring.backfill' => [
+            'backfill_count' => (int) (config('auto_episodes.backfill_preset_counts.0') ?? 1),
+        ],
         'schedules.bulk-apply' => [
             'series_ids' => [$seriesId],
             'preset' => 'hourly',

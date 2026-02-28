@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-02-25)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 7 (Auto Episodes (Schedules + Dedupe))
+**Current focus:** Phase 7 complete; ready for next roadmap phase.
 
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 11 of 12 in current phase
-Status: In progress
-Last activity: 2026-02-28 - Completed 07-08-PLAN.md
+Plan: 12 of 12 in current phase
+Status: Phase complete
+Last activity: 2026-02-28 - Completed 07-09-PLAN.md
 
-Progress: [█████████░] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
-- Total plans completed: 38
-- Average duration: 5.4 min
-- Total execution time: 3.39 hours
+- Total plans completed: 39
+- Average duration: 5.3 min
+- Total execution time: 3.46 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [█████████░] 97%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 11 | 65 min | 5.9 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 12 | 69 min | 5.8 min |
 
 ## Accumulated Context
 
@@ -121,6 +121,8 @@ Progress: [█████████░] 97%
 | 7 | Reuse one schedule editor submit contract for both enable and edit flows on series detail | Keep monitoring payload handling consistent while reducing duplicate UI wiring |
 | 7 | Dispatch optional backfill only after successful enable and explicit user opt-in from dialog | Preserve no-implicit-backfill semantics and keep first-enable behavior intentional |
 | 7 | Guard External-member monitoring actions in UI while showing disabled controls with explanation | Maintain visible-but-locked UX contract without emitting unauthorized mutation requests |
+| 7 | Expose Settings monitoring navigation entry to all authenticated users | Keep central monitoring visibility available without broadening mutation permissions |
+| 7 | Keep schedules page fully visible for External members with mutation controls disabled | Preserve transparent UX while enforcing authorization boundaries client-side |
 
 ### Pending Todos
 
@@ -132,6 +134,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T15:17:14Z
-Stopped at: Completed 07-08-PLAN.md
+Last session: 2026-02-28T15:26:04Z
+Stopped at: Completed 07-09-PLAN.md
 Resume file: None

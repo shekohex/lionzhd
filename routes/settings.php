@@ -11,8 +11,8 @@ use App\Http\Controllers\Settings\SyncMediaController;
 use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\Settings\XtreamCodeConfigController;
 use App\Http\Controllers\AutoEpisodes\AutoEpisodesPauseController;
+use App\Http\Controllers\AutoEpisodes\BulkApplySeriesMonitoringPresetController;
 use App\Http\Controllers\AutoEpisodes\MonitoringPageController;
-use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -58,7 +58,7 @@ Route::middleware('auth')->group(static function (): void {
     Route::get('settings/schedules', [MonitoringPageController::class, 'index'])->name('schedules');
 
     Route::middleware('can:auto-download-schedules')->prefix('settings/schedules')->group(static function (): void {
-        Route::patch('bulk-apply', [SeriesMonitoringController::class, 'bulkApply'])
+        Route::patch('bulk-apply', BulkApplySeriesMonitoringPresetController::class)
             ->name('schedules.bulk-apply');
         Route::patch('pause', [AutoEpisodesPauseController::class, 'update'])
             ->name('schedules.pause');

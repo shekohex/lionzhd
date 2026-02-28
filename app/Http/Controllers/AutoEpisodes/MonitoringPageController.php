@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\AutoEpisodes;
 
+use App\Data\AutoEpisodes\MonitoringPageData;
+use App\Data\AutoEpisodes\SeriesMonitorData;
+use App\Data\AutoEpisodes\SeriesMonitorEventData;
 use App\Http\Controllers\Controller;
 use App\Models\AutoEpisodes\SeriesMonitor;
+use App\Models\AutoEpisodes\SeriesMonitorEvent;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,44 +23,62 @@ final class MonitoringPageController extends Controller
     {
         $user->refresh();
 
-        $monitors = SeriesMonitor::query()
-            ->where('user_id', $user->id)
-            ->with(['series:series_id,name,cover'])
-            ->orderByDesc('enabled')
-            ->orderBy('next_run_at')
-            ->get()
-            ->map(static fn (SeriesMonitor $monitor): array => [
-                'id' => $monitor->id,
-                'series_id' => $monitor->series_id,
-                'series_name' => $monitor->series?->name,
-                'series_cover' => $monitor->series?->cover,
-                'enabled' => $monitor->enabled,
-                'timezone' => $monitor->timezone,
-                'schedule_type' => $monitor->schedule_type?->value ?? (string) $monitor->schedule_type,
-                'schedule_daily_time' => $monitor->schedule_daily_time,
-                'schedule_weekly_days' => $monitor->schedule_weekly_days ?? [],
-                'schedule_weekly_time' => $monitor->schedule_weekly_time,
-                'monitored_seasons' => $monitor->monitored_seasons ?? [],
-                'per_run_cap' => $monitor->per_run_cap,
-                'next_run_at' => $monitor->next_run_at?->toIso8601String(),
-                'last_attempt_at' => $monitor->last_attempt_at?->toIso8601String(),
-                'last_attempt_status' => $monitor->last_attempt_status?->value,
-                'last_successful_check_at' => $monitor->last_successful_check_at?->toIso8601String(),
-                'run_now_available_at' => $monitor->run_now_available_at?->toIso8601String(),
-            ])
-            ->values();
+        $monitors = collect();
 
-        $presetTimes = array_values(array_filter(
-            config('auto_episodes.preset_times', []),
-            static fn (mixed $value): bool => is_string($value),
+        if ($user->exists && Schema::hasTable('series_monitors')) {
+            $monitors = SeriesMonitor::query()
+                ->where('user_id', $user->id)
+                ->with(['series:series_id,name,cover'])
+                ->orderByDesc('enabled')
+                ->orderBy('next_run_at')
+                ->get()
+                ->map(static fn (SeriesMonitor $monitor): SeriesMonitorData => SeriesMonitorData::from($monitor))
+                ->values();
+        }
+
+        $events = collect();
+
+        if ($user->exists && Schema::hasTable('series_monitors') && Schema::hasTable('series_monitor_events')) {
+            $events = SeriesMonitorEvent::query()
+                ->whereHas('monitor', static function (Builder $query) use ($user): void {
+                    $query->where('user_id', $user->id);
+                })
+                ->with(['monitor:id,series_id', 'monitor.series:series_id,name,cover'])
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->limit(50)
+                ->get()
+                ->map(static fn (SeriesMonitorEvent $event): SeriesMonitorEventData => SeriesMonitorEventData::from($event))
+                ->values();
+        }
+
+        return Inertia::render('settings/schedules', new MonitoringPageData(
+            can_manage_schedules: $user->can('auto-download-schedules'),
+            is_paused: $user->auto_episodes_paused_at !== null,
+            auto_episodes_paused_at: $user->auto_episodes_paused_at,
+            monitors: $monitors->all(),
+            events: $events->all(),
+            preset_times: $this->presetTimes(),
+            backfill_preset_counts: $this->backfillPresetCounts(),
+            run_now_cooldown_seconds: max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300)),
         ));
+    }
 
-        return Inertia::render('settings/schedules', [
-            'can_manage_schedules' => $user->can('auto-download-schedules'),
-            'is_paused' => $user->auto_episodes_paused_at !== null,
-            'auto_episodes_paused_at' => $user->auto_episodes_paused_at?->toIso8601String(),
-            'preset_times' => $presetTimes,
-            'monitors' => $monitors,
-        ]);
+    private function presetTimes(): array
+    {
+        return collect(config('auto_episodes.preset_times', []))
+            ->filter(static fn (mixed $value): bool => is_string($value) && $value !== '')
+            ->values()
+            ->all();
+    }
+
+    private function backfillPresetCounts(): array
+    {
+        return collect(config('auto_episodes.backfill_preset_counts', []))
+            ->map(static fn (mixed $value): int => (int) $value)
+            ->filter(static fn (int $value): bool => $value > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

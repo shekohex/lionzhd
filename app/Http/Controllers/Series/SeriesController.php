@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Series;
 
 use App\Actions\BuildCategorySidebarItems;
+use App\Data\AutoEpisodes\SeriesMonitorData;
 use App\Data\CategoryBrowseFiltersData;
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Category;
 use App\Models\Series;
 use App\Models\User;
@@ -152,10 +154,37 @@ final class SeriesController extends Controller
     {
         $series = $client->send(new GetSeriesInfoRequest($model->series_id))->dtoOrFail();
         $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
+        $monitor = SeriesMonitor::query()
+            ->where('user_id', $user->id)
+            ->where('series_id', $model->series_id)
+            ->with(['series:series_id,name,cover'])
+            ->first();
 
         return Inertia::render('series/show', [
             'info' => $series,
             'in_watchlist' => $inWatchlist,
+            'monitor' => $monitor === null ? null : SeriesMonitorData::from($monitor),
+            'preset_times' => $this->presetTimes(),
+            'backfill_preset_counts' => $this->backfillPresetCounts(),
+            'run_now_cooldown_seconds' => max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300)),
         ]);
+    }
+
+    private function presetTimes(): array
+    {
+        return collect(config('auto_episodes.preset_times', []))
+            ->filter(static fn (mixed $value): bool => is_string($value) && $value !== '')
+            ->values()
+            ->all();
+    }
+
+    private function backfillPresetCounts(): array
+    {
+        return collect(config('auto_episodes.backfill_preset_counts', []))
+            ->map(static fn (mixed $value): int => (int) $value)
+            ->filter(static fn (int $value): bool => $value > 0)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

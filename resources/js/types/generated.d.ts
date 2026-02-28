@@ -142,6 +142,50 @@ declare namespace App.Data {
         password: string;
     };
 }
+declare namespace App.Data.AutoEpisodes {
+    export type MonitoringPageData = {
+        can_manage_schedules: boolean;
+        is_paused: boolean;
+        auto_episodes_paused_at?: string;
+        monitors: App.Data.AutoEpisodes.SeriesMonitorData[];
+        events: App.Data.AutoEpisodes.SeriesMonitorEventData[];
+        preset_times: string[];
+        backfill_preset_counts: number[];
+        run_now_cooldown_seconds: number;
+    };
+    export type SeriesMonitorData = {
+        id: number;
+        series_id: number;
+        series_name?: string;
+        series_cover?: string;
+        enabled: boolean;
+        timezone: string;
+        schedule_type: App.Enums.AutoEpisodes.MonitorScheduleType;
+        schedule_daily_time?: string;
+        schedule_weekly_days: number[];
+        schedule_weekly_time?: string;
+        monitored_seasons: number[];
+        per_run_cap: number;
+        next_run_at?: string;
+        last_attempt_at?: string;
+        last_attempt_status?: App.Enums.AutoEpisodes.SeriesMonitorRunStatus;
+        last_successful_check_at?: string;
+        run_now_available_at?: string;
+    };
+    export type SeriesMonitorEventData = {
+        id: number;
+        monitor_id: number;
+        series_id?: number;
+        series_name?: string;
+        series_cover?: string;
+        type: App.Enums.AutoEpisodes.SeriesMonitorEventType;
+        reason?: string;
+        episode_id?: string;
+        season?: number;
+        episode_num?: number;
+        created_at?: string;
+    };
+}
 declare namespace App.Enums {
     export type CategorySyncRunStatus = 'running' | 'success' | 'success_with_warnings' | 'failed';
     export type MediaDownloadAction = 'pause' | 'resume' | 'cancel' | 'remove' | 'retry';

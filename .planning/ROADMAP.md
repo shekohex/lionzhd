@@ -12,7 +12,7 @@ This milestone turns LionzHD into a more production-ready multi-user streaming c
 - [x] **Phase 4: Category Browse/Filter UX** - Users browse and filter movies/series by sidebar categories (incl. Uncategorized)
 - [x] **Phase 5: Download Lifecycle Reliability** - Accurate progress + correct cancel/resume/retry behavior with tests
 - [x] **Phase 6: Mobile Infinite-Scroll Pagination** - Mobile infinite scroll is deterministic, doesn’t skip items, and is regression-tested
-- [ ] **Phase 7: Auto Episodes (Schedules + Dedupe)** - Per-user series monitoring schedules detect new episodes and auto-queue without duplicates
+- [x] **Phase 7: Auto Episodes (Schedules + Dedupe)** - Per-user series monitoring schedules detect new episodes and auto-queue without duplicates
 
 ## Phase Details
 
@@ -133,18 +133,18 @@ Plans:
 **Plans**: 12 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Allow GET schedules page for all (visible-but-disabled UX)
-- [ ] 07-02-PLAN.md — Add monitoring + known-episodes persistence (schema + models)
-- [ ] 07-03-PLAN.md — Implement schedule math (hourly/daily/weekly) + unit tests
-- [ ] 07-04-PLAN.md — Add activity log persistence (runs + events)
-- [ ] 07-05-PLAN.md — Add dispatcher + scan jobs and scheduler wiring
-- [ ] 07-06-PLAN.md — Implement scan/diff/queue with dedupe + cap + tests
-- [ ] 07-07-PLAN.md — Add HTTP endpoints + access control for monitoring
-- [ ] 07-10-PLAN.md — Add request validation + explicit 422 coverage for monitoring mutations
-- [ ] 07-12-PLAN.md — Add monitoring DTOs + typed props + TS type generation
-- [ ] 07-11-PLAN.md — Add explicit recent-only backfill on enable (no auto-run)
-- [ ] 07-08-PLAN.md — Series detail monitoring UX + schedule editor (checkpoint)
-- [ ] 07-09-PLAN.md — Central monitoring management page in settings/schedules (checkpoint)
+- [x] 07-01-PLAN.md — Allow GET schedules page for all (visible-but-disabled UX)
+- [x] 07-02-PLAN.md — Add monitoring + known-episodes persistence (schema + models)
+- [x] 07-03-PLAN.md — Implement schedule math (hourly/daily/weekly) + unit tests
+- [x] 07-04-PLAN.md — Add activity log persistence (runs + events)
+- [x] 07-05-PLAN.md — Add dispatcher + scan jobs and scheduler wiring
+- [x] 07-06-PLAN.md — Implement scan/diff/queue with dedupe + cap + tests
+- [x] 07-07-PLAN.md — Add HTTP endpoints + access control for monitoring
+- [x] 07-10-PLAN.md — Add request validation + explicit 422 coverage for monitoring mutations
+- [x] 07-12-PLAN.md — Add monitoring DTOs + typed props + TS type generation
+- [x] 07-11-PLAN.md — Add explicit recent-only backfill on enable (no auto-run)
+- [x] 07-08-PLAN.md — Series detail monitoring UX + schedule editor (checkpoint)
+- [x] 07-09-PLAN.md — Central monitoring management page in settings/schedules (checkpoint)
 
 ## Progress
 
@@ -156,4 +156,4 @@ Plans:
 | 4. Category Browse/Filter UX | 6/6 | Complete | 2026-02-26 |
 | 5. Download Lifecycle Reliability | 4/4 | Complete | 2026-02-27 |
 | 6. Mobile Infinite-Scroll Pagination | 3/3 | Complete | 2026-02-27 |
-| 7. Auto Episodes (Schedules + Dedupe) | 0/TBD | Not started | - |
+| 7. Auto Episodes (Schedules + Dedupe) | 12/12 | Complete | 2026-02-28 |

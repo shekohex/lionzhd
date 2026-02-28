@@ -34,12 +34,12 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Auto Episodes
 
-- [ ] **AUTO-01**: User can enable automatic new-episode monitoring for a watched series
-- [ ] **AUTO-02**: User can configure an hourly monitoring schedule
-- [ ] **AUTO-03**: User can configure a daily monitoring schedule at a specific time
-- [ ] **AUTO-04**: User can configure a weekly monitoring schedule with day and time
-- [ ] **AUTO-05**: System detects new episodes by comparing Xtream episode IDs against known episode IDs for that user-series
-- [ ] **AUTO-06**: System auto-queues download of newly detected episodes and prevents duplicate queue entries for the same episode/user
+- [x] **AUTO-01**: User can enable automatic new-episode monitoring for a watched series
+- [x] **AUTO-02**: User can configure an hourly monitoring schedule
+- [x] **AUTO-03**: User can configure a daily monitoring schedule at a specific time
+- [x] **AUTO-04**: User can configure a weekly monitoring schedule with day and time
+- [x] **AUTO-05**: System detects new episodes by comparing Xtream episode IDs against known episode IDs for that user-series
+- [x] **AUTO-06**: System auto-queues download of newly detected episodes and prevents duplicate queue entries for the same episode/user
 
 ### Download Reliability
 
@@ -105,12 +105,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DOWN-02 | Phase 2 | Complete |
 | DOWN-03 | Phase 2 | Complete |
 | DOWN-04 | Phase 2 | Complete |
-| AUTO-01 | Phase 7 | Pending |
-| AUTO-02 | Phase 7 | Pending |
-| AUTO-03 | Phase 7 | Pending |
-| AUTO-04 | Phase 7 | Pending |
-| AUTO-05 | Phase 7 | Pending |
-| AUTO-06 | Phase 7 | Pending |
+| AUTO-01 | Phase 7 | Complete |
+| AUTO-02 | Phase 7 | Complete |
+| AUTO-03 | Phase 7 | Complete |
+| AUTO-04 | Phase 7 | Complete |
+| AUTO-05 | Phase 7 | Complete |
+| AUTO-06 | Phase 7 | Complete |
 | RELY-01 | Phase 5 | Complete |
 | RELY-02 | Phase 5 | Complete |
 | RELY-03 | Phase 5 | Complete |
@@ -128,4 +128,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-25*
-*Last updated: 2026-02-27 after Phase 6 completion*
+*Last updated: 2026-02-28 after Phase 7 completion*

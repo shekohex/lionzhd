@@ -1,17 +1,16 @@
 # syntax=docker/dockerfile:experimental
 # Frontend stage
-FROM node:22-alpine as frontend
+FROM oven/bun:1-alpine as frontend
 WORKDIR /app
-RUN npm install -g pnpm
-COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 COPY ./ /app/
 ARG ENVIRONMENT=production
 ARG APP_NAME=Lionz
 ENV VITE_APP_NAME=$APP_NAME
 ENV APP_ENV=$ENVIRONMENT
 ENV TELESCOPE_ENABLED=false
-RUN pnpm build
+RUN bun run build
 
 # Base stage
 FROM dunglas/frankenphp:1.5.0-php8.4.5-bookworm as base

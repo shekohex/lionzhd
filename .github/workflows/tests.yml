@@ -25,23 +25,14 @@ jobs:
           tools: composer:v2
           coverage: xdebug
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10
-          run_install: false
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install Node Dependencies
-        run: pnpm install
+      - name: Install Frontend Dependencies
+        run: bun install --frozen-lockfile
 
       - name: Build Assets
-        run: pnpm run build
+        run: bun run build
 
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader

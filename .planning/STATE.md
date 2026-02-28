@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 8 of 12 in current phase
+Plan: 9 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-11-PLAN.md
+Last activity: 2026-02-28 - Completed 07-12-PLAN.md
 
-Progress: [█████████░] 90%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
-- Total plans completed: 35
-- Average duration: 5.0 min
-- Total execution time: 2.90 hours
+- Total plans completed: 36
+- Average duration: 5.1 min
+- Total execution time: 3.07 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [█████████░] 90%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 8 | 36 min | 4.5 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 9 | 46 min | 5.1 min |
 
 ## Accumulated Context
 
@@ -113,6 +113,9 @@ Progress: [█████████░] 90%
 | 7 | Require watchlist membership on monitor enable/update and persist `watchlist_id` on monitor rows | Enforce monitoring ownership precondition and keep disable+remove behavior aligned with watchlist lifecycle |
 | 7 | Apply run-now cooldown via `run_now_available_at` at dispatch time | Enforce manual run throttling consistently from HTTP endpoint |
 | 7 | Keep backfill explicit via dedicated POST `/series/{model}/monitoring/backfill` endpoint and never dispatch on enable/update | Preserve baseline no-auto-backfill semantics while allowing immediate opt-in recent backfill |
+| 7 | Return settings/schedules props through `MonitoringPageData` with monitor/event/config payloads | Stabilize monitoring page backend→frontend contract via DTO serialization + generated TS types |
+| 7 | Include series/show monitoring props as `SeriesMonitorData|null` plus shared presets/cooldown values | Keep series detail monitoring state typed and aligned with schedules management config |
+| 7 | Route schedules bulk-apply through invokable `BulkApplySeriesMonitoringPresetController` | Satisfy architecture public-method constraints while preserving existing bulk-apply behavior |
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:49:41Z
-Stopped at: Completed 07-11-PLAN.md
+Last session: 2026-02-28T14:57:36Z
+Stopped at: Completed 07-12-PLAN.md
 Resume file: None

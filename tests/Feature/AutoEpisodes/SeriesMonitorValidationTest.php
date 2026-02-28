@@ -161,6 +161,22 @@ it('returns 422 when update includes weekly time outside configured preset times
     $response->assertStatus(422)->assertJsonValidationErrors(['schedule_weekly_time']);
 });
 
+it('returns 422 when update includes daily time outside configured preset times', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $series = seriesMonitorValidationCreateSeries();
+    $watchlist = seriesMonitorValidationCreateWatchlist($user, $series);
+    seriesMonitorValidationCreateMonitor($user, $series, $watchlist, [
+        'schedule_type' => MonitorScheduleType::Daily,
+        'schedule_daily_time' => seriesMonitorValidationPresetTime(),
+    ]);
+
+    $response = $this->actingAs($user)->patchJson(route('series.monitoring.update', ['model' => $series->series_id]), [
+        'schedule_daily_time' => '00:13',
+    ]);
+
+    $response->assertStatus(422)->assertJsonValidationErrors(['schedule_daily_time']);
+});
+
 it('accepts partial update payloads and validates only provided fields', function (): void {
     $user = User::factory()->memberInternal()->create();
     $series = seriesMonitorValidationCreateSeries();
@@ -190,6 +206,42 @@ it('accepts partial update payloads and validates only provided fields', functio
         ->and($monitor->monitored_seasons)->toBe([1, 3])
         ->and($monitor->per_run_cap)->toBe(9)
         ->and($monitor->next_run_at)->not->toBeNull();
+});
+
+it('accepts partial update payload with timezone only', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $series = seriesMonitorValidationCreateSeries();
+    $watchlist = seriesMonitorValidationCreateWatchlist($user, $series);
+    $monitor = seriesMonitorValidationCreateMonitor($user, $series, $watchlist, [
+        'timezone' => 'UTC',
+        'schedule_type' => MonitorScheduleType::Weekly,
+        'schedule_weekly_days' => [1, 4],
+        'schedule_weekly_time' => seriesMonitorValidationPresetTime(),
+    ]);
+
+    $response = $this->actingAs($user)->patch(route('series.monitoring.update', ['model' => $series->series_id]), [
+        'timezone' => 'Africa/Cairo',
+    ]);
+
+    $response->assertRedirect();
+
+    $monitor->refresh();
+
+    expect($monitor->timezone)->toBe('Africa/Cairo')
+        ->and($monitor->schedule_type)->toBe(MonitorScheduleType::Weekly)
+        ->and($monitor->schedule_weekly_days)->toBe([1, 4])
+        ->and($monitor->schedule_weekly_time)->toBe(seriesMonitorValidationPresetTime());
+});
+
+it('returns forbidden for external members before bulk preset validation runs', function (): void {
+    $user = User::factory()->memberExternal()->create();
+
+    $response = $this->actingAs($user)->patchJson(route('schedules.bulk-apply'), [
+        'series_ids' => [1],
+        'preset' => 'invalid',
+    ]);
+
+    $response->assertForbidden();
 });
 
 it('returns 422 for invalid bulk preset payloads', function (): void {

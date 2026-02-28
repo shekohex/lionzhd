@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-25)
 ## Current Position
 
 Phase: 7 of 7 (Auto Episodes (Schedules + Dedupe))
-Plan: 6 of 12 in current phase
+Plan: 7 of 12 in current phase
 Status: In progress
-Last activity: 2026-02-28 - Completed 07-06-PLAN.md
+Last activity: 2026-02-28 - Completed 07-07-PLAN.md
 
-Progress: [█████████░] 85%
+Progress: [█████████░] 87%
 
 ## Performance Metrics
 
-- Total plans completed: 33
+- Total plans completed: 34
 - Average duration: 5.0 min
-- Total execution time: 2.73 hours
+- Total execution time: 2.85 hours
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -30,7 +30,7 @@ Progress: [█████████░] 85%
 | 4 (Category Browse/Filter UX) | 6 | 30 min | 5.0 min |
 | 5 (Download Lifecycle Reliability) | 4 | 24 min | 6.0 min |
 | 6 (Mobile Infinite-Scroll Pagination) | 3 | 10 min | 3.3 min |
-| 7 (Auto Episodes (Schedules + Dedupe)) | 6 | 26 min | 4.3 min |
+| 7 (Auto Episodes (Schedules + Dedupe)) | 7 | 33 min | 4.7 min |
 
 ## Accumulated Context
 
@@ -109,6 +109,9 @@ Progress: [█████████░] 85%
 | 7 | Normalize Xtream episode IDs to unsigned 32-bit integers before queue lock/DB operations | Prevent invalid/overflow IDs from creating unsafe `media_download_refs` entries |
 | 7 | Treat first non-backfill scan as baseline and mark discovered episodes as `skipped` | Avoid unintended historical auto-backfill while still establishing known-episode state |
 | 7 | Forward trigger/options through `RunMonitorScan` into scan action | Preserve scheduled/manual/backfill semantics for run persistence and queue behavior |
+| 7 | Keep `GET /settings/schedules` outside mutation gate while applying `can:auto-download-schedules` to all monitoring mutations | Preserve visible-but-disabled UX for External members without granting mutation access |
+| 7 | Require watchlist membership on monitor enable/update and persist `watchlist_id` on monitor rows | Enforce monitoring ownership precondition and keep disable+remove behavior aligned with watchlist lifecycle |
+| 7 | Apply run-now cooldown via `run_now_available_at` at dispatch time | Enforce manual run throttling consistently from HTTP endpoint |
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-28T14:31:14Z
-Stopped at: Completed 07-06-PLAN.md
+Last session: 2026-02-28T14:44:59Z
+Stopped at: Completed 07-07-PLAN.md
 Resume file: None

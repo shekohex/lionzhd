@@ -7,6 +7,8 @@ use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Series\SeriesCacheController;
 use App\Http\Controllers\Series\SeriesController;
 use App\Http\Controllers\Series\SeriesDownloadController;
@@ -77,6 +79,24 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->whereNumber('model')
             ->name('series.direct.batch');
     });
+    Route::controller(SeriesMonitoringController::class)
+        ->middleware('can:auto-download-schedules')
+        ->prefix('series')
+        ->group(static function (): void {
+            Route::post('{model}/monitoring', 'store')
+                ->whereNumber('model')
+                ->name('series.monitoring.store');
+            Route::patch('{model}/monitoring', 'update')
+                ->whereNumber('model')
+                ->name('series.monitoring.update');
+            Route::delete('{model}/monitoring', 'destroy')
+                ->whereNumber('model')
+                ->name('series.monitoring.destroy');
+        });
+    Route::post('series/{model}/monitoring/run-now', [SeriesMonitoringRunNowController::class, 'store'])
+        ->whereNumber('model')
+        ->middleware('can:auto-download-schedules')
+        ->name('series.monitoring.run-now');
 
     Route::controller(WatchlistController::class)->prefix('watchlist')->group(static function (): void {
         Route::get('/', 'index')->name('watchlist');

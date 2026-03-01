@@ -8,7 +8,8 @@
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
-        "types": "tsc --noEmit"
+        "types": "tsc --noEmit",
+        "test:browser:prepare": "node -e \"const fs=require('node:fs');const path=require('node:path');const { chromium }=require('playwright');const target=chromium.executablePath();if(!fs.existsSync(target)){const candidates=['/usr/bin/google-chrome-stable','/usr/bin/google-chrome','/usr/bin/chromium-browser','/usr/bin/chromium'];const source=candidates.find((file)=>fs.existsSync(file));if(!source){console.error('Chrome executable not found. Install Google Chrome stable at /usr/bin/google-chrome-stable or update this script.');process.exit(1);}fs.mkdirSync(path.dirname(target),{recursive:true});try{fs.rmSync(target,{force:true});}catch{}fs.symlinkSync(source,target);}console.log('Playwright Chromium executable:',target);\""
     },
     "devDependencies": {
         "@eslint/js": "^9.26.0",
@@ -17,6 +18,7 @@
         "eslint-config-prettier": "^10.1.5",
         "eslint-plugin-react": "^7.37.5",
         "eslint-plugin-react-hooks": "^5.2.0",
+        "playwright": "1.54.1",
         "prettier": "^3.5.3",
         "prettier-plugin-organize-imports": "^4.1.0",
         "prettier-plugin-tailwindcss": "^0.6.11",

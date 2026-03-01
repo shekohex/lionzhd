@@ -15,7 +15,8 @@ namespace Tests;
 |
 */
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit');
+pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
+pest()->browser()->inChrome()->inLightMode();
 
 /*
 |--------------------------------------------------------------------------

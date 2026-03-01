@@ -30,6 +30,7 @@ yarn-error.log
 /.vscode
 /.zed
 /resources/js/ziggy.js
+/tests/Browser/Screenshots
 
 # windsurf rules
 .windsurfrules

@@ -83,6 +83,16 @@ final class MediaDownloadRef extends Model
         ]);
     }
 
+    public static function lockKeyForVodStream(User|int $owner, VodStream $vodStream): string
+    {
+        return self::lockKey($owner, VodStream::class, $vodStream->stream_id, $vodStream->stream_id);
+    }
+
+    public static function lockKeyForSeriesEpisode(User|int $owner, Series $series, Episode $episode): string
+    {
+        return self::lockKey($owner, Series::class, $series->series_id, $episode->id);
+    }
+
     public function isVodStream(): bool
     {
         return $this->media_type === VodStream::class;
@@ -115,5 +125,16 @@ final class MediaDownloadRef extends Model
         }
 
         return $owner;
+    }
+
+    private static function lockKey(User|int $owner, string $mediaType, int $mediaId, int|string $downloadableId): string
+    {
+        return sprintf(
+            'downloads:manual:user:%d:%s:%d:%s',
+            self::ownerId($owner) ?? 0,
+            str_replace('\\', ':', $mediaType),
+            $mediaId,
+            (string) $downloadableId,
+        );
     }
 }

@@ -15,19 +15,29 @@ use App\Data\BatchDownloadEpisodesData;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
 use App\Http\Integrations\LionzTv\Responses\Episode;
+use App\Http\Integrations\LionzTv\Responses\SeriesInformation;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\MediaDownloadRef;
 use App\Models\Series;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final class SeriesDownloadController extends Controller
 {
+    private const int DOWNLOAD_LOCK_TTL_SECONDS = 15;
+
+    private const int DOWNLOAD_LOCK_WAIT_SECONDS = 3;
+
+    private const int SAVE_ATTEMPTS = 5;
+
     /**
      * Trigger a download of the series.
      */
@@ -42,28 +52,34 @@ final class SeriesDownloadController extends Controller
             return back()->withErrors('Episode not found.');
         }
 
-        $activeDownload = GetActiveDownloads::run($model, $selectedEpisode, $user);
+        try {
+            $queuedDownload = Cache::lock(
+                MediaDownloadRef::lockKeyForSeriesEpisode($user, $model, $selectedEpisode),
+                self::DOWNLOAD_LOCK_TTL_SECONDS,
+            )->block(self::DOWNLOAD_LOCK_WAIT_SECONDS, fn (): array => $this->queueEpisodeDownload($user, $model, $dto, $selectedEpisode));
+        } catch (LockTimeoutException) {
+            $activeDownload = GetActiveDownloads::run($model, $selectedEpisode, $user);
 
-        if ($activeDownload) {
-            return $this->downloadsRedirect($request, [
-                'episode' => $selectedEpisode->episodeNum,
-                'downloadable_id' => $selectedEpisode->id,
-                'series_id' => $model->series_id,
-                'gid' => $activeDownload->gid,
-            ])->with('success', 'Download already in progress.');
+            if ($activeDownload !== null) {
+                return $this->downloadsRedirect($request, [
+                    'episode' => $selectedEpisode->episodeNum,
+                    'downloadable_id' => $selectedEpisode->id,
+                    'series_id' => $model->series_id,
+                    'gid' => $activeDownload->gid,
+                ])->with('success', 'Download already in progress.');
+            }
+
+            return back()->withErrors([
+                'download' => 'Download is already being prepared. Please try again.',
+            ]);
         }
-
-        $url = CreateXtreamcodesDownloadUrl::run($selectedEpisode);
-        $gid = DownloadMedia::run($url, ['out' => CreateDownloadOut::run($dto, $selectedEpisode)]);
-
-        MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode, $user)->saveOrFail();
 
         return $this->downloadsRedirect($request, [
             'episode' => $selectedEpisode->episodeNum,
             'downloadable_id' => $selectedEpisode->id,
             'series_id' => $model->series_id,
-            'gid' => $gid,
-        ])->with('success', 'Download started.');
+            'gid' => $queuedDownload['gid'],
+        ])->with('success', $queuedDownload['existing'] ? 'Download already in progress.' : 'Download started.');
     }
 
     public function store(#[CurrentUser] User $user, XtreamCodesConnector $client, Series $model, BatchDownloadEpisodesData $requestData, Request $request): RedirectResponse
@@ -109,7 +125,7 @@ final class SeriesDownloadController extends Controller
             });
 
             return true;
-        });
+        }, attempts: self::SAVE_ATTEMPTS);
 
         if (! $saved) {
             return back()->withErrors('Failed to save download references.');
@@ -203,5 +219,36 @@ final class SeriesDownloadController extends Controller
         }
 
         return redirect()->route('downloads', $parameters);
+    }
+
+    private function queueEpisodeDownload(User $user, Series $model, SeriesInformation $dto, Episode $selectedEpisode): array
+    {
+        $activeDownload = GetActiveDownloads::run($model, $selectedEpisode, $user);
+
+        if ($activeDownload !== null) {
+            return [
+                'gid' => $activeDownload->gid,
+                'existing' => true,
+            ];
+        }
+
+        $url = CreateXtreamcodesDownloadUrl::run($selectedEpisode);
+        $gid = DownloadMedia::run($url, ['out' => CreateDownloadOut::run($dto, $selectedEpisode)]);
+
+        $this->persistDownloadRef(MediaDownloadRef::fromSeriesAndEpisode($gid, $model, $selectedEpisode, $user));
+
+        return [
+            'gid' => $gid,
+            'existing' => false,
+        ];
+    }
+
+    private function persistDownloadRef(MediaDownloadRef $downloadRef): void
+    {
+        $saved = DB::transaction(static fn (): bool => $downloadRef->save(), attempts: self::SAVE_ATTEMPTS);
+
+        if (! $saved) {
+            throw new RuntimeException('Failed to save download reference.');
+        }
     }
 }

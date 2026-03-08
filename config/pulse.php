@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'enabled' => env('PULSE_ENABLED', true),
+    'enabled' => env('PULSE_ENABLED', env('APP_ENV') !== 'production'),
 
     /*
     |--------------------------------------------------------------------------

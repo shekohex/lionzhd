@@ -13,7 +13,7 @@ ENV TELESCOPE_ENABLED=false
 RUN bun run build
 
 # Base stage
-FROM dunglas/frankenphp:1.5.0-php8.4.5-bookworm as base
+FROM dunglas/frankenphp:1.12.0-php8.4-bookworm as base
 
 # Install PHP Extensions
 RUN install-php-extensions \
@@ -109,4 +109,4 @@ FROM base as app
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 EXPOSE 80 443
 HEALTHCHECK --interval=10m --timeout=30s --start-period=10s --retries=5 CMD [ "curl", "-f", "http://localhost/up" ]
-CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=80", "--caddyfile=/lionz/Caddyfile", "--no-interaction"]
+CMD ["frankenphp", "run", "--config", "/lionz/Caddyfile", "--adapter", "caddyfile"]

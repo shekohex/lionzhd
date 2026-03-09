@@ -1,6 +1,5 @@
 {
   "mode": "interactive",
-  "depth": "comprehensive",
   "parallelization": true,
   "commit_docs": true,
   "model_profile": "quality",
@@ -33,5 +32,6 @@
     "research": true,
     "plan_check": true,
     "verifier": true
-  }
+  },
+  "granularity": "fine"
 }

@@ -33,34 +33,12 @@ final readonly class SyncMedia
     {
         $this->removeAllFromSearchSafely();
 
-        Log::debug('Deleting all existing series');
-        Series::query()->delete();
-        Log::debug('Deleting all existing VOD streams');
-        VodStream::query()->delete();
-
         Telescope::withoutRecording(function (): void {
             Log::debug('Fetching series from Xtream Codes API');
             /** @var array<int, array<string, mixed>> $series */
             $series = $this->connector->send(new GetSeriesRequest)->dtoOrFail();
 
-            foreach (array_chunk($series, 1000) as $chunk) {
-                $saved = Series::query()->upsert(
-                    $chunk,
-                    ['series_id'],
-                    [
-                        'num', 'name', 'cover', 'plot', 'cast',
-                        'director', 'genre', 'releaseDate', 'last_modified',
-                        'rating', 'rating_5based', 'backdrop_path',
-                        'youtube_trailer', 'episode_run_time', 'category_id',
-                    ]
-                );
-
-                if ($saved) {
-                    Log::debug('Saved series chunk');
-                } else {
-                    Log::warning('Failed to save series chunk');
-                }
-            }
+            $this->syncSeries($series);
 
             unset($series);
             gc_collect_cycles();
@@ -69,32 +47,7 @@ final readonly class SyncMedia
             /** @var array<int, array<string, mixed>> $vodStreams */
             $vodStreams = $this->connector->send(new GetVodStreamsRequest)->dtoOrFail();
 
-            foreach (array_chunk($vodStreams, 1000) as $chunk) {
-                $saved = VodStream::query()->upsert(
-                    $chunk,
-                    ['stream_id'],
-                    [
-                        'num',
-                        'name',
-                        'stream_type',
-                        'stream_icon',
-                        'rating',
-                        'rating_5based',
-                        'added',
-                        'is_adult',
-                        'category_id',
-                        'container_extension',
-                        'custom_sid',
-                        'direct_source',
-                    ]
-                );
-
-                if ($saved) {
-                    Log::debug('Saved VOD stream chunk');
-                } else {
-                    Log::warning('Failed to save VOD stream chunk');
-                }
-            }
+            $this->syncVodStreams($vodStreams);
         });
 
         $this->bustXtreamDtoCacheNamespace();
@@ -138,5 +91,109 @@ final readonly class SyncMedia
                 'error' => $exception->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $series
+     */
+    private function syncSeries(array $series): void
+    {
+        foreach (array_chunk($series, 1000) as $chunk) {
+            $saved = Series::query()->upsert(
+                $chunk,
+                ['series_id'],
+                [
+                    'num', 'name', 'cover', 'plot', 'cast',
+                    'director', 'genre', 'releaseDate', 'last_modified',
+                    'rating', 'rating_5based', 'backdrop_path',
+                    'youtube_trailer', 'episode_run_time', 'category_id',
+                ]
+            );
+
+            if ($saved) {
+                Log::debug('Saved series chunk');
+            } else {
+                Log::warning('Failed to save series chunk');
+            }
+        }
+
+        $this->pruneMissingRows(Series::class, 'series_id', $series);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $vodStreams
+     */
+    private function syncVodStreams(array $vodStreams): void
+    {
+        foreach (array_chunk($vodStreams, 1000) as $chunk) {
+            $saved = VodStream::query()->upsert(
+                $chunk,
+                ['stream_id'],
+                [
+                    'num',
+                    'name',
+                    'stream_type',
+                    'stream_icon',
+                    'rating',
+                    'rating_5based',
+                    'added',
+                    'is_adult',
+                    'category_id',
+                    'container_extension',
+                    'custom_sid',
+                    'direct_source',
+                ]
+            );
+
+            if ($saved) {
+                Log::debug('Saved VOD stream chunk');
+            } else {
+                Log::warning('Failed to save VOD stream chunk');
+            }
+        }
+
+        $this->pruneMissingRows(VodStream::class, 'stream_id', $vodStreams);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $records
+     */
+    private function pruneMissingRows(string $modelClass, string $key, array $records): void
+    {
+        $activeIds = [];
+
+        foreach ($records as $record) {
+            $id = $record[$key] ?? null;
+
+            if ($id === null) {
+                continue;
+            }
+
+            $activeIds[(string) $id] = true;
+        }
+
+        $deleted = 0;
+
+        $modelClass::query()
+            ->select($key)
+            ->orderBy($key)
+            ->chunkById(1000, function ($rows) use ($activeIds, &$deleted, $key, $modelClass): void {
+                $staleIds = $rows
+                    ->pluck($key)
+                    ->filter(fn (mixed $id): bool => ! isset($activeIds[(string) $id]))
+                    ->values()
+                    ->all();
+
+                if ($staleIds === []) {
+                    return;
+                }
+
+                $deleted += $modelClass::query()->whereIn($key, $staleIds)->delete();
+            }, $key, $key);
+
+        Log::debug('Pruned stale media rows', [
+            'model' => $modelClass,
+            'deleted' => $deleted,
+        ]);
     }
 }

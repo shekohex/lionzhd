@@ -98,6 +98,8 @@ final readonly class SyncMedia
      */
     private function syncSeries(array $series): void
     {
+        $this->pruneMissingRows(Series::class, 'series_id', $series);
+
         foreach (array_chunk($series, 1000) as $chunk) {
             $saved = Series::query()->upsert(
                 $chunk,
@@ -116,8 +118,6 @@ final readonly class SyncMedia
                 Log::warning('Failed to save series chunk');
             }
         }
-
-        $this->pruneMissingRows(Series::class, 'series_id', $series);
     }
 
     /**
@@ -125,6 +125,8 @@ final readonly class SyncMedia
      */
     private function syncVodStreams(array $vodStreams): void
     {
+        $this->pruneMissingRows(VodStream::class, 'stream_id', $vodStreams);
+
         foreach (array_chunk($vodStreams, 1000) as $chunk) {
             $saved = VodStream::query()->upsert(
                 $chunk,
@@ -151,8 +153,6 @@ final readonly class SyncMedia
                 Log::warning('Failed to save VOD stream chunk');
             }
         }
-
-        $this->pruneMissingRows(VodStream::class, 'stream_id', $vodStreams);
     }
 
     /**

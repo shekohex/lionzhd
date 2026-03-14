@@ -155,3 +155,55 @@ test('it removes series that are no longer present upstream', function (): void 
     expect(DB::table('series')->pluck('name', 'series_id')->all())
         ->toBe([20_001 => 'Keep Me Updated']);
 });
+
+test('it replaces stale vod streams when upstream reuses a num for a new stream id', function (): void {
+    DB::table('vod_streams')->insert([
+        'stream_id' => 30_001,
+        'num' => 777,
+        'name' => 'Old Stream',
+        'stream_type' => 'movie',
+        'stream_icon' => null,
+        'rating' => null,
+        'rating_5based' => 0,
+        'added' => '2025-01-01 00:00:00',
+        'is_adult' => false,
+        'category_id' => 'legacy',
+        'container_extension' => 'mp4',
+        'custom_sid' => null,
+        'direct_source' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([], 200),
+            GetVodStreamsRequest::class => MockResponse::make([
+                [
+                    'stream_id' => 30_002,
+                    'num' => 777,
+                    'name' => 'Replacement Stream',
+                    'stream_type' => 'movie',
+                    'stream_icon' => null,
+                    'rating' => null,
+                    'rating_5based' => 0,
+                    'added' => '2025-01-02 00:00:00',
+                    'is_adult' => false,
+                    'category_id' => 'fresh',
+                    'container_extension' => 'mkv',
+                    'custom_sid' => null,
+                    'direct_source' => null,
+                ],
+            ], 200),
+        ]));
+    });
+
+    $job = app()->make(RefreshMediaContents::class);
+    $job->withFakeQueueInteractions()
+        ->assertNotFailed()->handle();
+
+    expect(DB::table('vod_streams')->pluck('name', 'stream_id')->all())
+        ->toBe([30_002 => 'Replacement Stream']);
+});

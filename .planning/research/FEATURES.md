@@ -1,139 +1,155 @@
 # Feature Research
 
-**Domain:** Xtream-based VOD/series streaming companion (multi-user + downloader)
-**Researched:** 2026-02-25
+**Domain:** Discovery personalization + search UX for an existing Xtream-based VOD/series catalog
+**Researched:** 2026-03-15
 **Confidence:** MEDIUM
 
 ## Feature Landscape
 
 ### Table Stakes (Users Expect These)
 
-Features users assume exist. Missing these = product feels incomplete/untrustworthy.
+Features users assume exist once a catalog app offers multi-user accounts and category-based discovery. Missing these makes personalization feel fake or inconsistent.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Category browsing + filtering (VOD + Series) | Large catalogs are unusable without category navigation; IPTV-style UX norm | MEDIUM | Store categories and map items; include “All”, “Uncategorized”, empty states; category selection must be sticky across navigation; exclude Live domain. |
-| Category UX on mobile (fast + stable) | Category switching should feel instant; mobile users are majority for “companion” usage | MEDIUM | Cache category lists; preserve scroll positions per category; avoid full list re-render on filter changes; prefetch next page. |
-| RBAC: Admin vs Member (admin-only areas locked) | Any multi-user server expects an admin surface and locked settings | MEDIUM | Admin-only: user management, system settings, sync/import, download operations, monitoring; Members can browse/search/watchlist/direct-link (per policy). (Jellyfin supports admin flag per user.) |
-| Member subtype policies: Internal vs External | Sharing access beyond core team requires guardrails (bandwidth/storage/control) | MEDIUM | External users: direct links only; no scheduling; ideally no server-side downloads. Mirrors “share access but restrict capabilities” patterns (e.g., Plex “Allow Downloads” permission model). |
-| User-scoped downloads (privacy + correctness) | Multi-user download lists must not leak titles/actions across users | HIGH | Downloads need explicit owner; list views filtered by owner for Members; Admin can view/manage all. Explicitly avoid “downloads have no ownership” behavior (Plex FAQ notes downloads can be visible to other managed users on same device). |
-| Download queue UX: pause/cancel/retry + error visibility | Users expect a queue with control and actionable failures | MEDIUM | Clear states: queued/preparing/downloading/paused/failed/completed/canceled; show failure reason + “Retry”; avoid silent stalls. (Plex documents in-progress queue and error listing.) |
-| Download lifecycle reliability (progress/abort/resume) | If downloads are flaky, the app’s core value collapses | HIGH | Persist state across app restarts; idempotent commands; handle aria2 reconnect; prevent duplicates; reconcile “actual files on disk” vs “DB state”; add lifecycle tests. |
-| Mobile infinite scroll correctness | Skipping/duplicating items destroys browsing trust | MEDIUM | Cursor/page boundary correctness; stable ordering; no “last item skipped” during page transition; preserve scroll anchor. |
+| Per-user category preferences: reorder, pin, hide | In a large catalog, users expect the navigation to adapt to their habits, not stay globally fixed | MEDIUM | Keep prefs per user and per media type. Strong default: synced category order until user changes it. Pins should stay capped at 5 and render first. Hidden should remove from sidebar/navigation only, not destroy data. |
+| Ignored categories remove matching titles from discovery listings | If a user says “I do not want this category,” they expect browse surfaces to stop showing those titles | HIGH | Apply to movies + series catalog listings and category-driven browsing. Do not mutate source mappings. Titles should still remain reachable from direct links, watchlist/history, or admin views if already known. |
+| Category labels on detail pages | Users often land on detail pages from search/watchlist and need category context to decide relevance | LOW | Show all assigned categories as badges/chips on movie and series details, even if the category is hidden or ignored in navigation. This preserves context and trust. |
+| Searchable category sidebar/navigation | Long category lists are painful without in-place filtering, especially on mobile | MEDIUM | Web: inline search field above sidebar list. Mobile: searchable sheet/drawer with sticky search field. Search should filter category labels only, not titles. Keep pinned categories visible when the search box is empty. |
+| Correct media-type filtering in search | A Movies mode that still leaks series results reads as a bug, not a missing enhancement | MEDIUM | Server-side filter must be authoritative. UI chips/tabs should match query params and URL state. Add regression coverage for mode switching, back/forward nav, and deep links. |
+| Adaptive full-width results for single-type search modes | When the user chooses Movies-only or Series-only, split layouts waste space and reduce scan speed | MEDIUM | In “All” mode, mixed presentation is fine. In single-type mode, switch to a full-width results grid/list tuned for that content type. Mobile should keep one-column flow; web should reclaim the secondary pane. |
+| Reset and empty-state recovery | Personalization without a safe reset path creates support burden and user fear | LOW | Provide “Reset to default” per media type. If all categories are hidden or ignored, show a recovery empty state with clear restore actions. |
 
 ### Differentiators (Competitive Advantage)
 
-Features that set the product apart. Not required, but valuable.
+Features that make personalization feel deliberate instead of a thin preference layer.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Per-user series auto-download scheduling (hourly/daily/weekly) | Turns watchlist into a “set-and-forget” pipeline; reduces manual checking | HIGH | Must be per-user + timezone-aware; should be easy to explain (“check for new episodes at …”); needs guardrails (limits, dedupe, backoff). |
-| New-episode detection via Xtream episode IDs | Deterministic, avoids fuzzy metadata matching | MEDIUM | Compare prior known episode IDs vs latest sync; define behavior for missing/renumbered IDs; ensure no redownload loop. |
-| Smart episode download rules | Matches “offline-first” streaming patterns (download next/unplayed; limit count) | MEDIUM | Emby exposes options like “only unplayed”, “auto download new episodes”, and “limit number to download”; bring similar semantics to user automation. |
-| External-member safe sharing (signed direct links + auditing) | Enables controlled “external access” without letting outsiders burn CPU/storage | MEDIUM | Signed links, expiry, per-user rate limits/quotas; per-user audit trail (what was accessed, when). |
-| Self-healing downloads (auto-retry + integrity checks) | Fewer support incidents; “it just works” | HIGH | Automatic retry policy; detect stuck jobs; optional checksum/size verification; “repair” action that reattaches aria2/gid or restarts cleanly. |
+| Clear separation between Hide and Ignore | Users can tidy navigation without losing catalog breadth, or aggressively suppress unwanted content when they mean it | MEDIUM | Strong UX language matters: Hide = remove category from navigation; Ignore = remove matching titles from discovery listings. This avoids accidental over-filtering. |
+| Independent personalization for Movies vs Series | Users often organize movie browsing very differently from episodic browsing | MEDIUM | Store separate preference sets and reset controls. Do not force one ordering model across both media types. |
+| Search mode drives layout, not just filtering | Faster scanning and fewer false negatives; the UI feels purposeful instead of patched | MEDIUM | “Movies” and “Series” modes should feel like dedicated result experiences, not a filtered copy of “All.” |
+| Preference persistence across web and mobile | Multi-device continuity makes personalization feel owned by the account, not the device | MEDIUM | Persist server-side. Mobile and web should reflect the same order/pins/hidden/ignored state after refresh/login. |
 
 ### Anti-Features (Commonly Requested, Often Problematic)
 
-Features that seem good but create problems.
+Features that sound useful but usually add confusion, regression risk, or support cost.
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| “Everyone can see/manage everyone’s downloads” | Convenience for small groups | Privacy leak; accidental deletion; social friction; breaks external access model | Owner-scoped by default; Admin-only global view; optional explicit sharing per download. |
-| “Let External users schedule server-side downloads” | Users want automation too | External abuse risk (bandwidth/storage), hardest to police; turns app into a public download service | External: direct-link only; if needed later, add strict quotas + approval workflow. |
-| “Auto-download entire series/library” | Offline hoarding | Storage explosion; queue starvation; high failure rate; violates many products’ intended design (Plex explicitly says Downloads isn’t intended for entire libraries) | Constrain automation: per-user limits, only new/unplayed, max N episodes/GB, per-series caps. |
-| “Complex role hierarchy” (many roles/permissions) | Fine-grained control | Configuration fatigue; RBAC bugs; hard to test | Two roles (Admin/Member) + one policy flag (Internal/External) + a small number of capability toggles. |
-| “Infinite scroll without stable ordering/cursors” | Quick implementation | Causes skipped/duplicated items as data changes; hard to reproduce bugs | Cursor-based pagination with stable sort key; snapshot semantics per query if possible. |
+| Global category order/visibility changes for all users | Admin convenience | Breaks the core value of per-user personalization and creates preference conflicts in shared accounts | Keep source category sync global, but apply a per-user preference overlay at read time |
+| Unlimited pinned categories | Users want full control | Once everything can be pinned, pins lose meaning and the sidebar becomes cluttered on mobile | Cap pins at 5 and keep the rest reorderable beneath them |
+| Hard-deleting ignored categories from local mappings | Seems simpler than filtering | Destroys sync integrity, complicates re-sync, and leaks user preference into global catalog data | Keep ignored as a user-specific query filter only |
+| Hiding or ignoring categories everywhere, including direct links/detail pages/watchlist | Users may assume “remove it everywhere” | Makes items appear broken or vanish unpredictably; hard to explain support cases | Limit ignore to discovery surfaces, but still show category badges/context on details |
+| Separate search implementations for All/Movies/Series | Fastest way to ship visually | Behavior drifts, bugs multiply, and regressions return when one mode is patched independently | Use one search contract with a media-type parameter and layout variants on top |
 
 ## Feature Dependencies
 
 ```
-[RBAC: Admin/Member]
-    └──requires──> [User model + authn]
+[Per-user category preferences]
+    ├──requires──> [Stable category IDs + existing item↔category mapping]
+    ├──requires──> [User-scoped preference storage]
+    └──enhances──> [Existing sidebar category browsing]
 
-[Internal vs External policy]
-    └──requires──> [RBAC: Admin/Member]
+[Pinned categories]
+    └──requires──> [Per-user category preferences]
 
-[User-scoped downloads]
-    ├──requires──> [RBAC: Admin/Member]
-    └──requires──> [Download ownership model (user_id) + authorization]
+[Hidden categories]
+    └──requires──> [Per-user category preferences]
 
-[Download reliability hardening]
-    └──requires──> [Persistent download state + aria2 job reconciliation]
+[Ignored categories]
+    ├──requires──> [Per-user category preferences]
+    ├──requires──> [Catalog queries that join/filter by category]
+    └──conflicts──> [Naive global counts/caches for category listings]
 
-[Categories UX]
-    └──requires──> [Category sync + item↔category mapping]
+[Category labels on detail pages]
+    └──requires──> [Stable item↔category mapping]
 
-[Per-user auto-episode scheduling]
-    ├──requires──> [Watchlist per user]
-    ├──requires──> [Job/queue + scheduler + timezone]
-    ├──requires──> [New-episode detection]
-    └──requires──> [Download operations allowed (Internal only)]
+[Searchable category sidebar]
+    ├──requires──> [Existing category navigation]
+    └──enhances──> [Pins + hidden categories]
 
-[Mobile infinite scroll correctness]
-    └──requires──> [Stable pagination contract (cursor/page) + deterministic ordering]
+[Correct media-type search filtering]
+    ├──requires──> [Single search contract with media-type parameter]
+    └──enhances──> [Adaptive full-width results]
 ```
 
 ### Dependency Notes
 
-- **Internal/External policy requires RBAC:** policy only matters once authorization gates exist across routes/actions.
-- **User-scoped downloads requires ownership:** without `download.user_id` (or equivalent), you can’t enforce visibility or quota.
-- **Scheduling requires a stable “new episode” signal:** Xtream episode IDs are a good primary key; otherwise automation will double-download.
-- **Mobile infinite scroll correctness requires a stable paging contract:** fixing the UI without fixing the paging invariant tends to regress.
+- **Per-user preferences require stable category identity:** reorder/pin/hide/ignore only stay correct if category IDs survive re-syncs.
+- **Ignored categories require query-level enforcement:** filtering in the UI alone is insufficient; list endpoints/search endpoints must exclude matching titles consistently.
+- **Ignored categories conflict with naive cached counts:** if counts are cached globally, users will see categories or result totals that contradict their preferences.
+- **Adaptive full-width results should wait for the search filter fix:** otherwise the team may polish the wrong layout on top of incorrect data.
+- **Detail-page category badges depend on the same category mapping used by discovery:** do not introduce a second source of truth.
 
 ## MVP Definition
 
-### Launch With (v1) — “Production hardening + multi-user”
+### Launch With (v1.1)
 
-- [ ] Categories (VOD + Series) + sidebar filtering — required for discovery at scale
-- [ ] RBAC (Admin vs Member) + Internal/External policy enforcement — required for multi-user safety
-- [ ] User-scoped downloads + authorization — required for privacy/correctness
-- [ ] Download reliability fixes (progress/abort/resume) + lifecycle tests — required to trust downloads
-- [ ] Mobile infinite-scroll boundary fix — required to trust browsing on mobile
+- [ ] User-scoped category preference model for movies and series — foundation for every new personalization behavior
+- [ ] Reorder + pin (max 5) + hide categories — core navigation ownership feature
+- [ ] Ignore categories in catalog listings — biggest relevance improvement for discovery
+- [ ] Category badges on movie and series detail pages — preserves context after filtering/personalization
+- [ ] Searchable sidebar/navigation on web and mobile — necessary once category lists become user-tuned and potentially long
+- [ ] Correct media-type search filtering + regression tests — functional bug fix before UX polish
+- [ ] Full-width single-type search results — makes fixed filtering visibly useful
+- [ ] Reset-to-default + “all hidden/ignored” recovery UX — required safety valve
 
-### Add After Validation (v1.x)
+### Add After Validation (v1.1.x)
 
-- [ ] Per-user auto-episode scheduling (hourly/daily/weekly) — add once RBAC + downloads are stable
-- [ ] New-episode auto-download rules (only unplayed, max N episodes, etc.) — prevent runaway automation
-- [ ] External-user auditing/quotas/rate limits — add if external access is used heavily
+- [ ] Bulk edit/manage mode for many categories — add if users have very large category sets and drag/drop becomes tedious
+- [ ] Lightweight onboarding hint/tooltips for Hide vs Ignore — add if support confusion appears after release
+- [ ] Usage-informed suggested pins — only if repeated behavior shows obvious “favorites” patterns
 
 ### Future Consideration (v2+)
 
-- [ ] “Offline library management” UX (bulk operations, smart prefetch) — only if usage proves it’s needed
-- [ ] Advanced download integrity verification (hash catalogs, repair workflows) — only if corruption becomes a recurring issue
+- [ ] Cross-device advanced preference sync rules (e.g. temporary mobile-only ordering) — defer unless device-specific behavior becomes a real need
+- [ ] Personalized category recommendations/auto-grouping — high complexity, weak need until base controls prove valuable
 
 ## Feature Prioritization Matrix
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Categories (VOD + Series) + sidebar filtering | HIGH | MEDIUM | P1 |
-| RBAC (Admin/Member) + Internal/External policy | HIGH | MEDIUM | P1 |
-| User-scoped downloads | HIGH | HIGH | P1 |
-| Download reliability hardening + tests | HIGH | HIGH | P1 |
-| Mobile infinite-scroll correctness | HIGH | MEDIUM | P1 |
-| Per-user auto-episode scheduling | MEDIUM-HIGH | HIGH | P2 |
-| Episode auto-download rules (limits/unplayed) | MEDIUM | MEDIUM | P2 |
-| External-user auditing/quotas | MEDIUM | MEDIUM | P2 |
+| User-scoped category preference foundation | HIGH | MEDIUM | P1 |
+| Reorder + pin + hide categories | HIGH | MEDIUM | P1 |
+| Ignore categories in catalog listings | HIGH | HIGH | P1 |
+| Category labels on detail pages | MEDIUM | LOW | P1 |
+| Searchable category sidebar/navigation | HIGH | MEDIUM | P1 |
+| Correct media-type search filtering | HIGH | MEDIUM | P1 |
+| Full-width single-type search results | MEDIUM-HIGH | MEDIUM | P1 |
+| Bulk category management tools | MEDIUM | MEDIUM | P2 |
+| Suggested pins/recommendations | LOW-MEDIUM | MEDIUM-HIGH | P3 |
+
+**Priority key:**
+- P1: Must have for this milestone
+- P2: Should have if adoption pain appears
+- P3: Future optimization
 
 ## Competitor Feature Analysis
 
-| Feature | Plex / Emby (media servers) | Seerr / Servarr ecosystem | Our Approach |
-|---------|------------------------------|---------------------------|--------------|
-| Offline downloads / queue | First-class offline downloads with queue/error UI; permissions exist; constraints documented (Plex Pass; “Allow Downloads”) | Not a downloader; orchestrates requests into Sonarr/Radarr | Keep aria2 engine; implement first-class queue UX + reliability + ownership. |
-| Per-user permissions | Strong multi-user story; admin vs user; per-user rights; sharing restrictions | Granular permission system + account integration with media servers | Minimal RBAC (Admin/Member) + Internal/External policy; lock admin surfaces; keep policy understandable. |
-| Auto-download new episodes | Emby exposes “auto download new episodes” and limits within download options | Automation is the core value (monitoring + grabbing new episodes) | Per-user watchlist schedules + Xtream ID-based new-episode detection + strict caps/dedupe. |
-| Mobile browsing UX | Mature apps generally avoid list glitches; category/section navigation is expected | Web UIs focus on mobile-friendly approvals | Fix infinite-scroll correctness; keep fast category switching; preserve scroll position; avoid skipped items. |
+| Feature | Netflix / Prime-style pattern | Plex / Jellyfin-style pattern | Our Approach |
+|---------|-------------------------------|-------------------------------|--------------|
+| Navigation personalization | Usually lightweight row/order personalization; strong emphasis on fast access to preferred sections | More library-driven than per-user category curation | Add explicit per-user category controls because this app already uses categories as primary discovery IA |
+| Search mode behavior | Strong type cues; single-type results usually take full width and suppress mixed noise | Often unified search first, then filtered library views | Keep one search flow, but let Movies/Series modes become visually dedicated result views |
+| Hidden vs ignored content | Mainstream apps often reduce recommendation visibility rather than expose hard controls | Self-hosted apps tend to expose filtering, less often preference semantics | Make the distinction explicit because the catalog is operator-synced and users need predictable control |
+| Category discoverability on mobile | Search/filter within long nav lists is common when taxonomies get large | Sidebars often degrade into long static lists | Use searchable mobile drawer/sheet rather than forcing long-scroll category selection |
+
+## Recommendations for Scoping
+
+- **Sequence foundation before polish:** ship preference storage + query semantics + search filtering before drag/drop or layout refinement.
+- **Treat Hide and Ignore as separate capability sets:** combining them into one ambiguous toggle will create product debt fast.
+- **Keep preference precedence simple:** `pinned first -> remaining visible categories in user order -> hidden excluded from nav -> ignored excluded from listings`.
+- **Use safe defaults:** new users inherit synced category order, zero pins, zero hidden, zero ignored.
+- **Respect recovery paths:** users must always be able to restore defaults even if they hide or ignore too aggressively.
+- **Mobile should favor manage flows over dense inline controls:** search + toggle sheet first, advanced reorder in a dedicated full-screen manage view if needed.
+- **Web can expose more directly:** inline sidebar search, visible pin affordances, and quick reset work well on desktop.
 
 ## Sources
 
-- Plex Support — Downloads Overview (last modified 2025-01-09): https://support.plex.tv/articles/downloads-overview/
-- Plex Support — Downloads for iOS/Android (last modified 2025-04-03): https://support.plex.tv/articles/download-ios-android/
-- Plex Support — Downloads FAQ (last modified 2025-06-16): https://support.plex.tv/articles/downloads-sync-faq/
-- Emby Docs — Offline Access: https://emby.media/support/articles/Offline-Access.html
-- Emby Docs — Download Options (includes auto-download new episodes + limits): https://emby.media/support/articles/Sync.html
-- Jellyfin Docs — Users (admin flag + per-user controls): https://jellyfin.org/docs/general/server/users/
-- Seerr Docs — Introduction (integrations + granular permission system): https://docs.seerr.dev/
+- Internal project context: `/home/coder/project/lionzhd/.planning/PROJECT.md`
+- Existing product constraints from milestone v1 and v1.1 scope in project planning
+- Comparative UX pattern synthesis from mainstream streaming and self-hosted media apps (observational, not tied to one vendor spec) — LOW confidence for competitor specifics
 
 ---
 *Feature research for: LionzHD Streaming Platform Enhancements*
-*Researched: 2026-02-25*
+*Researched: 2026-03-15*

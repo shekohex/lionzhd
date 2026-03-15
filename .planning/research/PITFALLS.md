@@ -1,405 +1,341 @@
 # Pitfalls Research
 
-**Domain:** Xtream-based VOD/series streaming companion app (multi-tenant personal/team), with categories, RBAC, per-user isolation, scheduled automation, aria2-based downloads
-**Researched:** 2026-02-25
-**Confidence:** MEDIUM
+**Domain:** Brownfield per-user category personalization and search/filter fixes in an existing Laravel + Inertia multi-user streaming app
+**Researched:** 2026-03-15
+**Confidence:** HIGH
 
 ## Critical Pitfalls
 
-### Pitfall 1: Category identity collisions (not scoping by provider + content type)
+### Pitfall 1: Writing per-user state onto the shared category table
 
 **What goes wrong:**
-Categories merge or overwrite each other across providers/accounts and/or across content types (VOD vs Series). Users see wrong groupings, missing items, or mixed catalogs.
+One user’s reorder, pin, hide, or ignore change leaks into every other user, or the next category sync wipes out personalizations.
 
 **Why it happens:**
-Teams treat `category_id` (or category name) as globally unique, and/or store categories in a single table without `source/provider/account` and `content_type` scoping.
+The current system already has a global `categories` table and global sidebar builder, so the easiest brownfield move is adding `sort_order`, `hidden`, or `ignored` columns there.
 
 **How to avoid:**
-- Model category identity as a composite key: `{provider_account_id, content_type, remote_category_id}`.
-- Persist both `remote_category_id` and `remote_category_name` (plus a local `display_name` override if needed).
-- Make item→category relationships reference the composite identity (or a local surrogate ID that is unique per composite).
-- Treat “category rename” as a normal update; treat “category id reuse” as possible and detect anomalies.
+- Keep taxonomy canonical and shared.
+- Add a separate `user_category_preferences` read/write model keyed by at least `{user_id, media_type, category_provider_id}`.
+- Store user-only state there: manual order, pin rank, hidden flag, ignored flag.
+- Treat sync as updating canonical categories only; never let sync mutate user preference rows.
 
 **Warning signs:**
-- After sync, category counts shrink unexpectedly or “duplicate category names” spike.
-- Items show up under categories from a different provider/account.
-- Support reports: “my categories changed after I added another playlist/team.”
+- A migration adds personalization columns to `categories`.
+- `BuildCategorySidebarItems` starts reading or writing shared user-facing sort state.
+- One user’s sidebar order changes after another user edits preferences.
 
 **Phase to address:**
-Phase 1 — Categories + schema changes (introduce scoped identity + migrations + resync).
+Phase 1 — Preference semantics + schema split.
 
 ---
 
-### Pitfall 2: Non-idempotent sync/upsert (duplicates, orphaned rows, stale joins)
+### Pitfall 2: Not defining hide vs ignore vs pin semantics up front
 
 **What goes wrong:**
-Repeated syncs create duplicate categories/items, stale rows remain forever, and category→item joins drift. Resync becomes slow and “fixes” require manual DB cleanup.
+The same category is hidden in the sidebar but still affects search; ignored items disappear from browse pages but remain in related-content lists; details pages either over-hide or re-expose ignored content.
 
 **Why it happens:**
-Sync logic is implemented as “insert everything” or “delete all then insert” without transactional boundaries, stable natural keys, or soft-delete semantics.
+These features sound similar but are not interchangeable. Brownfield systems usually bolt them onto existing filters one endpoint at a time.
 
 **How to avoid:**
-- Define stable natural keys for each remote entity (category, VOD item, series, season/episode if tracked) scoped by provider/account.
-- Use deterministic upsert (`INSERT … ON CONFLICT DO UPDATE`) and mark missing remote entities as soft-deleted per sync run.
-- Store `last_seen_at`/`sync_run_id` and periodically hard-delete only after a grace period.
-- Make resync safe to run twice concurrently (or enforce single-flight with locks).
+- Write a behavior matrix before implementation.
+- Explicitly define what each state affects for each surface: movies index, series index, search, sidebar search, detail pages, related items, watchlist, direct links.
+- Recommended contract:
+  - `pin`: ordering only
+  - `hide`: remove from sidebar/navigation only
+  - `ignore`: exclude titles from discovery/search listings for that user
+  - detail pages: show canonical category labels, but do not silently use hidden/ignored state to erase metadata
 
 **Warning signs:**
-- DB uniqueness constraints absent on remote keys.
-- Sync runtime grows roughly linearly with number of syncs.
-- “Fix is to drop tables and resync.”
+- Different controllers implement different semantics for the same flag.
+- QA reports “works on movies page, not on search/mobile/detail.”
+- Engineers debate expected behavior after coding has started.
 
 **Phase to address:**
-Phase 1 — Categories/catalog sync foundation (idempotency + constraints + migrations).
+Phase 1 — Semantics contract + acceptance criteria.
 
 ---
 
-### Pitfall 3: “RBAC by UI” or scattered ad-hoc checks (inconsistent enforcement)
+### Pitfall 3: Keeping `category_id` as the only truth when the feature needs full category assignment data
 
 **What goes wrong:**
-Users can hit APIs they shouldn’t (or jobs perform actions across teams) because authorization is inconsistently enforced. You’ll ship “looks locked” UI but backend is permissive.
+Detail pages cannot reliably show all assigned categories, ignore filtering is incomplete, and future syncs become harder because media only carries one category slot.
 
 **Why it happens:**
-RBAC is added late, enforced in the frontend, or implemented as scattered `if user.isAdmin` checks without a single policy layer.
+Current `vod_streams` and `series` models still rely on a single `category_id` field. It is tempting to keep stretching that field instead of introducing a proper assignment model.
 
 **How to avoid:**
-- Centralize authorization in one layer (policy functions/middleware) used by HTTP handlers *and* background jobs.
-- Build a role→permission matrix up front; keep it small (Owner/Admin/Member/Viewer) unless proven otherwise.
-- Add permission tests as a table-driven suite that asserts every endpoint/action is allowed/denied for each role.
+- Introduce canonical media↔category assignment tables for movies and series, or one normalized polymorphic assignment table.
+- Backfill from the existing single `category_id` field.
+- Keep the old column only as a temporary compatibility field if needed.
+- Index assignments by `{media_type, media_id, category_provider_id}`.
 
 **Warning signs:**
-- Backend endpoints lack explicit authorization checks.
-- “We hide the button” is used as security rationale.
-- New features land without updating a permission matrix/test file.
+- Comma-delimited IDs or JSON arrays start appearing in `category_id`.
+- Detail-page category badges come from ad hoc parsing instead of relations.
+- Ignore filtering still checks only one category per item.
 
 **Phase to address:**
-Phase 2 — RBAC design + enforcement + test matrix.
+Phase 1 — Canonical category assignment model + migration plan.
 
 ---
 
-### Pitfall 4: Per-user / per-team data isolation enforced only in application code
+### Pitfall 4: Applying ignore filtering only in browse controllers, not in the shared read model
 
 **What goes wrong:**
-One missed `WHERE tenant_id = ?` leaks data across users/teams (favorites, history, downloads, scheduled jobs, or content mappings). These are often silent and discovered late.
+Ignored titles disappear from category browse pages but still appear in search, lightweight search, related rows, counts, and pagination totals.
 
 **Why it happens:**
-Existing codebase predates multi-tenancy; engineers rely on “service layer filtering” without DB constraints or systematic test coverage.
+Current browse pages query Eloquent directly by `category_id`, while search uses separate Scout-based actions. In a brownfield app, teams patch each surface separately and drift.
 
 **How to avoid:**
-- Add `tenant_id` (and if needed `user_id`) to every user-owned table; make it NOT NULL.
-- Add composite unique indexes that include `tenant_id` (prevents cross-tenant collisions).
-- Prefer DB-enforced isolation when possible (e.g., Postgres Row-Level Security) or at least a repository interface that *requires* tenant context for all queries.
-- Add a “canary” test: create two tenants/users with similar data and assert cross-tenant queries return 0 rows across every read path.
+- Create one “visible catalog for user” query policy used by browse, search, counts, and detail-side discovery widgets.
+- Decide early whether ignored-category filtering must happen in the search engine, in DB queries, or as post-filtering with corrected totals.
+- Prefer pre-pagination filtering. Post-pagination filtering causes empty/short pages.
 
 **Warning signs:**
-- Queries join on `id` without also joining/scoping by tenant.
-- Background jobs run “as system” without a tenant context.
-- Manual QA uses only one tenant.
+- Same title is hidden in `/movies` but still returned by `/search`.
+- Sidebar counts do not match visible result counts.
+- Search totals remain high while rendered cards are low.
 
 **Phase to address:**
-Phase 2 — Tenancy/isolation baseline (schema + repositories + cross-tenant tests).
+Phase 2 — Personalization-aware query layer.
 
 ---
 
-### Pitfall 5: Membership/role changes not reflected promptly (stale auth state)
+### Pitfall 5: Unstable ordering and pin enforcement
 
 **What goes wrong:**
-Removed users keep access; promoted users can’t access; scheduled jobs keep running under an old team context.
+Pinned categories reshuffle after sync, hidden categories still occupy rank slots, movie and series ordering bleed together, or users end up with more than five pins.
 
 **Why it happens:**
-Roles are cached in long-lived sessions/tokens, or computed once at login, with no invalidation strategy.
+Teams persist a single absolute sort integer and keep mutating it as categories appear/disappear, instead of separating pin priority from fallback order.
 
 **How to avoid:**
-- If using JWT/session caching: include a `membership_version` / `roles_updated_at` claim and force re-auth or re-fetch when it changes.
-- Keep access checks authoritative server-side (read current membership in DB) for sensitive actions.
-- Add tests for “remove user from team” and “change role” affecting authorization immediately.
+- Scope preferences by media type.
+- Store `pin_rank` separately from `manual_order`.
+- Normalize order values on every write.
+- Enforce the “max 5 pins” rule transactionally, not only in the UI.
+- Use a deterministic fallback order for categories with no user override.
 
 **Warning signs:**
-- “Log out and in” fixes permission issues.
-- Support sees access anomalies after role changes.
+- Duplicate rank values appear for the same user/media type.
+- Users can pin a sixth category via direct request.
+- A sync introducing a new category changes unrelated category positions.
 
 **Phase to address:**
-Phase 2 — RBAC + tenancy (auth state invalidation + tests).
+Phase 2 — Preference write rules + ordering engine.
 
 ---
 
-### Pitfall 6: Scheduled automation without idempotency + single-flight locking
+### Pitfall 6: Sidebar category search that drops selection or breaks mobile state
 
 **What goes wrong:**
-Jobs overlap (multiple workers, retries, deploy restarts) causing duplicated work: double syncs, duplicate notifications, repeated aria2 adds, or conflicting writes.
+The selected category disappears when the sidebar search narrows the list, the mobile sheet closes before state settles, retry/error states lose the search input, or keyboard focus becomes unusable.
 
 **Why it happens:**
-Schedulers are “fire and forget”; retries are enabled by default; job handlers assume exactly-once execution.
+The current sidebar component is a static list with separate desktop/mobile shells. Adding live search on top of that without a clear state model creates divergent behavior.
 
 **How to avoid:**
-- Design jobs as at-least-once: handlers must be idempotent.
-- Implement job-level uniqueness (e.g., key by `{tenant_id, job_type}`) and/or distributed locks with TTL.
-- Persist job runs with `run_id`, `started_at`, `finished_at`, `status`, `attempt`, `dedupe_key`.
-- Add a test harness that simulates retry/overlap (run handler twice, assert no duplicates).
+- Keep the selected category visible even if it does not match the current sidebar search term.
+- Preserve sheet/search state long enough to complete selection feedback.
+- Test desktop and mobile flows separately.
+- Make empty-state copy distinguish between “no categories exist,” “no categories match search,” and “categories failed to load.”
 
 **Warning signs:**
-- Duplicate rows created by “automation” features.
-- Cron-style schedules run multiple times after deploy.
-- Job queue backlog grows with no clear cause.
+- Selecting a category from mobile intermittently clears the filter.
+- A hidden category can still be surfaced by sidebar search.
+- QA can reproduce different behavior between desktop sidebar and mobile sheet.
 
 **Phase to address:**
-Phase 3 — Scheduler/jobs foundation (idempotency + locking + run tracking + tests).
+Phase 3 — Sidebar search UX + mobile parity.
 
 ---
 
-### Pitfall 7: Time zone / DST errors for schedules (and “run-at” drift)
+### Pitfall 7: Fixing the media-type bug in the UI while leaving backend pagination/model selection wrong
 
 **What goes wrong:**
-User-scheduled jobs run an hour early/late, twice, or not at all around DST changes; “daily at 02:30” becomes ambiguous.
+The search page looks filtered, but the backend still splits `per_page` between movies and series, keeps two result sections, or calculates totals for data that should not be returned. Filtered pages render half-empty or inconsistent “Found X results” counts.
 
 **Why it happens:**
-Schedules are stored as naive local timestamps, or cron expressions are interpreted in server time while users expect local time.
+Current search behavior is built around dual-type results, split limits, and section-specific pagination. A UI-only patch does not change the query contract.
 
 **How to avoid:**
-- Store: user’s IANA time zone + schedule intent (e.g., local time-of-day) and compute next run in UTC.
-- For cron: explicitly set timezone in scheduler if supported; otherwise compute next run yourself.
-- Add tests for at least one DST transition (spring-forward and fall-back) using a fixed timezone.
+- When `media_type` is set, switch to a single-result-mode contract end to end.
+- Do not split `per_page` across two datasets in filtered mode.
+- Render full-width filtered results from a single paginator.
+- Add explicit controller tests for movie-only and series-only totals, payload shape, and pagination links.
 
 **Warning signs:**
-- “It runs at the wrong time for EU/US users.”
-- Around DST weeks: spikes in “missed sync” reports.
+- `media_type=movie` still computes or returns series payloads.
+- Filtered results still render under two section headings.
+- Page 2 of filtered search has fewer items than `per_page` without actually exhausting results.
 
 **Phase to address:**
-Phase 3 — Scheduler/jobs (time model + DST tests).
+Phase 4 — Search contract fix + full-width filtered result mode.
 
 ---
 
-### Pitfall 8: aria2 treated as a “library call” (no supervision, no reconciliation)
+### Pitfall 8: Post-filtering ignored categories after search pagination
 
 **What goes wrong:**
-Downloads get stuck in “running” forever after restarts; state in DB diverges from aria2; partial files accumulate; users see phantom downloads.
+Search pages come back short, empty, or with wrong totals because ignored items were removed after the search engine already paginated them.
 
 **Why it happens:**
-aria2 is a long-running process with its own queue/state. If you don’t supervise it and reconcile state, your app becomes unreliable after crashes/deploys.
+Brownfield search stacks often cannot apply user-specific filters inside the index query, so teams filter the page collection afterward.
 
 **How to avoid:**
-- Run aria2 as a supervised service (systemd/docker/k8s) and treat it as an external dependency.
-- Use RPC with a secret token; assume RPC can fail and implement retries/backoff.
-- Persist aria2 `gid` per download and implement a periodic reconciler job:
-  - `tellActive`/`tellWaiting`/`tellStopped` and map results back to your DB.
-  - Detect “DB says running but aria2 doesn’t know gid” and transition to failed/retryable.
-- On controlled shutdowns, consider `aria2.saveSession` to persist state (and configure session files if you rely on it).
+- Prefer DB-backed filtered search if the search backend cannot enforce per-user ignored-category filters.
+- If staying on Scout/database search, ensure category visibility is applied before pagination.
+- If post-filtering is unavoidable temporarily, mark it as an explicit short-lived compromise and recompute totals/pages correctly.
 
 **Warning signs:**
-- After deploy, many downloads become “stuck” without progress.
-- aria2 RPC errors/connection resets increase.
-- DB contains many downloads with no corresponding aria2 status.
+- Users see “10 results” but only 3 cards.
+- Page 1 is empty while page 2 has results.
+- Ignoring a large category causes pagination to collapse unpredictably.
 
 **Phase to address:**
-Phase 4 — aria2 lifecycle + reliability (supervision + reconciliation + failure semantics + tests).
+Phase 4 — Search filtering correctness.
 
 ---
 
-### Pitfall 9: Unsafe download paths + cross-tenant file collisions
+### Pitfall 9: Brownfield migration that breaks existing category browsing during rollout
 
 **What goes wrong:**
-One user overwrites another user’s files; path traversal writes outside the intended directory; filenames break on different OS/filesystems.
+Deploying new preference or assignment tables breaks category browse pages, detail pages, or sync because old code still assumes the legacy shape and the backfill is incomplete.
 
 **Why it happens:**
-Teams build paths from remote titles (“Series Name S01E01”) or URLs without strict sanitization and per-tenant root enforcement.
+Existing code paths already read `category_id` directly and build sidebars globally. Schema changes are acceptable here, which makes it easy to under-plan compatibility and recovery.
 
 **How to avoid:**
-- Ensure per-tenant (and optionally per-user) download root directories; never share.
-- Use server-generated stable filenames (IDs/hashes) and store display names separately.
-- Validate paths are relative; reject `..`, absolute paths, and path separators in “filename” fields.
-- Use atomic moves: download to a temp path, then rename into place once complete.
+- Use additive migrations first.
+- Backfill from existing category data before cutting reads over.
+- Keep a rollback path: either dual-read temporarily or keep a deterministic re-sync path ready.
+- Run migration tests against a production-like snapshot.
+- Feature-flag user personalization reads until backfill completes.
 
 **Warning signs:**
-- Duplicate filenames across different items cause overwrites.
-- “Why did my download disappear after someone else downloaded?”
-- Any code that concatenates paths with user-controlled strings.
+- Deploy requires app and DB to switch in lockstep with no fallback.
+- Not-null constraints are added before data exists.
+- “We can always resync later” is the only recovery story.
 
 **Phase to address:**
-Phase 4 — Downloads + storage model (path safety + tenant isolation + tests).
+Phase 1 and Phase 5 — Migration design first, rollout validation last.
 
 ---
 
-### Pitfall 10: Provider variability + rate limiting ignored (sync/jobs can DOS the provider)
+### Pitfall 10: Regression coverage that only proves pages render
 
 **What goes wrong:**
-Automation and resync flood Xtream endpoints; provider blocks/bans the IP/account; app becomes slow and unreliable.
+Search bugs reappear, user-specific filtering leaks, and sidebar behavior regresses because tests only assert status codes or minimal payload presence.
 
 **Why it happens:**
-Existing systems assume “fast and unlimited” upstream. Adding categories and scheduled sync multiplies calls (per tenant, per playlist, per job).
+Current search tests mostly cover omitted `per_page` behavior. That is useful, but not enough for personalized visibility and media-type correctness.
 
 **How to avoid:**
-- Add per-provider/account rate limiting and concurrency caps.
-- Cache aggressively (ETag/If-Modified-Since if supported; otherwise hash responses and short-circuit processing).
-- Prefer incremental refresh where possible; don’t pull full catalogs on every job.
-- Make sync resilient: timeouts, retries with jitter, and circuit breaking per provider.
+- Add a matrix test suite, not a few happy-path tests.
+- Cover: hide vs ignore semantics, max pin limit, reordering stability, details-page category labels, sidebar search on desktop/mobile, movie-only search, series-only search, mixed search, ignored-category search exclusion, and pagination after filtering.
+- Add tests that create two users with different preferences against the same catalog.
 
 **Warning signs:**
-- Sync job duration and error rate spike with user growth.
-- Lots of 401/403/429/5xx from provider.
-- “Works for one user, falls apart for teams.”
+- No test creates two users with contradictory category preferences.
+- No assertion checks that ignored titles are absent from search.
+- Search tests pass even if the wrong payload shape is returned.
 
 **Phase to address:**
-Phase 3 — Jobs + sync hardening (rate limits, backoff, circuit breaker, tests with fake upstream).
-
----
-
-### Pitfall 11: Test suite depends on real Xtream/aria2 instances (flaky + slow)
-
-**What goes wrong:**
-CI becomes unreliable; tests fail due to network/provider changes; engineers stop trusting tests and ship regressions in RBAC/isolation/jobs.
-
-**Why it happens:**
-Domain features are integration-heavy; it’s tempting to “just hit the real server.”
-
-**How to avoid:**
-- Use deterministic fixtures (recorded JSON responses) or a local fake Xtream server.
-- For aria2, mock RPC at the client boundary or run an ephemeral local aria2 daemon in integration tests only.
-- Add contract tests that validate parsing of “weird” provider payloads (missing fields, IDs as strings, empty categories).
-
-**Warning signs:**
-- CI failures correlate with time-of-day/network.
-- Tests take minutes waiting on upstream.
-- Engineers rerun CI until green.
-
-**Phase to address:**
-Phase 0/1 (immediately) — Testing strategy + fixtures; then applied in all phases.
-
----
-
-### Pitfall 12: Backfill/migration plan skipped for new tenancy + RBAC fields
-
-**What goes wrong:**
-Deploy breaks existing “production-ish” data: NULL tenant IDs, orphaned rows, permissions undefined, scheduled jobs mis-scoped. Fix becomes emergency scripts + resync.
-
-**Why it happens:**
-Milestone pressure + “breaking changes acceptable” leads to under-specifying data migration paths.
-
-**How to avoid:**
-- Add explicit migration/backfill steps (even if resync is acceptable):
-  - Create default tenant/team for existing users.
-  - Assign deterministic initial roles.
-  - Backfill `tenant_id`/`user_id` across tables.
-- Add migration tests (schema + backfill) against a snapshot of representative old data.
-
-**Warning signs:**
-- Migrations add NOT NULL columns without backfill.
-- “We’ll just resync later” is used without an actual resync mechanism.
-
-**Phase to address:**
-Phase 1–2 — Schema evolution + backfill + resync tooling.
+Phase 4 — Regression suite + Phase 5 smoke tests.
 
 ---
 
 ## Technical Debt Patterns
 
-Shortcuts that seem reasonable but create long-term problems.
+Shortcuts that look fast but will hurt this milestone.
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 |----------|-------------------|----------------|-----------------|
-| Use category name as identifier | Easy mapping | Renames break favorites/history; duplicates collide | Never |
-| Keep a single global downloads directory | Simple filesystem layout | Cross-tenant collisions, privacy leaks, cleanup pain | Never |
-| Implement RBAC as booleans (`is_admin`, `is_owner`) scattered in code | Fast to ship | Inconsistent enforcement; hard to test/extend | Only as a temporary shim during migration, removed same milestone |
-| Run scheduled jobs inside the web process without run tracking | No extra worker infra | Unbounded retries, overlap, and invisible failures | Only for dev; never for production-ish |
-| Store remote payload blobs without schema/versioning | Easy debugging | Migrations become hard; parsing assumptions drift | Acceptable if versioned + size-limited + not used for queries |
-| “Delete all + resync” as the only recovery | Simple mental model | Expensive at scale; breaks user data (favorites, downloads) | Only if user-owned data is separable and explicitly preserved |
+| Add `hidden` / `ignored` / `sort_order` columns to `categories` | Fastest schema patch | Breaks multi-user isolation; sync clobbers personalization | Never |
+| Keep using only `vod_streams.category_id` / `series.category_id` | No migration of relations | Cannot model full category assignments cleanly; future filters drift | Only as a temporary read-compat field during backfill |
+| Filter ignored categories only in controllers | Small local diff | Search, counts, related content, and pagination diverge | Never |
+| Enforce “max 5 pins” only in React | Easy demo | Direct requests violate invariants; bad data accumulates | Never |
+| Keep search in dual-section mode even when `media_type` is selected | Less UI work | Totals, pagination, and adaptive layout stay wrong | Never |
 
-## Integration Gotchas
+## Filtering Correctness Traps
 
-Common mistakes when connecting to external services.
-
-| Integration | Common Mistake | Correct Approach |
-|-------------|----------------|------------------|
-| Xtream provider APIs | Assume stable schemas/types (IDs always numbers, fields always present) | Use tolerant parsing + validation; coerce numeric strings; handle missing/empty categories; add fixtures for edge payloads |
-| Xtream sync | Sync “per user action” + “per schedule” without coordination | Centralize sync triggers; dedupe by `{provider_account_id, sync_kind}`; rate limit and backoff |
-| aria2 RPC | Expose RPC without a secret / bind publicly | Use RPC secret token; bind to localhost/private network; restrict firewall |
-| aria2 state | Assume DB state == aria2 state | Implement reconciler + state machine; treat aria2 as source of truth for progress |
-| Filesystem | Trust remote titles for filenames | Server-generated filenames; sanitize strictly; store display title separately |
+| Trap | Failure Mode | Prevention |
+|------|--------------|------------|
+| Ignore list applied to browse but not search | Hidden titles still discoverable | Centralize personalization-aware visibility rules across all read paths |
+| Hide treated like ignore | Categories vanish and content disappears unexpectedly | Keep navigation visibility separate from content visibility |
+| Detail pages respect ignore too aggressively | Metadata disappears for reachable items | Show canonical category labels on details; only discovery lists should be filtered unless explicitly decided otherwise |
+| Sidebar search searches canonical categories instead of visible categories | Hidden categories resurface through search | Search the user-visible sidebar dataset, not the raw global taxonomy |
+| Counts computed before ignore filtering | Sidebar and result totals lie | Compute counts from the same filtered dataset used for rendering |
 
 ## Performance Traps
 
-Patterns that work at small scale but fail as usage grows.
-
 | Trap | Symptoms | Prevention | When It Breaks |
 |------|----------|------------|----------------|
-| Full catalog resync on every schedule tick | High DB write volume; slow sync; provider throttling | Incremental sync, caching, backoff, dedupe; cap concurrency | Breaks quickly with teams + multiple providers |
-| N+1 metadata fetch per category/item | API latency spikes; huge request counts | Bulk endpoints where possible; batch requests; cache | Becomes obvious at 1k–10k items |
-| Unbounded job retries | Same failures repeat; queue grows forever | Retry budget + dead-letter; alerting on repeated failure | As soon as upstream is flaky |
-| Keeping “download progress polling” too frequent | CPU/network waste; aria2 load | Adaptive polling; event-driven notifications if available; per-tenant caps | Moderate user growth |
-
-## Security Mistakes
-
-Domain-specific security issues beyond general web security.
-
-| Mistake | Risk | Prevention |
-|---------|------|------------|
-| Missing server-side authorization for downloads/history/favorites | Cross-tenant data leaks | Enforce tenancy in data access; add cross-tenant tests; consider DB-level controls (e.g., RLS) |
-| Logging Xtream credentials or full URLs with tokens | Credential leakage (logs, error trackers) | Redact secrets; structured logging with allowlist fields |
-| Exposing aria2 RPC externally | Remote control of downloads; data exfil | Bind to localhost/private; RPC secret; firewall |
-| Path traversal in download destination | Write arbitrary files | Strict path validation; per-tenant root; no user-provided paths |
-| “System jobs” bypass RBAC/tenant rules | Privilege escalation via automation | Run jobs with explicit tenant context; apply same policy layer as HTTP |
+| Joining user preferences and category assignments on every request without indexes | Browse/search latency jumps; DB CPU rises | Add composite indexes on preference and assignment tables; cache sidebar payloads per user+media type | Breaks quickly once category counts and user count both grow |
+| N+1 category badge loading on detail pages | Detail pages slow down after adding category labels | Eager load assignments/categories or pre-hydrate category badge data | Breaks immediately on detail pages with related-content widgets |
+| Recomputing sidebar counts from full catalog each render | Mobile/category navigation feels sluggish | Precompute or efficiently aggregate counts; invalidate cache on sync/pref change | Breaks as catalog size grows, even with modest user count |
+| Post-search filtering of ignored categories | Empty pages and wasted queries | Filter before paginate; use a query path that understands personalization | Breaks as soon as ignored categories are common |
 
 ## UX Pitfalls
 
-Common user experience mistakes in this domain.
-
 | Pitfall | User Impact | Better Approach |
 |---------|-------------|-----------------|
-| Categories reorder/rename unexpectedly after sync | Users lose “muscle memory”; favorites feel broken | Preserve stable ordering; show “last sync changed categories” note; allow pinning/custom ordering |
-| Permission errors are silent (items disappear) | Confusing “bug” reports | Clear 403 states; show role restrictions; audit log for admin actions |
-| Schedules described ambiguously (“daily at 2”) | Users think jobs are broken | Show timezone explicitly; show next-run time; warn about DST |
-| Downloads get stuck with no recovery UI | Users retry randomly; storage fills | Provide retry/cancel; surface aria2 errors; “reconcile” action |
+| Hidden categories simply vanish with no recovery affordance | Users think categories were deleted | Provide a clear manage/edit state with hidden-category recovery |
+| Ignored categories have the same visual treatment as hidden ones | Users cannot predict whether titles will disappear | Use distinct labels/copy for “hidden from sidebar” vs “ignored from catalog” |
+| Selected category disappears when sidebar search narrows results | Users lose context and cannot undo easily | Keep selected state anchored and always clearable |
+| Movie-only / series-only search still shows split sections | Filtered UX feels broken and wastes space | Switch filtered mode to a single full-width result grid/list |
+| Detail pages show category labels that link into ignored categories without explanation | Users can navigate into content they intended to suppress | Decide whether labels are informational only or navigable under ignore rules, then enforce consistently |
+
+## Migration and Rollout Risks
+
+| Risk | What Goes Wrong | Mitigation |
+|------|-----------------|------------|
+| Assignment-table backfill incomplete | Some titles lose category badges or ignore filtering | Add backfill validation counts and fallback reads until complete |
+| Preference rows created without media-type scope | Movie preferences leak into series sidebar | Include media type in unique keys and fixture coverage |
+| Legacy reads remain in one controller | One surface ignores personalization | Audit every entry point that reads categories or media discovery |
+| Feature ships without observability | Hard to detect wrong totals or empty searches | Log preference mutations, search filter mode, and ignored-result drops; add post-deploy smoke checks |
 
 ## "Looks Done But Isn't" Checklist
 
-Things that appear complete but are missing critical pieces.
-
-- [ ] **Categories:** IDs scoped by provider+content type; resync idempotent; uniqueness constraints exist
-- [ ] **RBAC:** Backend policy enforcement exists for *every* action; permission matrix tests cover endpoints and jobs
-- [ ] **Tenancy:** Every user-owned table has `tenant_id`; cross-tenant canary test exists; no “system job” bypass
-- [ ] **Scheduled jobs:** Single-flight/locking exists; retries are bounded; DST/timezone tests exist
-- [ ] **aria2:** Supervised process; RPC secured; reconciler job exists; state machine handles missing GIDs
-- [ ] **Downloads storage:** Per-tenant root; filename sanitization; atomic move; cleanup of partials
-
-## Recovery Strategies
-
-When pitfalls occur despite prevention, how to recover.
-
-| Pitfall | Recovery Cost | Recovery Steps |
-|---------|---------------|----------------|
-| Category collisions / bad mapping | MEDIUM | Add scoping columns + backfill; rebuild category mapping tables; force catalog resync; invalidate caches |
-| Duplicate/stale catalog rows | MEDIUM | Add unique constraints; write dedupe migration; mark-and-sweep cleanup; rerun idempotent sync |
-| RBAC enforcement bugs | MEDIUM | Ship hotfix policy layer; add missing checks; add failing regression tests for the exploit paths |
-| Cross-tenant data leak | HIGH | Immediately block affected endpoints; audit logs; rotate tokens if needed; run data integrity scans; add tenant constraints/RLS + tests |
-| Job overlap causing duplicates | MEDIUM | Pause scheduler; add locks/dedupe keys; cleanup duplicate rows; re-enable with canary tenant |
-| aria2 divergence/stuck downloads | MEDIUM | Restart supervised aria2; run reconciler to mark unknown GIDs failed; cleanup partial files; requeue downloads |
+- [ ] **Per-user preferences:** Two users can reorder/pin/hide/ignore the same category differently with no leakage.
+- [ ] **Category semantics:** Hide affects navigation only; ignore affects discovery surfaces exactly as specified.
+- [ ] **Canonical assignments:** Detail pages show all assigned categories from normalized data, not from hacked string parsing.
+- [ ] **Sidebar search:** Works on desktop and mobile, preserves selected state, and does not resurface hidden categories.
+- [ ] **Filtered search:** `media_type=movie` and `media_type=series` each use a single-result-mode payload and full-width layout.
+- [ ] **Ignored search results:** Titles in ignored categories are absent from browse and search, not just from one page.
+- [ ] **Pagination:** Totals, links, and item counts stay correct after personalization filters are applied.
+- [ ] **Migration:** Fresh install, upgraded DB, and re-sync path all produce equivalent category/discovery behavior.
 
 ## Pitfall-to-Phase Mapping
 
-How roadmap phases should address these pitfalls.
-
 | Pitfall | Prevention Phase | Verification |
 |---------|------------------|--------------|
-| Category identity collisions | Phase 1 | Two providers with same category_id/name don’t collide; tests validate scoped uniqueness |
-| Non-idempotent sync/upsert | Phase 1 | Running sync twice yields identical DB state; uniqueness constraints prevent duplicates |
-| RBAC by UI / scattered checks | Phase 2 | Permission matrix tests; unauthorized requests reliably return 403 |
-| App-only tenancy filtering | Phase 2 | Cross-tenant canary tests pass for all reads/writes; no query path lacks tenant scope |
-| Stale membership/roles | Phase 2 | Role change takes effect immediately in tests; token/session invalidation covered |
-| Jobs without idempotency/locking | Phase 3 | Simulated overlap/retry produces no duplicates; job run table shows one active run per key |
-| Time zone/DST schedule bugs | Phase 3 | DST unit tests; UI shows next-run time and timezone |
-| aria2 lifecycle unreliability | Phase 4 | Kill/restart aria2: reconciler converges DB state; downloads recover or fail deterministically |
-| Unsafe download paths/collisions | Phase 4 | Path traversal tests; per-tenant directories enforced; no overwrites across users |
-| Provider rate limit ignored | Phase 3 | Load tests with fake upstream show capped concurrency + backoff; error spikes don’t cascade |
-| Flaky tests hitting real services | Phase 0/1 | CI runs offline; fixtures/fakes cover edge cases |
-| Backfill/migration skipped | Phase 1–2 | Migration test from old snapshot succeeds; resync tooling verified |
+| Shared table used for per-user state | Phase 1 | Schema review shows separate preference table and user-scoped unique key |
+| Hide/ignore semantics drift | Phase 1 | Acceptance matrix exists and is referenced by tests |
+| Single `category_id` stretched too far | Phase 1 | Normalized assignment model exists and detail pages use it |
+| Ignore filtering only patched into some surfaces | Phase 2 | Browse, search, and counts all use one personalization-aware read path |
+| Ordering and pin instability | Phase 2 | Two-user tests prove stable ranks and hard pin limit |
+| Sidebar search/mobile state regressions | Phase 3 | Web/mobile interaction tests cover selection, clearing, and empty/error states |
+| Media-type search bug fixed only visually | Phase 4 | Controller and page tests assert single-mode filtered payload + layout |
+| Post-pagination ignore filtering | Phase 4 | Search totals and per-page counts stay correct with ignored categories present |
+| Migration rollout breaks discovery | Phase 5 | Upgrade test + smoke test + rollback/re-sync plan verified |
+| Tests too shallow | Phase 4 and 5 | Regression matrix exists and post-deploy smoke suite passes |
 
 ## Sources
 
-- aria2 manual (RPC methods, session, supervision considerations): https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface
-- aria2 manual (general options incl. input/session concepts): https://aria2.github.io/manual/en/html/aria2c.html
-- PostgreSQL Row-Level Security (useful for DB-enforced tenant isolation): https://www.postgresql.org/docs/current/ddl-rowsecurity.html
-- OWASP Top Ten (general web security baseline; not IPTV-specific): https://owasp.org/www-project-top-ten/
-- Team experience patterns (multi-tenant RBAC, job idempotency, downloader supervision) — MEDIUM confidence where not backed by official docs
+- Project context: `/home/coder/project/lionzhd/.planning/PROJECT.md`
+- Current global category sidebar builder: `/home/coder/project/lionzhd/app/Actions/BuildCategorySidebarItems.php`
+- Current canonical category model: `/home/coder/project/lionzhd/app/Models/Category.php`
+- Current single-category media models: `/home/coder/project/lionzhd/app/Models/VodStream.php`, `/home/coder/project/lionzhd/app/Models/Series.php`
+- Current search controller contract: `/home/coder/project/lionzhd/app/Http/Controllers/SearchController.php`
+- Current search query DTO and split-mode behavior: `/home/coder/project/lionzhd/app/Data/SearchMediaData.php`, `/home/coder/project/lionzhd/app/Actions/SearchMovies.php`, `/home/coder/project/lionzhd/app/Actions/SearchSeries.php`
+- Current search UI structure and filter handling: `/home/coder/project/lionzhd/resources/js/pages/search.tsx`
+- Current sidebar UI structure: `/home/coder/project/lionzhd/resources/js/components/category-sidebar.tsx`
+- Current search test coverage baseline: `/home/coder/project/lionzhd/tests/Feature/Controllers/SearchControllerTest.php`
 
 ---
-*Pitfalls research for: Xtream-based VOD/series streaming companion app milestone (categories, RBAC, isolation, scheduler, aria2)*
-*Researched: 2026-02-25*
+*Pitfalls research for: LionzHD v1.1 category personalization + search UX milestone*
+*Researched: 2026-03-15*

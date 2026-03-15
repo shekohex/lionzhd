@@ -207,3 +207,55 @@ test('it replaces stale vod streams when upstream reuses a num for a new stream 
     expect(DB::table('vod_streams')->pluck('name', 'stream_id')->all())
         ->toBe([30_002 => 'Replacement Stream']);
 });
+
+test('it tolerates duplicate vod nums within the same upstream payload', function (): void {
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([], 200),
+            GetVodStreamsRequest::class => MockResponse::make([
+                [
+                    'stream_id' => 40_001,
+                    'num' => 888,
+                    'name' => 'First Duplicate',
+                    'stream_type' => 'movie',
+                    'stream_icon' => null,
+                    'rating' => null,
+                    'rating_5based' => 0,
+                    'added' => '2025-01-01 00:00:00',
+                    'is_adult' => false,
+                    'category_id' => 'one',
+                    'container_extension' => 'mp4',
+                    'custom_sid' => null,
+                    'direct_source' => null,
+                ],
+                [
+                    'stream_id' => 40_002,
+                    'num' => 888,
+                    'name' => 'Second Duplicate',
+                    'stream_type' => 'movie',
+                    'stream_icon' => null,
+                    'rating' => null,
+                    'rating_5based' => 0,
+                    'added' => '2025-01-02 00:00:00',
+                    'is_adult' => false,
+                    'category_id' => 'two',
+                    'container_extension' => 'mkv',
+                    'custom_sid' => null,
+                    'direct_source' => null,
+                ],
+            ], 200),
+        ]));
+    });
+
+    $job = app()->make(RefreshMediaContents::class);
+    $job->withFakeQueueInteractions()
+        ->assertNotFailed()->handle();
+
+    expect(DB::table('vod_streams')->pluck('name', 'stream_id')->all())
+        ->toBe([
+            40_001 => 'First Duplicate',
+            40_002 => 'Second Duplicate',
+        ]);
+});

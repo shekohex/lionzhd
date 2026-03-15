@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\VodStream;
 
-use App\Actions\BuildCategorySidebarItems;
+use App\Actions\BuildPersonalizedCategorySidebar;
 use App\Data\CategoryBrowseFiltersData;
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
@@ -94,7 +94,7 @@ final class VodStreamController extends Controller
         return Inertia::render('movies/index', [
             'movies' => fn () => $movies,
             'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId),
-            'categories' => fn () => BuildCategorySidebarItems::run(MediaType::Movie, $categoryId),
+            'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Movie, $categoryId),
         ]);
     }
 

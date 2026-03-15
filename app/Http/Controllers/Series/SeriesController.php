@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Series;
 
-use App\Actions\BuildCategorySidebarItems;
+use App\Actions\BuildPersonalizedCategorySidebar;
 use App\Data\AutoEpisodes\SeriesMonitorData;
 use App\Data\CategoryBrowseFiltersData;
 use App\Enums\MediaType;
@@ -98,7 +98,7 @@ final class SeriesController extends Controller
         return Inertia::render('series/index', [
             'series' => fn () => $series,
             'filters' => fn () => new CategoryBrowseFiltersData(category: $categoryId),
-            'categories' => fn () => BuildCategorySidebarItems::run(MediaType::Series, $categoryId),
+            'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Series, $categoryId),
         ]);
     }
 

@@ -119,6 +119,79 @@ it('rejects invalid category ids for the requested media type snapshot', functio
     $response->assertSessionHasErrors(['visible_ids', 'hidden_ids', 'pinned_ids']);
 });
 
+it('preserves stored non pinned order when pinning and isolates writes per user', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('movie-comedy', 'Comedy', inVod: true);
+    createCategory('movie-drama', 'Drama', inVod: true);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-action',
+        'pin_rank' => null,
+        'sort_order' => 1,
+        'is_hidden' => false,
+    ]);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-comedy',
+        'pin_rank' => null,
+        'sort_order' => 2,
+        'is_hidden' => false,
+    ]);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-drama',
+        'pin_rank' => null,
+        'sort_order' => 3,
+        'is_hidden' => false,
+    ]);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $otherUser->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-drama',
+        'pin_rank' => null,
+        'sort_order' => 9,
+        'is_hidden' => true,
+    ]);
+
+    $response = test()->actingAs($user)
+        ->from(route('movies', ['category' => 'movie-drama']))
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => ['movie-drama'],
+            'visible_ids' => ['movie-drama', 'movie-action', 'movie-comedy'],
+            'hidden_ids' => [],
+        ]);
+
+    $response->assertRedirect(route('movies', ['category' => 'movie-drama']));
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-drama',
+        'pin_rank' => 1,
+        'sort_order' => 3,
+        'is_hidden' => false,
+    ]);
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $otherUser->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-drama',
+        'pin_rank' => null,
+        'sort_order' => 9,
+        'is_hidden' => true,
+    ]);
+});
+
 it('resets only the requested media type and redirects back to the browse url', function (): void {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();

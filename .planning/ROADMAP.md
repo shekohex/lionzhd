@@ -32,8 +32,8 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 **Plans**: 4 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Add user-scoped preference storage and personalized sidebar contracts
-- [ ] 08-02-PLAN.md — Add instant-save preference mutation endpoints and scoped reset validation
+- [x] 08-01-PLAN.md — Add user-scoped preference storage and personalized sidebar contracts
+- [x] 08-02-PLAN.md — Add instant-save preference mutation endpoints and scoped reset validation
 - [ ] 08-03-PLAN.md — Build browse-attached desktop/mobile manage UI and recovery flows
 - [ ] 08-04-PLAN.md — Switch movies/series browse payloads to personalized sidebar data and add read-path regression coverage
 
@@ -81,7 +81,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 8. Personal Category Controls | 1/4 | In Progress|  |
+| 8. Personal Category Controls | 2/4 | In Progress|  |
 | 9. Ignored Discovery Filters | 0/TBD | Not started | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |

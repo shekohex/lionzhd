@@ -13,7 +13,7 @@ Requirements for milestone `v1.1 Category Personalization & Search UX`. Each map
 - [x] **PERS-02**: User can reorder visible categories for a media type and see that order persist across sessions
 - [x] **PERS-03**: User can pin up to 5 categories per media type and pinned categories stay above non-pinned categories
 - [x] **PERS-04**: User can hide a category from sidebar or navigation for a media type without affecting other users
-- [ ] **PERS-05**: User can reset category preferences for a media type back to the default synced order and visibility
+- [x] **PERS-05**: User can reset category preferences for a media type back to the default synced order and visibility
 
 ### Ignore Filters
 
@@ -75,7 +75,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-02 | Phase 8 | Complete |
 | PERS-03 | Phase 8 | Complete |
 | PERS-04 | Phase 8 | Complete |
-| PERS-05 | Phase 8 | Pending |
+| PERS-05 | Phase 8 | Complete |
 | IGNR-01 | Phase 9 | Pending |
 | IGNR-02 | Phase 9 | Pending |
 | NAVG-01 | Phase 10 | Pending |

@@ -15,7 +15,8 @@ final class SearchMediaData extends Data
 {
     public function __construct(
         public ?string $q,
-        public ?int $per_page,
+        #[Min(1)]
+        public int $per_page = 10,
         #[Min(1)]
         public ?int $page = 1,
         public ?MediaType $media_type = null,

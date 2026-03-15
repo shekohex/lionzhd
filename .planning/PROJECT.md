@@ -8,6 +8,17 @@ LionzHD is a Laravel + Inertia streaming companion for Xtream VOD and Series cat
 
 Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
 
+## Current Milestone: v1.1 Category Personalization & Search UX
+
+**Goal:** Make discovery feel user-owned by adding per-user category controls and fixing search filtering behavior across web and mobile.
+
+**Target features:**
+- Per-user category preferences for movies and series: reorder, pin up to 5, hide
+- Ignored categories remove matching titles from catalog listings for that user
+- Category labels visible on movie and series detail pages
+- Searchable category sidebar/navigation on web and mobile
+- Search media-type filtering fixed with adaptive full-width filtered results and regression coverage
+
 ## Current State
 
 - Latest shipped milestone: **v1** (2026-02-28)
@@ -37,10 +48,11 @@ Users can quickly find the right movie/series and reliably get their own downloa
 
 ### Active
 
-- [ ] Add automation controls for unplayed-only and capped queueing per series
-- [ ] Add external governance controls (quotas/rate limits + direct-link usage audit trail)
-- [ ] Close remaining operational hardening debt from manual smoke checklists (reliability/mobile)
-- [ ] Define next milestone roadmap and acceptance criteria
+- [ ] User can personalize movie and series category order per account, including pinning up to 5 categories
+- [ ] User can hide categories from sidebar/navigation without affecting default behavior for other users
+- [ ] User can ignore categories so matching movies and series are removed from their catalog listings
+- [ ] User can see all assigned categories on movie and series detail pages
+- [ ] User can search categories in sidebar/navigation on web and mobile, and search media-type filtering behaves correctly
 
 ### Out of Scope
 
@@ -76,12 +88,5 @@ Reference API source used for this milestone:
 | Keep aria2 and harden lifecycle behavior | Reduce risk of engine migration while solving current reliability issues | ✓ Shipped in v1 |
 | Keep infinite scroll on mobile and fix boundary logic | Preserve UX while addressing missed-item bug | ✓ Shipped in v1 |
 
-## Next Milestone Goals
-
-1. Expand automation controls (unplayed-only, queue caps, storage/download caps).
-2. Add governance and observability for External users.
-3. Convert manual smoke-check recommendations into automated or scripted validation where practical.
-4. Define and execute v1.x roadmap scope.
-
 ---
-*Last updated: 2026-02-28 after v1 milestone completion*
+*Last updated: 2026-03-15 after starting milestone v1.1*

@@ -2,26 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-28)
+See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Planning next milestone.
+**Current focus:** Milestone v1.1 Category Personalization & Search UX.
 
 ## Current Position
 
-Phase: Planning (next milestone)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-02-28 - v1 milestone archived and tagged prep complete
+Phase: Not started (defining requirements)
+Plan: -
+Status: Defining requirements
+Last activity: 2026-03-15 - Milestone v1.1 started
 
 Progress: [----------] 0%
-
-## Latest Milestone Stats (v1)
-
-- Phases completed: 7
-- Plans completed: 39
-- Tasks completed: 99
-- Timeline: 2026-02-25 -> 2026-02-28
 
 ## Accumulated Context
 

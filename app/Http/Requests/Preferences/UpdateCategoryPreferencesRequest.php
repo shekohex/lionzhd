@@ -21,13 +21,22 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'pinned_ids' => ['required', 'array', 'max:5'],
+            'pinned_ids' => ['present', 'array', 'max:5'],
             'pinned_ids.*' => ['string', 'distinct:strict'],
-            'visible_ids' => ['required', 'array'],
+            'visible_ids' => ['present', 'array'],
             'visible_ids.*' => ['string', 'distinct:strict'],
-            'hidden_ids' => ['required', 'array'],
+            'hidden_ids' => ['present', 'array'],
             'hidden_ids.*' => ['string', 'distinct:strict'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'pinned_ids' => $this->input('pinned_ids', []),
+            'visible_ids' => $this->input('visible_ids', []),
+            'hidden_ids' => $this->input('hidden_ids', []),
+        ]);
     }
 
     public function messages(): array

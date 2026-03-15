@@ -43,7 +43,8 @@ it('persists a category preference snapshot for the authenticated user and reque
             'hidden_ids' => ['movie-drama'],
         ]);
 
-    $response->assertRedirect($browseUrl);
+    $response->assertRedirect($browseUrl)
+        ->assertSessionHasNoErrors();
 
     assertDatabaseHas('user_category_preferences', [
         'user_id' => $user->id,
@@ -171,7 +172,8 @@ it('preserves stored non pinned order when pinning and isolates writes per user'
             'hidden_ids' => [],
         ]);
 
-    $response->assertRedirect(route('movies', ['category' => 'movie-drama']));
+    $response->assertRedirect(route('movies', ['category' => 'movie-drama']))
+        ->assertSessionHasNoErrors();
 
     assertDatabaseHas('user_category_preferences', [
         'user_id' => $user->id,
@@ -229,7 +231,8 @@ it('resets only the requested media type and redirects back to the browse url', 
         ->from($browseUrl)
         ->delete(route('category-preferences.reset', ['mediaType' => MediaType::Series->value]));
 
-    $response->assertRedirect($browseUrl);
+    $response->assertRedirect($browseUrl)
+        ->assertSessionHasNoErrors();
 
     assertDatabaseMissing('user_category_preferences', [
         'user_id' => $user->id,

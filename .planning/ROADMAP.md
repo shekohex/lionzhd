@@ -81,7 +81,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 8. Personal Category Controls | 0/4 | Not started | - |
+| 8. Personal Category Controls | 1/4 | In Progress|  |
 | 9. Ignored Discovery Filters | 0/TBD | Not started | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |

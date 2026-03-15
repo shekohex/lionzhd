@@ -1,157 +1,155 @@
 # Project Research Summary
 
-**Project:** LionzHD Streaming Platform Enhancements
-**Domain:** Xtream-based VOD/Series streaming companion (Laravel 12 + Inertia React) with multi-user access control, user-scoped downloads, and watchlist-driven automation (aria2-backed)
-**Researched:** 2026-02-25
+**Project:** LionzHD Streaming Platform Enhancements  
+**Domain:** Per-user category personalization + discovery/search UX for a Laravel 12 + Inertia React Xtream VOD/series app  
+**Researched:** 2026-03-15  
 **Confidence:** MEDIUM
 
 ## Executive Summary
 
-This milestone is a brownfield “streaming companion” for Xtream VOD/Series (not Live): fast category-based discovery, safe multi-user access, and reliable server-side downloading (aria2) with automation (watchlist → new episodes → downloads). Successful implementations treat external systems (Xtream + aria2) as flaky dependencies, keep the database as the source of truth for user intent/ownership, and harden scheduled work with idempotency + locks.
+This is a brownfield discovery enhancement on an existing Laravel monolith: the app already has category browsing, media sync, and search, and the v1.1 milestone must add user-owned category behavior without breaking global category semantics. Expert patterns for this type of project use an overlay approach—global taxonomy stays canonical, user preferences are stored separately, and UI behavior is driven from a shared, server-owned projection.
 
-Recommended approach: extend the existing Laravel monolith boundaries (Controllers → Actions → Jobs → Integrations) and ship in phases that establish invariants early: (1) authorization + ownership/tenancy and a fixture-based test strategy, (2) category identity + idempotent sync + stable pagination to fix mobile infinite-scroll, (3) download lifecycle reconciliation + safe storage boundaries, then (4) timezone-aware automation with strict dedupe/limits and provider rate controls.
+Recommended implementation is additive and action-driven. Add `user_category_preferences`, introduce shared actions for personalized sidebar build and ignored-category filtering, and keep all personalization-aware reads going through those actions. Use existing React primitives (`dnd-kit`, `cmdk`, Radix) and query-state via `nuqs` rather than inventing a new state architecture. The result is controllable, testable, and compatible with current Laravel + Inertia contracts.
 
-Main risks are correctness and trust killers: category collisions across provider/content types, RBAC/tenant isolation enforced only in UI/app code, and non-reconciled aria2 state causing stuck/phantom downloads. Mitigate with composite identity keys + DB constraints, centralized policy enforcement + canary isolation tests, and a DB-first download model with a periodic reconciler job (plus secure per-tenant paths and bounded retries).
+The highest risks are consistency risks: leaking personalization into shared tables, diverging hide/ignore semantics across endpoints, and filter timing bugs in search pagination. Keep semantics explicit, apply filters through one shared path, and gate rollout with a matrix-driven regression plan (per-user contrasts, pagination totals, and mode-specific search behavior).
 
 ## Key Findings
 
 ### Recommended Stack
 
-Stack is Laravel-native and operationally pragmatic: Redis-backed queues with Horizon for visibility, optional Reverb/Echo for real-time progress (otherwise controlled polling), and a first-party integration style (Saloon connectors) for Xtream + aria2 JSON-RPC. Avoid stale aria2 PHP clients; implement a small internal RPC client so reliability semantics (retry/backoff, batching, idempotency) match product needs.
+Stick to existing stack components and add only focused dependencies needed for reorder/search/persistence UX.
 
 **Core technologies:**
-- Redis OSS (7.x): queue backend + scheduler coordination + WS scaling — standard for Laravel Horizon/Reverb in production.
-- Laravel Horizon: queue observability + worker tuning — required once sync/reconcile/automation fan-out lands.
-- Laravel Reverb: first-party WebSocket server — best fit for download progress updates without third-party WS infra (optional if polling-only).
-- aria2c: download engine with resumable transfers — mature, RPC-driven, supports pause/resume and rich status.
+- **Laravel Eloquent + migrations (12.x):** powers per-user preference persistence and deterministic query behavior for browse/search.
+- **Laravel Scout + current search engine (`laravel/scout` 10.15.x, `meilisearch/meilisearch-php` 1.14.x):** keeps discovery search aligned with backend filtering when payloads/index settings are updated.
+- **`@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/modifiers` (6.3.1 / 10.0.0 / 9.0.0):** stable drag/drop + touch/keyboard patterns for sidebar and mobile sheet ordering.
+- **`cmdk` (1.1.1):** searchable category navigation in web + mobile flows; upgrade needed for React 19 compatibility.
+- **Pest + pest-browser + Playwright:** add end-to-end coverage for persistence, ordering, and search filter correctness.
+
+**Supporting version constraints:** `nuqs` 2.4.3 for URL query state, keep existing Radix primitives, avoid client-only filtering logic that bypasses server constraints.
 
 ### Expected Features
 
-The “trust” surface is dominated by discovery correctness (categories + mobile infinite scroll) and download correctness (ownership + lifecycle). Differentiation comes from per-user, timezone-aware series automation with strict guardrails.
+Research indicates a single-phase priority band: correctness-first personalization, then interaction polish.
 
 **Must have (table stakes):**
-- Categories browsing/filtering for VOD + Series (exclude Live) — discovery at scale.
-- Mobile category UX + infinite-scroll correctness — prevents skipped/duplicated items and UI jank.
-- RBAC (Admin vs Member) + Internal vs External policy — admin surfaces locked; external users constrained.
-- User-scoped downloads (visibility + ownership + authorization) — prevents privacy/correctness issues.
-- Download queue UX (pause/cancel/retry) + lifecycle reliability (progress/abort/resume) — core value.
+- Per-user category preference model for movies/series.
+- Reorder, pin (max 5), and hide categories in sidebar.
+- Ignore categories so matching titles disappear from discovery listings.
+- Category labels on movie/series detail pages.
+- Searchable category sidebar/navigation on web and mobile.
+- Correct `media_type` filtering + explicit query params.
+- Full-width results in single-type search modes.
+- Reset/recovery UX for aggressive hide/ignore states.
 
 **Should have (competitive):**
-- Per-user series auto-download schedules (hourly/daily/weekly) — watchlist becomes “set and forget”.
-- New-episode detection using Xtream episode IDs — deterministic automation trigger.
-- Smart episode rules (limits, unplayed-only) + self-healing retries — prevents runaway automation/support load.
-- External-member safe sharing (signed links + auditing/quotas) — controlled external access.
+- Explicit hide-vs-ignore semantics and copy.
+- Separate movie and series preference profiles.
+- Cross-device persistence of preferences.
+- Layout adaptation driven by media mode rather than cosmetic styling changes.
 
 **Defer (v2+):**
-- Bulk/offline library management (auto-download entire series/library) — high risk of storage/queue blowups.
-- Advanced integrity verification/repair workflows — only if corruption becomes common.
+- Bulk category management workflows.
+- Onboarding hints/tooltips for behavior interpretation.
+- Recommended pins or broader predictive personalization.
 
 ### Architecture Approach
 
-Keep the current monolith pattern and formalize key boundaries: controllers authorize + validate, actions implement business rules (idempotency, dedupe, path rules), jobs handle slow/flaky work, integrations own external API contracts. For downloads, prefer a DB-first intent model plus a reconciler that converges DB state with aria2, rather than treating aria2 as the source of truth.
+Use a **user-scoped overlay pattern** on global categories with shared query composition actions. Keep discovery reads centralized so ignored-category behavior cannot diverge by endpoint.
 
 **Major components:**
-1. Catalog (VOD/Series) — local cached catalog + search + stable pagination.
-2. Categories — scoped category identity + sync + facet filtering for browse.
-3. Access/RBAC — Admin vs Member plus Internal vs External policy gates.
-4. Downloads — user-owned download intents + UI state model + storage ownership.
-5. aria2 lifecycle — RPC client + reconciliation + anomaly handling + backoff.
-6. Automation (Series) — per-user subscriptions + scheduler coordinator + fan-out jobs.
+1. **`user_category_preferences` table/model + upsert action:** stores visibility/order/ignore/pin state by `user_id + media_type + category`.
+2. **Personalization actions:** build sidebar projection and apply ignored-category filters for all discovery paths.
+3. **Controllers/pages contract:** `VodStreamController`, `SeriesController`, `SearchController`, `LightweightSearchController`, and `category-sidebar.tsx` consume shared data contracts.
+4. **Testing layer:** feature tests for semantics and matrix/browser tests for reorder/search/mobile parity and filtered pagination.
 
 ### Critical Pitfalls
 
-1. **Category identity collisions** — scope categories by `{provider_account_id, content_type, remote_category_id}` and enforce with DB constraints; never key by name.
-2. **Non-idempotent sync/upsert** — define stable natural keys, use deterministic upserts + mark-and-sweep cleanup, and lock single-flight sync per provider/account.
-3. **RBAC/tenancy enforced in UI or ad-hoc checks** — centralize policies/middleware and add table-driven permission tests + cross-tenant canary tests.
-4. **Scheduled automation without idempotency/locking (plus DST bugs)** — at-least-once handlers, unique locks/dedupe keys, run tracking, timezone-aware next-run computation, DST tests.
-5. **aria2 divergence + unsafe download paths** — supervise aria2, secure RPC, periodic reconciliation, per-tenant root dirs, server-generated filenames, and path traversal tests.
+1. **Global-category state leakage** — writing user prefs into shared `categories` table breaks multi-user isolation.
+2. **Undeclared hide/ignore/pin semantics** — leads to inconsistent behavior across browse/search/sidebar/detail.
+3. **Surface-by-surface filtering only** — ignored titles vanish in one page but still appear elsewhere.
+4. **Post-pagination filtering** — search shows short/empty pages because ignored content was removed after pagination.
+5. **Unstable ordering** — mixing pin rank and default order without normalization causes drift and cap violations.
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+### Phase 1: Semantics contract + preference schema
+**Rationale:** Prevents irreversible product debt; all later work depends on invariant definitions.
+**Delivers:** behavior contract, migration for `user_category_preferences`, request/data objects, `media_type` scoping, and pin/enforcement rules.
+**Addresses:** per-user preferences, reorder/pin/hide foundation, media-type separation.
+**Avoids:** Pitfalls 1, 2, 3.
 
-### Phase 0: Test/ops scaffolding (enables safe refactors)
-**Rationale:** All major work touches external integrations + multi-user safety; flaky “real service” tests will stall delivery and mask regressions.
-**Delivers:** Fixture-based Xtream payloads, aria2 RPC mocking boundary (or ephemeral local daemon in a small integration suite), baseline job observability (Horizon/Schedule monitor) in non-local envs.
-**Addresses:** Reliability hardening preconditions; protects every subsequent phase.
-**Avoids:** PITFALLS #11 (flaky tests), #6 (overlap untested).
+### Phase 2: Shared read-path integration
+**Rationale:** Correctness must be consistent before interaction polish.
+**Delivers:** new shared sidebar builder and ignored-category query action wired into movies/series browse and counters.
+**Addresses:** hide/ignore correctness, stable ordering, ignored-category filtering in browse.
+**Avoids:** Pitfalls 4 and 5.
 
-### Phase 1: Access + ownership/tenancy invariants (multi-user safety)
-**Rationale:** RBAC and ownership are cross-cutting; shipping features before invariants creates pervasive rework and silent leaks.
-**Delivers:** Admin vs Member roles, Internal vs External policy gates, admin-only route protection, user-scoped download ownership model, backfill/migration plan, permission matrix tests + cross-tenant canary tests.
-**Addresses:** FEATURES table stakes: RBAC, Internal/External, user-scoped downloads.
-**Avoids:** PITFALLS #3/#4/#5/#12.
+### Phase 3: Sidebar + write path implementation
+**Rationale:** UX for personalization is only safe after server contract is stable.
+**Delivers:** drag/drop and pin/hide/search interactions in desktop/mobile sidebar, optimistic local state, preference endpoint write path.
+**Addresses:** Searchable sidebar, reorder/pin/hide workflows, user-side controls.
+**Avoids:** Pitfalls 6 and 10 (mobile parity and regressions).
 
-### Phase 2: Discovery UX (categories + stable pagination + mobile infinite scroll)
-**Rationale:** Discovery is the first trust touchpoint; correctness depends on stable server pagination and properly-scoped category identity.
-**Delivers:** Category tables with scoped identity, idempotent category sync, item↔category mapping, sidebar browse/filter for movies + series, stable paginator contract (`withQueryString`, deterministic ordering), mobile infinite-scroll boundary fix (optionally add list virtualization).
-**Uses:** spatie/laravel-query-builder (allow-listed filters/sorts/includes), React Query/Virtual where appropriate.
-**Avoids:** PITFALLS #1/#2 and “infinite scroll without stable ordering”.
+### Phase 4: Search/detail integration
+**Rationale:** Search is the largest trust surface; fixed filtering must be end-to-end.
+**Delivers:** explicit search params (`media_type`, `sort_by`), single-mode filtered results, pagination correctness, detail category labels via local lookup.
+**Addresses:** search bugfix + filtered full-width mode + category visibility context.
+**Avoids:** Pitfalls 7 and 8.
 
-### Phase 3: Download lifecycle hardening (aria2 reconciliation + safe storage)
-**Rationale:** The product’s core value collapses if downloads are flaky; hardening requires DB-first orchestration, safe path rules, and reconciliation semantics.
-**Delivers:** DB-first download intent (unique by user+media), secure aria2 JSON-RPC client, pause/cancel/retry/resume semantics, periodic reconciliation job with anomaly handling, safe per-tenant/per-user storage roots + server-generated filenames + atomic moves, improved error visibility in UI; optional Reverb/Echo real-time progress.
-**Uses:** Redis + Horizon; (optional) Reverb + Echo + Pusher protocol.
-**Avoids:** PITFALLS #8/#9.
-
-### Phase 4: Watchlist automation (timezone-aware + rate-limited)
-**Rationale:** Automation multiplies load and failure modes; only ship once RBAC/ownership + download reliability are stable.
-**Delivers:** Per-user schedules (hourly/daily/weekly) with explicit timezone and next-run UX, coordinator + fan-out jobs with dedupe/locks, new-episode detection by Xtream episode IDs, smart rules (limits/unplayed), bounded retries + dead-letter/alerts, provider rate limiting/backoff/circuit breaking.
-**Addresses:** Differentiators: per-user auto-download scheduling + new-episode detection + rules.
-**Avoids:** PITFALLS #6/#7/#10.
+### Phase 5: Validation, migration rollout, and smoke
+**Rationale:** Brownfield rollout requires controlled migration and proof of consistency.
+**Delivers:** matrix tests for all personalized states, migration/re-sync playbook, rollback and smoke checks.
+**Addresses:** production readiness and release confidence.
+**Avoids:** Pitfalls 9 and 10.
 
 ### Phase Ordering Rationale
-
-- Establish invariants first (authorization + ownership + test harness) so later features can be implemented once and verified.
-- Categories and mobile browsing correctness depend on stable pagination and correct identity scoping; do them before performance micro-optimizations.
-- Download hardening requires its own lifecycle model and reconciliation loop; treat it as a subsystem with explicit states and storage rules.
-- Automation is last because it amplifies provider load and operational risk; it must lean on idempotent download intents and hardened jobs.
+- Phased by dependency: model/semantics → shared read layer → mutations/UI → search contract → rollout hardening.
+- Prevents UX features from being built on inconsistent data behavior.
+- Aligns with architecture by isolating cross-cutting concern (`ignored`/`hidden`/`pin`) early.
 
 ### Research Flags
 
 Phases likely needing deeper research during planning:
-- **Phase 3 (Downloads hardening):** aria2 RPC edge cases (restart/session, missing GIDs), reconciliation semantics, safe file naming/path model, and whether to use WS (Reverb) vs controlled polling.
-- **Phase 4 (Automation):** timezone/DST modeling, schedule intent UX, provider variability in episode IDs, rate limiting strategy per provider/account.
+- **Phase 2:** confirm Scout/meilisearch constraint behavior vs DB search path in this repository’s exact driver configuration.
+- **Phase 4:** verify media-type pagination and single-mode payload shape under mixed results and filter combinations.
 
-Phases with standard patterns (skip research-phase):
-- **Phase 1 (RBAC/ownership):** standard Laravel policies/gates + DB constraints + table-driven tests.
-- **Phase 2 (Categories + pagination):** standard sync + allow-listed filtering + cursor/page invariants.
+Phases with standard patterns (skip deep research):
+- **Phase 1:** Laravel migration/actions and validation constraints.
+- **Phase 3:** `dnd-kit` + `cmdk` + `nuqs` usage in existing Inertia patterns.
+- **Phase 5:** test matrix + smoke checklist, rollback strategy.
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | MEDIUM | Versions validated via registries/Packagist; final choices depend on current runtime (PHP 8.2/8.3 vs 8.4) and existing infra. |
-| Features | MEDIUM | Table stakes/differentiators grounded in Plex/Emby/Jellyfin patterns; still needs validation against LionzHD’s specific user workflows. |
-| Architecture | MEDIUM | Aligns with existing monolith boundaries; details depend on current schema (teams/tenancy) and existing download model. |
-| Pitfalls | MEDIUM | Mix of official docs (aria2/Laravel/OWASP) and field experience; broadly consistent with multi-tenant + downloader systems. |
+| Stack | HIGH | Inputs reference existing versions and explicit compatibility checks in repository context. |
+| Features | MEDIUM | P1 scope well-defined; some behavioral edges depend on product decision around recovery UX. |
+| Architecture | HIGH | Strong fit with current action/controller structure and monolith boundaries. |
+| Pitfalls | HIGH | Clear, phase-mapped risks with concrete prevention checks. |
 
-**Overall confidence:** MEDIUM
+**Overall confidence:** HIGH-MEDIUM
 
 ### Gaps to Address
-
-- **Tenancy model reality:** confirm whether “team/tenant” is already modeled; if not, define minimal `tenant_id` strategy and backfill plan (or explicitly choose single-tenant + per-user isolation).
-- **Provider-account concept:** categories and sync keys assume `{provider_account_id, content_type, remote_id}`; validate how LionzHD represents Xtream credentials/accounts today.
-- **Progress delivery mechanism:** decide WS (Reverb) vs polling based on ops constraints; ensure UI state is consistent under aria2 restarts either way.
-- **Filesystem/runtime constraints:** confirm deployment environment for downloads (permissions, disk quotas, container volumes) to design safe per-tenant roots and cleanup policies.
+- **Category assignment model scope:** existing media models still rely heavily on single category references; decide if v1.1 keeps this as-is or starts normalized assignment migration.
+- **Search-engine capability variance:** final behavior differs if Scout is database-driver vs Meilisearch; lock this early in phase planning.
+- **Recovery UX wording and copy:** determine exact empty states/reset messaging before development.
 
 ## Sources
 
-### Primary (HIGH confidence)
-- Laravel docs (12.x) — scheduling, authorization: https://laravel.com/docs/12.x/scheduling , https://laravel.com/docs/12.x/authorization
-- aria2 manual — RPC interface + session concepts: https://aria2.github.io/manual/en/html/aria2c.html#rpc-interface
-- Packagist — Horizon/Reverb/Pulse/Spatie packages version constraints (see STACK.md sources)
-- npm registry — Echo/Pusher/React Query/React Virtual versions (see STACK.md sources)
+### Primary
+- `.planning/research/STACK.md`
+- `.planning/research/FEATURES.md`
+- `.planning/research/ARCHITECTURE.md`
+- `.planning/research/PITFALLS.md`
 
-### Secondary (MEDIUM confidence)
-- Plex Support — downloads UX/constraints: https://support.plex.tv/articles/downloads-overview/ (and related FAQ/iOS/Android pages)
-- Emby docs — offline access + auto-download semantics/limits: https://emby.media/support/articles/Offline-Access.html , https://emby.media/support/articles/Sync.html
-- Jellyfin docs — users/admin concept: https://jellyfin.org/docs/general/server/users/
-- PostgreSQL docs — Row Level Security concept (optional hardening): https://www.postgresql.org/docs/current/ddl-rowsecurity.html
+### Secondary
+- `.planning/PROJECT.md`
+- Filesets referenced throughout research files (controllers/actions/pages/tests)
 
-### Tertiary (LOW confidence)
-- Team experience patterns referenced in PITFALLS.md where not directly backed by official docs (treat as hypotheses to validate)
+### Tertiary
+- Official docs and package references linked in STACK and source files.
 
 ---
-*Research completed: 2026-02-25*
+*Research completed: 2026-03-15*
 *Ready for roadmap: yes*

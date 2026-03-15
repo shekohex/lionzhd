@@ -1,6 +1,9 @@
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
-import CategorySidebar from '@/components/category-sidebar';
+import CategorySidebar, {
+    type CategorySidebarMutationOptions,
+    type CategorySidebarPreferencesSnapshot,
+} from '@/components/category-sidebar';
 import MediaSection from '@/components/media-section';
 import { Button } from '@/components/ui/button';
 import { DualPagination } from '@/components/ui/enhanced-pagination';
@@ -40,6 +43,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const CATEGORY_LOAD_ERROR_MESSAGE = 'Unable to load categories right now. Please try again.';
+const CATEGORY_PREFERENCE_ERROR_MESSAGE = 'Unable to save your category changes right now. Please try again.';
+
+function firstCategoryPreferenceError(errors: Record<string, string>) {
+    return errors.pinned_ids ?? errors.visible_ids ?? errors.hidden_ids ?? CATEGORY_PREFERENCE_ERROR_MESSAGE;
+}
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
@@ -263,6 +271,51 @@ export default function Series() {
         });
     };
 
+    const handleSavePreferences = (
+        payload: CategorySidebarPreferencesSnapshot,
+        options?: CategorySidebarMutationOptions,
+    ) => {
+        router.patch(
+            route('category-preferences.update', { mediaType: 'series' }),
+            {
+                pinned_ids: payload.pinnedIds,
+                visible_ids: payload.visibleIds,
+                hidden_ids: payload.hiddenIds,
+            },
+            {
+                only: ['categories', 'filters'],
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    options?.onSuccess?.();
+                },
+                onError: (errors) => {
+                    options?.onError?.(firstCategoryPreferenceError(errors as Record<string, string>));
+                },
+                onFinish: () => {
+                    options?.onFinish?.();
+                },
+            },
+        );
+    };
+
+    const handleResetPreferences = (options?: CategorySidebarMutationOptions) => {
+        router.delete(route('category-preferences.reset', { mediaType: 'series' }), {
+            only: ['categories', 'filters'],
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                options?.onSuccess?.();
+            },
+            onError: () => {
+                options?.onError?.(CATEGORY_PREFERENCE_ERROR_MESSAGE);
+            },
+            onFinish: () => {
+                options?.onFinish?.();
+            },
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Series" />
@@ -276,9 +329,18 @@ export default function Series() {
                         onSelectCategory={handleSelectCategory}
                         error={categoryLoadError}
                         onRetryCategories={handleRetryCategories}
+                        onSavePreferences={handleSavePreferences}
+                        onResetPreferences={handleResetPreferences}
                     />
 
                     <div className="min-w-0 flex-1">
+                        {categories.selectedCategoryIsHidden ? (
+                            <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+                                {categories.selectedCategoryName
+                                    ? `${categories.selectedCategoryName} is hidden for your account. Current results stay visible until you switch categories or unhide it from the manager.`
+                                    : 'This category is hidden for your account. Current results stay visible until you switch categories or unhide it from the manager.'}
+                            </div>
+                        ) : null}
                         <MediaSection title="Latest TV Shows">
                             <SeriesResults
                                 key={resultsKey}

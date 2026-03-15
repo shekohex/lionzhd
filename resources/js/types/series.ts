@@ -8,13 +8,15 @@ export interface CategorySidebarItem {
     isUncategorized: boolean;
 }
 
+export type PersonalizedCategorySidebarData = App.Data.CategorySidebarData;
+
 export interface CategoryBrowseFilters {
     category: string | null;
 }
 
 export interface SeriesPageProps extends SharedData {
     series: Pagination<App.Data.SeriesData & App.Data.InWatchlistData>;
-    categories: CategorySidebarItem[];
+    categories: PersonalizedCategorySidebarData;
     filters: CategoryBrowseFilters;
 }
 

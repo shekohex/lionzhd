@@ -9,13 +9,15 @@ export interface CategorySidebarItem {
     isUncategorized: boolean;
 }
 
+export type PersonalizedCategorySidebarData = App.Data.CategorySidebarData;
+
 export interface CategoryBrowseFilters {
     category: string | null;
 }
 
 export interface MoviesPageProps extends SharedData {
     movies: Pagination<App.Data.VodStreamData & InWatchlist>;
-    categories: CategorySidebarItem[];
+    categories: PersonalizedCategorySidebarData;
     filters: CategoryBrowseFilters;
 }
 

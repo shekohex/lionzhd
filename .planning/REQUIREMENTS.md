@@ -71,26 +71,26 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERS-01 | — | Pending |
-| PERS-02 | — | Pending |
-| PERS-03 | — | Pending |
-| PERS-04 | — | Pending |
-| PERS-05 | — | Pending |
-| IGNR-01 | — | Pending |
-| IGNR-02 | — | Pending |
-| NAVG-01 | — | Pending |
-| SRCH-01 | — | Pending |
-| SRCH-02 | — | Pending |
-| SRCH-03 | — | Pending |
-| SRCH-04 | — | Pending |
-| CTXT-01 | — | Pending |
-| CTXT-02 | — | Pending |
+| PERS-01 | Phase 8 | Pending |
+| PERS-02 | Phase 8 | Pending |
+| PERS-03 | Phase 8 | Pending |
+| PERS-04 | Phase 8 | Pending |
+| PERS-05 | Phase 8 | Pending |
+| IGNR-01 | Phase 9 | Pending |
+| IGNR-02 | Phase 9 | Pending |
+| NAVG-01 | Phase 10 | Pending |
+| SRCH-01 | Phase 11 | Pending |
+| SRCH-02 | Phase 11 | Pending |
+| SRCH-03 | Phase 11 | Pending |
+| SRCH-04 | Phase 11 | Pending |
+| CTXT-01 | Phase 12 | Pending |
+| CTXT-02 | Phase 12 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 14 total
-- Mapped to phases: 0
-- Unmapped: 14 ⚠️
+- Mapped to phases: 14
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-15 after initial milestone definition*
+*Last updated: 2026-03-15 after roadmap creation*

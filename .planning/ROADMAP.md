@@ -29,7 +29,13 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
   3. User can pin up to 5 categories for a media type and pinned categories stay above non-pinned categories.
   4. User can hide a category from navigation for a media type without changing what another user sees.
   5. User can reset one media type back to default synced order and visibility.
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — Add user-scoped preference storage and personalized sidebar contracts
+- [ ] 08-02-PLAN.md — Add instant-save preference mutation endpoints and scoped reset validation
+- [ ] 08-03-PLAN.md — Build browse-attached desktop/mobile manage UI and recovery flows
+- [ ] 08-04-PLAN.md — Switch movies/series browse payloads to personalized sidebar data and add read-path regression coverage
 
 ### Phase 9: Ignored Discovery Filters
 **Goal**: Users can exclude unwanted categories from discovery results without losing a recovery path back to browseable state.
@@ -75,7 +81,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 8. Personal Category Controls | 0/TBD | Not started | - |
+| 8. Personal Category Controls | 0/4 | Not started | - |
 | 9. Ignored Discovery Filters | 0/TBD | Not started | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |

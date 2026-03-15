@@ -11,10 +11,24 @@ declare namespace App.Data {
     export type CategoryBrowseFiltersData = {
         category?: string;
     };
+    export type CategorySidebarData = {
+        visibleItems: Array<App.Data.CategorySidebarItemData>;
+        hiddenItems: Array<App.Data.CategorySidebarItemData>;
+        selectedCategoryIsHidden: boolean;
+        selectedCategoryName?: string;
+        pinLimit: number;
+        canReset: boolean;
+    };
     export type CategorySidebarItemData = {
         id: string;
         name: string;
         disabled: boolean;
+        canNavigate: boolean;
+        canEdit: boolean;
+        isPinned: boolean;
+        isHidden: boolean;
+        pinRank?: number;
+        sortOrder?: number;
         isUncategorized: boolean;
     };
     export type DiscoverMediaData = {
@@ -91,7 +105,7 @@ declare namespace App.Data {
     };
     export type SearchMediaData = {
         q?: string;
-        per_page?: number;
+        per_page: number;
         page?: number;
         media_type?: App.Enums.MediaType;
         sort_by?: App.Enums.SearchSortby;

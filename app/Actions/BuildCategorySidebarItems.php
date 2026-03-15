@@ -52,6 +52,12 @@ final class BuildCategorySidebarItems
                     id: $category->provider_id,
                     name: $category->name,
                     disabled: $count === 0 && $category->provider_id !== $selectedCategoryId,
+                    canNavigate: $count > 0 || $category->provider_id === $selectedCategoryId,
+                    canEdit: ! $isUncategorized,
+                    isPinned: false,
+                    isHidden: false,
+                    pinRank: null,
+                    sortOrder: null,
                     isUncategorized: $isUncategorized,
                 );
             })

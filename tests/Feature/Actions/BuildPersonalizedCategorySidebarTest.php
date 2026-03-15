@@ -167,6 +167,7 @@ it('keeps all categories first and uncategorized last without exposing fixed row
 function personalizedSidebarVisibleIds(CategorySidebarData $sidebar): array
 {
     return $sidebar->visibleItems
+        ->toCollection()
         ->filter(static fn (CategorySidebarItemData $item): bool => $item->id !== 'all-categories' && ! $item->isUncategorized)
         ->pluck('id')
         ->values()
@@ -176,6 +177,7 @@ function personalizedSidebarVisibleIds(CategorySidebarData $sidebar): array
 function personalizedSidebarHiddenIds(CategorySidebarData $sidebar): array
 {
     return $sidebar->hiddenItems
+        ->toCollection()
         ->pluck('id')
         ->values()
         ->all();
@@ -184,7 +186,9 @@ function personalizedSidebarHiddenIds(CategorySidebarData $sidebar): array
 function personalizedSidebarVisibleItem(CategorySidebarData $sidebar, string $id): CategorySidebarItemData
 {
     /** @var CategorySidebarItemData|null $item */
-    $item = $sidebar->visibleItems->first(static fn (CategorySidebarItemData $item): bool => $item->id === $id);
+    $item = $sidebar->visibleItems
+        ->toCollection()
+        ->first(static fn (CategorySidebarItemData $item): bool => $item->id === $id);
 
     if ($item === null) {
         throw new RuntimeException(sprintf('Visible item %s not found.', $id));

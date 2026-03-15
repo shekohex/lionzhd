@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-15T06:10:47Z"
-last_activity: 2026-03-15 - Completed 08-02 instant-save category preference endpoints and transactional reset contract
+stopped_at: Completed 08-04-PLAN.md
+last_updated: "2026-03-15T06:21:24Z"
+last_activity: 2026-03-15 - Completed 08-04 personalized browse payload read paths and discovery regression coverage
 progress:
   total_phases: 5
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -26,16 +26,16 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 ## Current Position
 
 Phase: 8 of 12 (Personal Category Controls)
-Plan: 2 of 4
+Plan: 3 of 4
 Status: In progress
-Last activity: 2026-03-15 - Completed 08-02 instant-save category preference endpoints and transactional reset contract
+Last activity: 2026-03-15 - Completed 08-04 personalized browse payload read paths and discovery regression coverage
 
-Progress: [█████-----] 50%
+Progress: [████████--] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 40
+- Total plans completed: 41
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -44,12 +44,12 @@ Progress: [█████-----] 50%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
-| 08 | 2 | 18 min | 9 min |
+| 08 | 3 | 23 min | 8 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-02 completed in 11 min; 08-01 completed in 7 min; earlier v1 history not itemized here
-- Trend: v1.1 phase 8 write-path work completed through plan 2
-- Phase 08-personal-category-controls P02 | 11 min | 2 tasks | 5 files |
+- Last 5 plans: 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min; earlier v1 history not itemized here
+- Trend: v1.1 phase 8 browse read-path work completed through plan 4 while 08-03 UI remains pending
+- Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -66,6 +66,8 @@ Progress: [█████-----] 50%
 - [Phase 08-personal-category-controls]: Sidebar items retain the legacy disabled flag while adding explicit navigation, edit, pin, and hidden state for later UI plans.
 - [Phase 08-personal-category-controls]: Browse-attached category preference mutations now use category-preferences.update/reset and always redirect back to the current movies or series URL.
 - [Phase 08-personal-category-controls]: Category preference writes persist pin_rank separately from sort_order so pinning keeps the stored non-pinned order needed for later unpin recovery.
+- [Phase 08-personal-category-controls]: Browse controllers now use BuildPersonalizedCategorySidebar so movie and series read paths stay aligned with the write/reset contract.
+- [Phase 08-personal-category-controls]: Hidden selected-category browse URLs keep rendering results while exposing recovery banner metadata for the UI.
 
 ### Pending Todos
 
@@ -78,6 +80,6 @@ Progress: [█████-----] 50%
 
 ## Session Continuity
 
-Last session: 2026-03-15T06:11:58.991Z
-Stopped at: Completed 08-02-PLAN.md
+Last session: 2026-03-15T06:21:24Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None

@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\MediaType;
 use App\Http\Controllers\DirectDownloadController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
+use App\Http\Controllers\Preferences\CategoryPreferenceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
 use App\Http\Controllers\AutoEpisodes\SeriesMonitoringBackfillController;
@@ -30,6 +32,13 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
 
     Route::post('/search', [LightweightSearchController::class, 'show'])->name('search.lightweight');
     Route::get('/search', [SearchController::class, 'show'])->name('search.full');
+
+    Route::patch('category-preferences/{mediaType}', [CategoryPreferenceController::class, 'update'])
+        ->whereIn('mediaType', [MediaType::Movie->value, MediaType::Series->value])
+        ->name('category-preferences.update');
+    Route::delete('category-preferences/{mediaType}', [CategoryPreferenceController::class, 'destroy'])
+        ->whereIn('mediaType', [MediaType::Movie->value, MediaType::Series->value])
+        ->name('category-preferences.reset');
 
     Route::controller(VodStreamController::class)->prefix('movies')->group(static function (): void {
         Route::get('/', 'index')->name('movies');

@@ -113,10 +113,10 @@ it('rejects invalid category ids for the requested media type snapshot', functio
         ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
             'pinned_ids' => ['movie-action'],
             'visible_ids' => ['all-categories', 'series-crime'],
-            'hidden_ids' => ['movie-action'],
+            'hidden_ids' => ['series-crime'],
         ]);
 
-    $response->assertSessionHasErrors(['visible_ids', 'hidden_ids']);
+    $response->assertSessionHasErrors(['visible_ids', 'hidden_ids', 'pinned_ids']);
 });
 
 it('resets only the requested media type and redirects back to the browse url', function (): void {

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\VodStream;
 
 use App\Actions\BuildPersonalizedCategorySidebar;
 use App\Data\CategoryBrowseFiltersData;
+use App\Data\CategoryBrowseRecoveryStateData;
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
@@ -42,12 +43,18 @@ final class VodStreamController extends Controller
             return to_route('movies')->with('warning', 'Category not found. Showing all categories.');
         }
 
-        $ignoredCategoryIds = $this->resolveIgnoredMovieCategoryIds($user);
+        $moviePreferenceCategoryIds = $this->resolveMoviePreferenceCategoryIds($user);
+        $hiddenCategoryIds = $moviePreferenceCategoryIds['hidden'];
+        $ignoredCategoryIds = $moviePreferenceCategoryIds['ignored'];
+        $selectedCategoryIsIgnored = $categoryId !== null && in_array($categoryId, $ignoredCategoryIds, true);
 
         $moviesQuery = VodStream::query()
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             }])
+            ->when($categoryId === null && $hiddenCategoryIds !== [], static function (Builder $query) use ($hiddenCategoryIds): void {
+                $query->whereNotIn('category_id', $hiddenCategoryIds);
+            })
             ->when($ignoredCategoryIds !== [], static function (Builder $query) use ($ignoredCategoryIds): void {
                 $query->whereNotIn('category_id', $ignoredCategoryIds);
             })
@@ -97,9 +104,17 @@ final class VodStreamController extends Controller
             ->appends(['as_of' => $asOf, 'as_of_id' => $asOfId])
             ->withQueryString();
 
+        $recovery = $this->resolveRecoveryState(
+            categoryId: $categoryId,
+            selectedCategoryIsIgnored: $selectedCategoryIsIgnored,
+            hiddenCategoryIds: $hiddenCategoryIds,
+            ignoredCategoryIds: $ignoredCategoryIds,
+            hasResults: $movies->total() > 0,
+        );
+
         return Inertia::render('movies/index', [
             'movies' => fn () => $movies,
-            'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId, recovery: null),
+            'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId, recovery: $recovery),
             'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Movie, $categoryId),
         ]);
     }
@@ -134,16 +149,66 @@ final class VodStreamController extends Controller
         return $resolved > 0 ? $resolved : null;
     }
 
-    private function resolveIgnoredMovieCategoryIds(User $user): array
+    private function resolveMoviePreferenceCategoryIds(User $user): array
     {
-        return UserCategoryPreference::query()
+        $preferences = UserCategoryPreference::query()
             ->where('user_id', $user->getKey())
             ->where('media_type', MediaType::Movie->value)
-            ->where('is_ignored', true)
+            ->get(['category_provider_id', 'is_hidden', 'is_ignored']);
+
+        $resolveIds = static fn (string $column) => $preferences
+            ->where($column, true)
             ->pluck('category_provider_id')
             ->filter(static fn (mixed $value): bool => is_string($value) && $value !== '')
             ->values()
             ->all();
+
+        return [
+            'hidden' => $resolveIds('is_hidden'),
+            'ignored' => $resolveIds('is_ignored'),
+        ];
+    }
+
+    private function resolveRecoveryState(
+        ?string $categoryId,
+        bool $selectedCategoryIsIgnored,
+        array $hiddenCategoryIds,
+        array $ignoredCategoryIds,
+        bool $hasResults,
+    ): ?CategoryBrowseRecoveryStateData {
+        if ($selectedCategoryIsIgnored) {
+            return new CategoryBrowseRecoveryStateData(
+                allCategoriesEmptyDueToIgnored: true,
+                allCategoriesEmptyDueToHidden: false,
+            );
+        }
+
+        if ($categoryId !== null || $hasResults) {
+            return null;
+        }
+
+        $allCategoriesEmptyDueToIgnored = $this->categoryIdsContainMovies($ignoredCategoryIds);
+        $allCategoriesEmptyDueToHidden = $this->categoryIdsContainMovies($hiddenCategoryIds);
+
+        if (! $allCategoriesEmptyDueToIgnored && ! $allCategoriesEmptyDueToHidden) {
+            return null;
+        }
+
+        return new CategoryBrowseRecoveryStateData(
+            allCategoriesEmptyDueToIgnored: $allCategoriesEmptyDueToIgnored,
+            allCategoriesEmptyDueToHidden: $allCategoriesEmptyDueToHidden,
+        );
+    }
+
+    private function categoryIdsContainMovies(array $categoryIds): bool
+    {
+        if ($categoryIds === []) {
+            return false;
+        }
+
+        return VodStream::query()
+            ->whereIn('category_id', $categoryIds)
+            ->exists();
     }
 
     /**

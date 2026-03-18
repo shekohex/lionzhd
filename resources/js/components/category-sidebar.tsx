@@ -3,7 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, ListFilterIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CategorySidebarBrowse } from './category-sidebar/browse';
 import { CategorySidebarManage } from './category-sidebar/manage';
 import {
@@ -15,6 +15,7 @@ import {
 } from './category-sidebar/types';
 
 export { type CategorySidebarMutationOptions, type CategorySidebarPreferencesSnapshot };
+export { type CategorySidebarData, type CategorySidebarItem };
 
 const ALL_CATEGORIES_ID = 'all-categories';
 
@@ -32,13 +33,15 @@ function buildEditableGroups(categories: CategorySidebarData | null | undefined)
                 canEdit: false,
                 isPinned: false,
                 isHidden: false,
+                isIgnored: false,
                 pinRank: undefined,
                 sortOrder: undefined,
                 isUncategorized: false,
             } satisfies CategorySidebarItem),
         uncategorizedItem: visibleItems.find((item) => item.isUncategorized) ?? null,
-        pinnedItems: visibleItems.filter((item) => item.canEdit && item.isPinned && !item.isUncategorized),
-        visibleItems: visibleItems.filter((item) => item.canEdit && !item.isPinned && !item.isUncategorized),
+        pinnedItems: visibleItems.filter((item) => item.canEdit && item.isPinned && !item.isIgnored && !item.isUncategorized),
+        visibleItems: visibleItems.filter((item) => item.canEdit && !item.isPinned && !item.isIgnored && !item.isUncategorized),
+        ignoredVisibleItems: visibleItems.filter((item) => item.canEdit && item.isIgnored && !item.isUncategorized),
         hiddenItems: (categories?.hiddenItems ?? []).filter((item) => item.canEdit && !item.isUncategorized),
     };
 }
@@ -46,12 +49,14 @@ function buildEditableGroups(categories: CategorySidebarData | null | undefined)
 function buildSnapshot(
     pinnedItems: CategorySidebarItem[],
     visibleItems: CategorySidebarItem[],
+    ignoredVisibleItems: CategorySidebarItem[],
     hiddenItems: CategorySidebarItem[],
 ): CategorySidebarPreferencesSnapshot {
     return {
         pinnedIds: pinnedItems.map((item) => item.id),
         visibleIds: [...pinnedItems, ...visibleItems].map((item) => item.id),
         hiddenIds: hiddenItems.map((item) => item.id),
+        ignoredIds: ignoredVisibleItems.map((item) => item.id),
     };
 }
 
@@ -76,6 +81,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         onSelectCategory,
         onSavePreferences,
         onResetPreferences,
+        manageRequestKey,
         className,
     } = props;
 
@@ -86,7 +92,9 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
     const [pinnedItems, setPinnedItems] = useState<CategorySidebarItem[]>([]);
     const [visibleItems, setVisibleItems] = useState<CategorySidebarItem[]>([]);
+    const [ignoredVisibleItems, setIgnoredVisibleItems] = useState<CategorySidebarItem[]>([]);
     const [hiddenItems, setHiddenItems] = useState<CategorySidebarItem[]>([]);
+    const lastManageRequestKey = useRef<number | undefined>(manageRequestKey);
 
     const canManage = typeof onSavePreferences === 'function';
     const pinLimit = categories?.pinLimit ?? 5;
@@ -97,31 +105,49 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         const nextGroups = buildEditableGroups(categories);
         setPinnedItems(nextGroups.pinnedItems);
         setVisibleItems(nextGroups.visibleItems);
+        setIgnoredVisibleItems(nextGroups.ignoredVisibleItems);
         setHiddenItems(nextGroups.hiddenItems);
         setFeedback(null);
     }, [categories]);
 
+    useEffect(() => {
+        if (manageRequestKey === undefined || manageRequestKey === lastManageRequestKey.current) {
+            return;
+        }
+
+        lastManageRequestKey.current = manageRequestKey;
+
+        if (manageRequestKey > 0) {
+            setView('manage');
+            setIsMobileSheetOpen(true);
+        }
+    }, [manageRequestKey]);
+
     const runSave = (
         nextPinnedItems: CategorySidebarItem[],
         nextVisibleItems: CategorySidebarItem[],
+        nextIgnoredVisibleItems: CategorySidebarItem[],
         nextHiddenItems: CategorySidebarItem[],
     ) => {
         const previousPinnedItems = pinnedItems;
         const previousVisibleItems = visibleItems;
+        const previousIgnoredVisibleItems = ignoredVisibleItems;
         const previousHiddenItems = hiddenItems;
 
         setPinnedItems(nextPinnedItems);
         setVisibleItems(nextVisibleItems);
+        setIgnoredVisibleItems(nextIgnoredVisibleItems);
         setHiddenItems(nextHiddenItems);
         setFeedback(null);
 
         if (!onSavePreferences) return;
 
         setIsSaving(true);
-        onSavePreferences(buildSnapshot(nextPinnedItems, nextVisibleItems, nextHiddenItems), {
+        onSavePreferences(buildSnapshot(nextPinnedItems, nextVisibleItems, nextIgnoredVisibleItems, nextHiddenItems), {
             onError: (message) => {
                 setPinnedItems(previousPinnedItems);
                 setVisibleItems(previousVisibleItems);
+                setIgnoredVisibleItems(previousIgnoredVisibleItems);
                 setHiddenItems(previousHiddenItems);
                 setFeedback(message);
             },
@@ -135,7 +161,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         if (item.isPinned) {
             const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
             const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isPinned: false, pinRank: undefined }]);
-            runSave(nextPinnedItems, nextVisibleItems, hiddenItems);
+            runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, hiddenItems);
             return;
         }
 
@@ -146,7 +172,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
         const nextVisibleItems = visibleItems.filter((entry) => entry.id !== item.id);
         const nextPinnedItems = [...pinnedItems, { ...item, isPinned: true }];
-        runSave(nextPinnedItems, nextVisibleItems, hiddenItems);
+        runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, hiddenItems);
     };
 
     const handleHide = (item: CategorySidebarItem) => {
@@ -159,7 +185,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
             { ...item, isPinned: false, isHidden: true, pinRank: undefined },
         ]);
 
-        runSave(nextPinnedItems, nextVisibleItems, nextHiddenItems);
+        runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);
     };
 
     const handleUnhide = (item: CategorySidebarItem) => {
@@ -168,14 +194,14 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         const nextHiddenItems = hiddenItems.filter((entry) => entry.id !== item.id);
         const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isHidden: false, isPinned: false, pinRank: undefined }]);
 
-        runSave(pinnedItems, nextVisibleItems, nextHiddenItems);
+        runSave(pinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);
     };
 
     const handleReorder = (group: 'pinned' | 'visible', nextItems: CategorySidebarItem[]) => {
         if (group === 'pinned') {
-            runSave(nextItems, visibleItems, hiddenItems);
+            runSave(nextItems, visibleItems, ignoredVisibleItems, hiddenItems);
         } else {
-            runSave(pinnedItems, nextItems, hiddenItems);
+            runSave(pinnedItems, nextItems, ignoredVisibleItems, hiddenItems);
         }
     };
 

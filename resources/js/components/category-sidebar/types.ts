@@ -7,6 +7,7 @@ export interface CategorySidebarPreferencesSnapshot {
     pinnedIds: string[];
     visibleIds: string[];
     hiddenIds: string[];
+    ignoredIds: string[];
 }
 
 export interface CategorySidebarMutationOptions {
@@ -28,6 +29,7 @@ export interface CategorySidebarProps {
         options?: CategorySidebarMutationOptions,
     ) => void;
     onResetPreferences?: (options?: CategorySidebarMutationOptions) => void;
+    manageRequestKey?: number;
     className?: string;
 }
 

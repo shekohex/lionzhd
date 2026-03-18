@@ -73,6 +73,19 @@ function orderBySortOrder(items: CategorySidebarItem[]) {
     });
 }
 
+function orderByPinRank(items: CategorySidebarItem[]) {
+    return [...items].sort((left, right) => {
+        const leftRank = left.pinRank ?? Number.MAX_SAFE_INTEGER;
+        const rightRank = right.pinRank ?? Number.MAX_SAFE_INTEGER;
+
+        if (leftRank !== rightRank) {
+            return leftRank - rightRank;
+        }
+
+        return left.name.localeCompare(right.name);
+    });
+}
+
 export default function CategorySidebar(props: CategorySidebarProps) {
     const {
         title,
@@ -157,6 +170,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
     const handleTogglePin = (item: CategorySidebarItem) => {
         if (isSaving) return;
+        if (item.isIgnored) return;
 
         if (item.isPinned) {
             const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
@@ -180,12 +194,13 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
         const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
         const nextVisibleItems = visibleItems.filter((entry) => entry.id !== item.id);
+        const nextIgnoredVisibleItems = ignoredVisibleItems.filter((entry) => entry.id !== item.id);
         const nextHiddenItems = orderBySortOrder([
             ...hiddenItems,
-            { ...item, isPinned: false, isHidden: true, pinRank: undefined },
+            { ...item, isPinned: false, isHidden: true, isIgnored: false, pinRank: undefined },
         ]);
 
-        runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);
+        runSave(nextPinnedItems, nextVisibleItems, nextIgnoredVisibleItems, nextHiddenItems);
     };
 
     const handleUnhide = (item: CategorySidebarItem) => {
@@ -195,6 +210,35 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isHidden: false, isPinned: false, pinRank: undefined }]);
 
         runSave(pinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);
+    };
+
+    const handleIgnore = (item: CategorySidebarItem) => {
+        if (isSaving || item.isIgnored) return;
+
+        const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
+        const nextVisibleItems = visibleItems.filter((entry) => entry.id !== item.id);
+        const nextIgnoredVisibleItems = orderBySortOrder([
+            ...ignoredVisibleItems,
+            { ...item, isHidden: false, isIgnored: true },
+        ]);
+
+        runSave(nextPinnedItems, nextVisibleItems, nextIgnoredVisibleItems, hiddenItems);
+    };
+
+    const handleUnignore = (item: CategorySidebarItem) => {
+        if (isSaving || !item.isIgnored) return;
+
+        const nextIgnoredVisibleItems = ignoredVisibleItems.filter((entry) => entry.id !== item.id);
+
+        if (item.isPinned) {
+            const nextPinnedItems = orderByPinRank([...pinnedItems, { ...item, isIgnored: false }]);
+            runSave(nextPinnedItems, visibleItems, nextIgnoredVisibleItems, hiddenItems);
+
+            return;
+        }
+
+        const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isIgnored: false }]);
+        runSave(pinnedItems, nextVisibleItems, nextIgnoredVisibleItems, hiddenItems);
     };
 
     const handleReorder = (group: 'pinned' | 'visible', nextItems: CategorySidebarItem[]) => {
@@ -223,6 +267,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
     const commonManageProps = {
         pinnedItems,
         visibleItems,
+        ignoredVisibleItems,
         hiddenItems,
         allCategoriesItem,
         uncategorizedItem,
@@ -230,6 +275,8 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         feedback,
         pinLimit,
         onTogglePin: handleTogglePin,
+        onIgnore: handleIgnore,
+        onUnignore: handleUnignore,
         onHide: handleHide,
         onUnhide: handleUnhide,
         onReorder: handleReorder,
@@ -240,11 +287,14 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         ...props,
         pinnedItems,
         visibleItems,
+        ignoredVisibleItems,
         allCategoriesItem,
         uncategorizedItem,
         isSaving,
         canManage,
         onTogglePin: handleTogglePin,
+        onIgnore: handleIgnore,
+        onUnignore: handleUnignore,
         onHide: handleHide,
         onManage: () => setView('manage'),
         onSelectCategory: handleSelectAndClose,

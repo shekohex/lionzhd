@@ -20,7 +20,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, Pin, PinOff, RotateCcw } from 'lucide-react';
+import { Ban, ChevronDown, ChevronUp, Eye, EyeOff, GripVertical, Pin, PinOff, RotateCcw, Undo2 } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
 import { iconButtonClass, ManageCategoryRow } from './shared-ui';
 import { CategorySidebarItem, CategorySidebarProps } from './types';
@@ -28,6 +28,7 @@ import { CategorySidebarItem, CategorySidebarProps } from './types';
 interface CategorySidebarManageProps extends CategorySidebarProps {
     pinnedItems: CategorySidebarItem[];
     visibleItems: CategorySidebarItem[];
+    ignoredVisibleItems: CategorySidebarItem[];
     hiddenItems: CategorySidebarItem[];
     allCategoriesItem: CategorySidebarItem;
     uncategorizedItem: CategorySidebarItem | null;
@@ -36,6 +37,8 @@ interface CategorySidebarManageProps extends CategorySidebarProps {
     feedback: string | null;
     pinLimit: number;
     onTogglePin: (item: CategorySidebarItem) => void;
+    onIgnore: (item: CategorySidebarItem) => void;
+    onUnignore: (item: CategorySidebarItem) => void;
     onHide: (item: CategorySidebarItem) => void;
     onUnhide: (item: CategorySidebarItem) => void;
     onReorder: (group: 'pinned' | 'visible', nextItems: CategorySidebarItem[]) => void;
@@ -97,6 +100,7 @@ export function CategorySidebarManage({
     categories,
     pinnedItems,
     visibleItems,
+    ignoredVisibleItems,
     hiddenItems,
     allCategoriesItem,
     uncategorizedItem,
@@ -105,6 +109,8 @@ export function CategorySidebarManage({
     feedback,
     pinLimit,
     onTogglePin,
+    onIgnore,
+    onUnignore,
     onHide,
     onUnhide,
     onReorder,
@@ -173,6 +179,17 @@ export function CategorySidebarManage({
                 >
                     <Eye className="h-4 w-4" />
                 </button>
+            ) : item.isIgnored ? (
+                <button
+                    type="button"
+                    className={iconButtonClass()}
+                    onClick={() => onUnignore(item)}
+                    disabled={isSaving}
+                    aria-label={`Unignore ${item.name}`}
+                    title="Unignore category"
+                >
+                    <Undo2 className="h-4 w-4" />
+                </button>
             ) : (
                 <>
                     <button
@@ -194,6 +211,16 @@ export function CategorySidebarManage({
                         title="Hide category"
                     >
                         <EyeOff className="h-4 w-4" />
+                    </button>
+                    <button
+                        type="button"
+                        className={iconButtonClass()}
+                        onClick={() => onIgnore(item)}
+                        disabled={isSaving}
+                        aria-label={`Ignore ${item.name}`}
+                        title="Ignore category"
+                    >
+                        <Ban className="h-4 w-4" />
                     </button>
                 </>
             )}
@@ -232,6 +259,32 @@ export function CategorySidebarManage({
         );
     };
 
+    const renderIgnoredGroup = () => {
+        if (ignoredVisibleItems.length === 0) {
+            return null;
+        }
+
+        return (
+            <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Ignored</p>
+                    <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{ignoredVisibleItems.length}</span>
+                </div>
+                <div className="space-y-2">
+                    {ignoredVisibleItems.map((item) => (
+                        <ManageCategoryRow
+                            key={item.id}
+                            item={item}
+                            active={selectedCategory === item.id}
+                            actions={renderManageActions(item)}
+                            muted
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <DndContext
             sensors={sensors}
@@ -255,7 +308,7 @@ export function CategorySidebarManage({
                         <div className="mb-4 space-y-1">
                             <p className="text-sm font-bold">Preferences</p>
                             <p className="text-xs leading-relaxed text-muted-foreground">
-                                Pin up to {pinLimit} favorites and drag to reorder. Hidden categories won't appear in browse.
+                                Pin up to {pinLimit} favorites, hide categories from navigation, or ignore categories from results.
                             </p>
                         </div>
                         <Button
@@ -280,6 +333,7 @@ export function CategorySidebarManage({
                 <div className="space-y-5">
                     {renderManageGroup('Pinned', pinnedItems, 'pinned')}
                     {renderManageGroup('Visible', visibleItems, 'visible')}
+                    {renderIgnoredGroup()}
                 </div>
 
                 {uncategorizedItem && (

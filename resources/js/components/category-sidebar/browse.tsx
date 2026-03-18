@@ -2,19 +2,22 @@ import EmptyState from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { EyeOff, Pin, PinOff, Settings2 } from 'lucide-react';
+import { Ban, EyeOff, Pin, PinOff, Settings2, Undo2 } from 'lucide-react';
 import { iconButtonClass } from './shared-ui';
 import { CategorySidebarItem, CategorySidebarProps } from './types';
 
 interface CategorySidebarBrowseProps extends CategorySidebarProps {
     pinnedItems: CategorySidebarItem[];
     visibleItems: CategorySidebarItem[];
+    ignoredVisibleItems: CategorySidebarItem[];
     allCategoriesItem: CategorySidebarItem;
     uncategorizedItem: CategorySidebarItem | null;
     isMobile?: boolean;
     isSaving: boolean;
     canManage: boolean;
     onTogglePin: (item: CategorySidebarItem) => void;
+    onIgnore: (item: CategorySidebarItem) => void;
+    onUnignore: (item: CategorySidebarItem) => void;
     onHide: (item: CategorySidebarItem) => void;
     onManage: () => void;
 }
@@ -27,11 +30,15 @@ export function CategorySidebarBrowse({
     onRetryCategories,
     pinnedItems,
     visibleItems,
+    ignoredVisibleItems,
     allCategoriesItem,
     uncategorizedItem,
+    isMobile = false,
     isSaving,
     canManage,
     onTogglePin,
+    onIgnore,
+    onUnignore,
     onHide,
     onManage,
 }: CategorySidebarBrowseProps) {
@@ -44,14 +51,23 @@ export function CategorySidebarBrowse({
             'group flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left text-sm transition-all duration-200',
             isSelected
                 ? 'border-primary/50 bg-primary/5 text-primary ring-1 ring-primary/20'
-                : 'border-transparent hover:border-border hover:bg-muted/80',
+                : item.isIgnored
+                    ? 'border-border/70 bg-muted/25 text-muted-foreground hover:border-border hover:bg-muted/40'
+                    : 'border-transparent hover:border-border hover:bg-muted/80',
             !item.canNavigate && 'cursor-not-allowed text-muted-foreground opacity-60',
         );
 
         if (item.canNavigate) {
             return (
                 <button type="button" className={buttonClassName} onClick={onSelect}>
-                    <span className="block whitespace-normal break-words font-medium leading-5">{item.name}</span>
+                    <span
+                        className={cn(
+                            'block whitespace-normal break-words font-medium leading-5',
+                            item.isIgnored && !isSelected && 'text-muted-foreground',
+                        )}
+                    >
+                        {item.name}
+                    </span>
                 </button>
             );
         }
@@ -78,36 +94,69 @@ export function CategorySidebarBrowse({
                 <div className="min-w-0 flex-1">
                     {renderNavigationButton(item, () => onSelectCategory(isSelected ? null : item.id))}
                 </div>
-                {item.canEdit && (
+                {item.canEdit && !isMobile && (
                     <div className="flex items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/row:opacity-100 pt-0.5">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    type="button"
-                                    className={iconButtonClass(item.isPinned)}
-                                    onClick={() => onTogglePin(item)}
-                                    disabled={isSaving}
-                                    aria-label={item.isPinned ? `Unpin ${item.name}` : `Pin ${item.name}`}
-                                >
-                                    {item.isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>{item.isPinned ? 'Unpin category' : 'Pin category'}</TooltipContent>
-                        </Tooltip>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <button
-                                    type="button"
-                                    className={iconButtonClass()}
-                                    onClick={() => onHide(item)}
-                                    disabled={isSaving}
-                                    aria-label={`Hide ${item.name}`}
-                                >
-                                    <EyeOff className="h-3.5 w-3.5" />
-                                </button>
-                            </TooltipTrigger>
-                            <TooltipContent>Hide category</TooltipContent>
-                        </Tooltip>
+                        {item.isIgnored ? (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        type="button"
+                                        className={iconButtonClass()}
+                                        onClick={() => onUnignore(item)}
+                                        disabled={isSaving}
+                                        aria-label={`Unignore ${item.name}`}
+                                    >
+                                        <Undo2 className="h-3.5 w-3.5" />
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>Unignore category</TooltipContent>
+                            </Tooltip>
+                        ) : (
+                            <>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className={iconButtonClass(item.isPinned)}
+                                            onClick={() => onTogglePin(item)}
+                                            disabled={isSaving}
+                                            aria-label={item.isPinned ? `Unpin ${item.name}` : `Pin ${item.name}`}
+                                        >
+                                            {item.isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>{item.isPinned ? 'Unpin category' : 'Pin category'}</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className={iconButtonClass()}
+                                            onClick={() => onIgnore(item)}
+                                            disabled={isSaving}
+                                            aria-label={`Ignore ${item.name}`}
+                                        >
+                                            <Ban className="h-3.5 w-3.5" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Ignore category</TooltipContent>
+                                </Tooltip>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            type="button"
+                                            className={iconButtonClass()}
+                                            onClick={() => onHide(item)}
+                                            disabled={isSaving}
+                                            aria-label={`Hide ${item.name}`}
+                                        >
+                                            <EyeOff className="h-3.5 w-3.5" />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Hide category</TooltipContent>
+                                </Tooltip>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
@@ -166,6 +215,7 @@ export function CategorySidebarBrowse({
                 <div>{renderNavigationButton(allCategoriesItem, () => onSelectCategory(null))}</div>
                 {pinnedItems.map((item) => renderVisibleBrowseRow(item))}
                 {visibleItems.map((item) => renderVisibleBrowseRow(item))}
+                {ignoredVisibleItems.map((item) => renderVisibleBrowseRow(item))}
                 {uncategorizedItem && (
                     <div>{renderNavigationButton(uncategorizedItem, () => onSelectCategory(uncategorizedItem.id))}</div>
                 )}

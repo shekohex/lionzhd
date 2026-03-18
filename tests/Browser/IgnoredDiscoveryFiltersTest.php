@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -173,6 +174,165 @@ if (! extension_loaded('sockets')) {
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
     })->group('browser');
+
+    it('shows series ignored category recovery in place and restores results on the same url after unignore', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-comedy', 'Comedy');
+
+        seedSeriesRecord(61_001, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(61_002, 'Comedy Nights', 'series-comedy');
+
+        updateCategoryPreferences($user, MediaType::Series, route('series'), [
+            'pinned_ids' => [],
+            'visible_ids' => ['series-comedy'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['series-drama'],
+        ]);
+
+        test()->actingAs($user);
+
+        $page = visit(route('series', ['category' => 'series-drama']))
+            ->waitForText('Series Categories')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('series-drama');
+
+        $page->click('Unignore and restore results')
+            ->waitForText('Drama Nights')
+            ->assertDontSee('This category is ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('series-drama');
+    })->group('browser');
+
+    it('uses manage first recovery for empty all categories series browse and keeps reset secondary', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-thriller', 'Thriller');
+
+        seedSeriesRecord(62_001, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(62_002, 'Thriller Nights', 'series-thriller');
+
+        updateCategoryPreferences($user, MediaType::Series, route('series'), [
+            'pinned_ids' => [],
+            'visible_ids' => [],
+            'hidden_ids' => ['series-drama'],
+            'ignored_ids' => ['series-thriller'],
+        ]);
+
+        test()->actingAs($user);
+
+        $page = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->waitForText('Your series view is empty')
+            ->assertSee('Manage categories')
+            ->assertSee('Reset preferences')
+            ->assertNoJavaScriptErrors();
+
+        $actions = $page->script(<<<'JS'
+            () => {
+                const root = Array.from(document.querySelectorAll('h3')).find((heading) =>
+                    heading.textContent?.includes('Your series view is empty')
+                )?.parentElement;
+
+                return Array.from(root?.querySelectorAll('button') ?? []).map((button) => button.textContent?.trim());
+            }
+        JS);
+
+        expect($actions)->toBe(['Manage categories', 'Reset preferences']);
+
+        $page->click('Manage categories')
+            ->waitForText('Preferences')
+            ->assertSee('Reset to default')
+            ->assertNoJavaScriptErrors();
+    })->group('browser');
+
+    it('keeps ignored series rows visible and selectable on desktop and mobile with muted affordances', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-comedy', 'Comedy');
+
+        seedSeriesRecord(63_001, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(63_002, 'Comedy Nights', 'series-comedy');
+
+        updateCategoryPreferences($user, MediaType::Series, route('series'), [
+            'pinned_ids' => [],
+            'visible_ids' => ['series-comedy'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['series-drama'],
+        ]);
+
+        test()->actingAs($user);
+
+        $page = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->assertNoJavaScriptErrors();
+
+        $desktopMetrics = ignoredRowMetrics($page, 'Drama');
+
+        expect($desktopMetrics['found'])->toBeTrue();
+        expect($desktopMetrics['className'])->toContain('bg-muted/25');
+        expect($desktopMetrics['rowText'])->toBe('Drama');
+
+        $page->click('Drama')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+
+        $mobilePage = visit(route('series'))
+            ->resize(390, 844)
+            ->waitForText('Series Categories')
+            ->assertNoJavaScriptErrors();
+
+        $opened = $mobilePage->script(<<<'JS'
+            () => {
+                const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                    candidate.textContent?.trim() === 'Series Categories' && candidate.offsetParent !== null
+                );
+
+                button?.click();
+
+                return Boolean(button);
+            }
+        JS);
+
+        expect($opened)->toBeTrue();
+
+        $mobilePage->waitForText('Drama')
+            ->assertNoJavaScriptErrors();
+
+        $mobileMetrics = ignoredRowMetrics($mobilePage, 'Drama');
+
+        expect($mobileMetrics['found'])->toBeTrue();
+        expect($mobileMetrics['className'])->toContain('bg-muted/25');
+        expect($mobileMetrics['rowText'])->toBe('Drama');
+
+        $selected = $mobilePage->script(<<<'JS'
+            () => {
+                const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                    candidate.textContent?.trim() === 'Drama' && candidate.offsetParent !== null
+                );
+
+                button?.click();
+
+                return Boolean(button);
+            }
+        JS);
+
+        expect($selected)->toBeTrue();
+
+        $mobilePage->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+    })->group('browser');
 }
 
 function createMovieCategory(string $providerId, string $name): void
@@ -182,6 +342,17 @@ function createMovieCategory(string $providerId, string $name): void
         'name' => $name,
         'in_vod' => true,
         'in_series' => false,
+        'is_system' => false,
+    ]);
+}
+
+function createSeriesCategory(string $providerId, string $name): void
+{
+    Category::query()->create([
+        'provider_id' => $providerId,
+        'name' => $name,
+        'in_vod' => false,
+        'in_series' => true,
         'is_system' => false,
     ]);
 }
@@ -202,6 +373,27 @@ function seedMovieRecord(int $streamId, string $name, string $categoryId): void
             ]);
         });
     });
+}
+
+function seedSeriesRecord(int $seriesId, string $name, string $categoryId): void
+{
+    DB::table('series')->insert([
+        'series_id' => $seriesId,
+        'num' => $seriesId,
+        'name' => $name,
+        'category_id' => $categoryId,
+        'cover' => 'https://example.com/cover.jpg',
+        'plot' => 'Plot',
+        'cast' => 'Cast',
+        'director' => 'Director',
+        'genre' => 'Genre',
+        'backdrop_path' => json_encode([], JSON_THROW_ON_ERROR),
+        'releaseDate' => '2026-03-18',
+        'rating' => 4.5,
+        'rating_5based' => 4.5,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 }
 
 function updateCategoryPreferences(User $user, MediaType $mediaType, string $from, array $payload): void

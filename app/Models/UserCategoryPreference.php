@@ -17,6 +17,7 @@ final class UserCategoryPreference extends Model
         'pin_rank',
         'sort_order',
         'is_hidden',
+        'is_ignored',
     ];
 
     protected function casts(): array
@@ -26,6 +27,7 @@ final class UserCategoryPreference extends Model
             'pin_rank' => 'integer',
             'sort_order' => 'integer',
             'is_hidden' => 'boolean',
+            'is_ignored' => 'boolean',
         ];
     }
 

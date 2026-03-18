@@ -25,6 +25,7 @@ final class CategoryPreferenceController extends Controller
             pinnedIds: array_values($validated['pinned_ids']),
             visibleIds: array_values($validated['visible_ids']),
             hiddenIds: array_values($validated['hidden_ids']),
+            ignoredIds: array_values($validated['ignored_ids']),
         );
 
         return back();

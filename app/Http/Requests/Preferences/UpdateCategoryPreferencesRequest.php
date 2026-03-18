@@ -27,6 +27,8 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
             'visible_ids.*' => ['string', 'distinct:strict'],
             'hidden_ids' => ['present', 'array'],
             'hidden_ids.*' => ['string', 'distinct:strict'],
+            'ignored_ids' => ['present', 'array'],
+            'ignored_ids.*' => ['string', 'distinct:strict'],
         ];
     }
 
@@ -36,6 +38,7 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
             'pinned_ids' => $this->input('pinned_ids', []),
             'visible_ids' => $this->input('visible_ids', []),
             'hidden_ids' => $this->input('hidden_ids', []),
+            'ignored_ids' => $this->input('ignored_ids', []),
         ]);
     }
 
@@ -57,6 +60,7 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
 
             $visibleIds = $this->normalizedList('visible_ids');
             $hiddenIds = $this->normalizedList('hidden_ids');
+            $ignoredIds = $this->normalizedList('ignored_ids');
             $pinnedIds = $this->normalizedList('pinned_ids');
             $editableIds = $this->editableCategoryIds($mediaType);
             $disallowedIds = [
@@ -67,14 +71,12 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
 
             $this->ensureValidIds($validator, 'visible_ids', $visibleIds, $editableIds, $disallowedIds);
             $this->ensureValidIds($validator, 'hidden_ids', $hiddenIds, $editableIds, $disallowedIds);
+            $this->ensureValidIds($validator, 'ignored_ids', $ignoredIds, $editableIds, $disallowedIds);
             $this->ensureValidIds($validator, 'pinned_ids', $pinnedIds, $editableIds, $disallowedIds);
 
-            $overlap = array_values(array_intersect($visibleIds, $hiddenIds));
-
-            if ($overlap !== []) {
-                $validator->errors()->add('visible_ids', 'A category cannot be both visible and hidden in the same snapshot.');
-                $validator->errors()->add('hidden_ids', 'A category cannot be both visible and hidden in the same snapshot.');
-            }
+            $this->ensureNoOverlap($validator, 'visible_ids', $visibleIds, 'hidden_ids', $hiddenIds, 'A category cannot be both visible and hidden in the same snapshot.');
+            $this->ensureNoOverlap($validator, 'visible_ids', $visibleIds, 'ignored_ids', $ignoredIds, 'A category cannot be both visible and ignored in the same snapshot.');
+            $this->ensureNoOverlap($validator, 'hidden_ids', $hiddenIds, 'ignored_ids', $ignoredIds, 'A category cannot be both hidden and ignored in the same snapshot.');
 
             $unpinnedVisibleIds = array_values(array_diff($pinnedIds, $visibleIds));
 
@@ -134,5 +136,15 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
         if (array_values(array_diff($ids, $editableIds, $disallowedIds)) !== []) {
             $validator->errors()->add($field, 'Every category id must belong to the requested media type.');
         }
+    }
+
+    private function ensureNoOverlap(Validator $validator, string $leftField, array $leftIds, string $rightField, array $rightIds, string $message): void
+    {
+        if (array_values(array_intersect($leftIds, $rightIds)) === []) {
+            return;
+        }
+
+        $validator->errors()->add($leftField, $message);
+        $validator->errors()->add($rightField, $message);
     }
 }

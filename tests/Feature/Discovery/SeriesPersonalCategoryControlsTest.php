@@ -142,6 +142,96 @@ it('resets only series preferences and restores default order after new categori
     expect(collect($moviesAfterReset->json('props.categories.hiddenItems'))->pluck('id')->all())->toBe(['movie-horror']);
 });
 
+it('excludes ignored series categories from all categories for the authenticated user', function (): void {
+    $user = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+
+    seedPersonalizedSeriesRecord(2301, 'series-action');
+    seedPersonalizedSeriesRecord(2302, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-drama'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.series.total', 1);
+
+    expect(seriesResultIds($response))->toBe([2301]);
+});
+
+it('keeps non-ignored series category listings isolated from ignored series categories', function (): void {
+    $user = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+
+    seedPersonalizedSeriesRecord(2401, 'series-action');
+    seedPersonalizedSeriesRecord(2402, 'series-action');
+    seedPersonalizedSeriesRecord(2403, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-drama'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user, ['category' => 'series-action']);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', 'series-action');
+    $response->assertJsonPath('props.series.total', 2);
+
+    expect(seriesResultIds($response))->toBe([2402, 2401]);
+});
+
+it('isolates ignored series filtering from other users and movie preferences', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+    createMoviePersonalCategory('movie-comedy', 'Comedy');
+
+    seedPersonalizedSeriesRecord(2501, 'series-action');
+    seedPersonalizedSeriesRecord(2502, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-drama'],
+    ]);
+
+    updateSeriesPersonalPreferences($otherUser, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-drama'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-action'],
+    ]);
+
+    updateMoviePersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => [],
+        'hidden_ids' => [],
+        'ignored_ids' => ['movie-comedy'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.series.total', 1);
+
+    expect(seriesResultIds($response))->toBe([2501]);
+});
+
 function seriesPersonalBrowseResponse(User $user, array $query = []): TestResponse
 {
     return test()->actingAs($user)
@@ -206,6 +296,11 @@ function seedPersonalizedSeriesRecord(int $seriesId, ?string $categoryId): void
         'created_at' => now(),
         'updated_at' => now(),
     ]);
+}
+
+function seriesResultIds(TestResponse $response): array
+{
+    return collect($response->json('props.series.data'))->pluck('series_id')->all();
 }
 
 function seriesVisibleIds(TestResponse $response): array

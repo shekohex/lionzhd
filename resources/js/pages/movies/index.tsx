@@ -12,7 +12,7 @@ import { useResizableSidebar } from '@/hooks/use-resizable-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { MoviesPageProps } from '@/types/movies';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { FilmIcon, GripVertical } from 'lucide-react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -70,7 +70,25 @@ interface MoviesResultsProps {
     isMobile: boolean;
     isSwitchingCategory: boolean;
     selectedCategory: string | null;
+    selectedCategoryIsIgnored: boolean;
+    selectedCategoryName?: string;
+    recovery: MoviesPageProps['filters']['recovery'];
     onResetToAllCategories: () => void;
+    onManageCategories: () => void;
+    onResetPreferences: () => void;
+    onUnignoreSelectedCategory: () => void;
+}
+
+function describeMovieRecoveryState(recovery: MoviesPageProps['filters']['recovery']) {
+    if (recovery?.allCategoriesEmptyDueToIgnored && recovery?.allCategoriesEmptyDueToHidden) {
+        return 'Ignored and hidden categories are filtering every movie out. Manage categories to restore your view, or reset preferences as a fallback.';
+    }
+
+    if (recovery?.allCategoriesEmptyDueToIgnored) {
+        return 'Ignored categories are filtering every movie out. Manage categories to restore your view, or reset preferences as a fallback.';
+    }
+
+    return 'Hidden categories are removing every movie from all categories. Manage categories to restore your view, or reset preferences as a fallback.';
 }
 
 function MoviesResults({
@@ -78,7 +96,13 @@ function MoviesResults({
     isMobile,
     isSwitchingCategory,
     selectedCategory,
+    selectedCategoryIsIgnored,
+    selectedCategoryName,
+    recovery,
     onResetToAllCategories,
+    onManageCategories,
+    onResetPreferences,
+    onUnignoreSelectedCategory,
 }: MoviesResultsProps) {
     const hasMovies = movies.total > 0;
     const rememberKey = `Movies/InfiniteScroll:${selectedCategory ?? 'all'}`;
@@ -101,6 +125,26 @@ function MoviesResults({
     }
 
     if (!hasMovies) {
+        if (selectedCategory !== null && selectedCategoryIsIgnored) {
+            return (
+                <EmptyState
+                    icon={<FilmIcon className="h-12 w-12" />}
+                    title="This category is ignored"
+                    description={
+                        selectedCategoryName
+                            ? `"${selectedCategoryName}" is currently ignored, so its movies stay hidden until you unignore it.`
+                            : 'This category is currently ignored, so its movies stay hidden until you unignore it.'
+                    }
+                    className="bg-muted/30"
+                    action={
+                        <Button type="button" onClick={onUnignoreSelectedCategory}>
+                            Unignore and restore results
+                        </Button>
+                    }
+                />
+            );
+        }
+
         if (selectedCategory !== null) {
             return (
                 <EmptyState
@@ -112,6 +156,27 @@ function MoviesResults({
                         <Button type="button" variant="outline" onClick={onResetToAllCategories}>
                             Show all categories
                         </Button>
+                    }
+                />
+            );
+        }
+
+        if (recovery?.allCategoriesEmptyDueToIgnored || recovery?.allCategoriesEmptyDueToHidden) {
+            return (
+                <EmptyState
+                    icon={<FilmIcon className="h-12 w-12" />}
+                    title="Your movie view is empty"
+                    description={describeMovieRecoveryState(recovery)}
+                    className="bg-muted/30"
+                    action={
+                        <div className="flex flex-col items-center gap-3 sm:flex-row">
+                            <Button type="button" onClick={onManageCategories}>
+                                Manage categories
+                            </Button>
+                            <Button type="button" variant="outline" onClick={onResetPreferences}>
+                                Reset preferences
+                            </Button>
+                        </div>
                     }
                 />
             );
@@ -199,15 +264,24 @@ export default function Movies() {
     const {
         isSwitchingCategory,
         categoryLoadError,
+        manageRequestKey,
         handleSelectCategory,
         handleRetryCategories,
         handleSavePreferences,
         handleResetPreferences,
+        handleUnignoreCategory,
+        requestManageMode,
     } = useCategoryBrowser({
         routeName: 'movies',
         mediaType: 'movie',
         only: ['movies', 'filters', 'categories'],
     });
+
+    const reloadMovies = () => {
+        router.reload({
+            only: ['movies', 'filters', 'categories'],
+        });
+    };
 
     const categoryHiddenBanner = categories.selectedCategoryIsHidden ? (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3.5 text-sm text-amber-900 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
@@ -228,7 +302,17 @@ export default function Movies() {
                 isMobile={isMobile}
                 isSwitchingCategory={isSwitchingCategory}
                 selectedCategory={selectedCategory}
+                selectedCategoryIsIgnored={categories.selectedCategoryIsIgnored}
+                selectedCategoryName={categories.selectedCategoryName}
+                recovery={filters.recovery}
                 onResetToAllCategories={() => handleSelectCategory(null, selectedCategory)}
+                onManageCategories={requestManageMode}
+                onResetPreferences={() => handleResetPreferences({ onSuccess: reloadMovies })}
+                onUnignoreSelectedCategory={() =>
+                    handleUnignoreCategory(selectedCategory, categories, {
+                        onSuccess: reloadMovies,
+                    })
+                }
             />
         </MediaSection>
     );
@@ -244,6 +328,7 @@ export default function Movies() {
             onRetryCategories={handleRetryCategories}
             onSavePreferences={handleSavePreferences}
             onResetPreferences={handleResetPreferences}
+            manageRequestKey={manageRequestKey}
             className="w-full"
         />
     );

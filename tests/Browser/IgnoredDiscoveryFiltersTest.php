@@ -127,19 +127,49 @@ if (! extension_loaded('sockets')) {
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
 
-        $page->resize(390, 844)
-            ->click('Movie Categories')
-            ->waitForText('Action')
+        $mobilePage = visit(route('movies'))
+            ->resize(390, 844)
+            ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        $mobileMetrics = ignoredRowMetrics($page, 'Action');
+        $opened = $mobilePage->script(<<<'JS'
+            () => {
+                const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                    candidate.textContent?.trim() === 'Movie Categories' && candidate.offsetParent !== null
+                );
+
+                button?.click();
+
+                return Boolean(button);
+            }
+        JS);
+
+        expect($opened)->toBeTrue();
+
+        $mobilePage->waitForText('Action')
+            ->assertNoJavaScriptErrors();
+
+        $mobileMetrics = ignoredRowMetrics($mobilePage, 'Action');
 
         expect($mobileMetrics['found'])->toBeTrue();
         expect($mobileMetrics['className'])->toContain('bg-muted/25');
         expect($mobileMetrics['rowText'])->toBe('Action');
 
-        $page->click('Action')
-            ->waitForText('This category is ignored')
+        $selected = $mobilePage->script(<<<'JS'
+            () => {
+                const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                    candidate.textContent?.trim() === 'Action' && candidate.offsetParent !== null
+                );
+
+                button?.click();
+
+                return Boolean(button);
+            }
+        JS);
+
+        expect($selected)->toBeTrue();
+
+        $mobilePage->waitForText('This category is ignored')
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
     })->group('browser');
@@ -206,7 +236,7 @@ function ignoredRowMetrics(object $page, string $label): array
         () => {
             const label = __LABEL__;
             const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
-                candidate.textContent?.trim() === label
+                candidate.textContent?.trim() === label && candidate.offsetParent !== null
             );
 
             return {

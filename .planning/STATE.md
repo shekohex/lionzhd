@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-03-15T06:21:24Z"
-last_activity: 2026-03-15 - Completed 08-04 personalized browse payload read paths and discovery regression coverage
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-03-18T04:18:46Z"
+last_activity: 2026-03-18 - Completed 08-03 browse-attached personal category controls and closed Phase 8
 progress:
   total_phases: 5
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 8 - Personal Category Controls.
+**Current focus:** Phase 8 complete - ready for Phase 9 planning.
 
 ## Current Position
 
 Phase: 8 of 12 (Personal Category Controls)
-Plan: 3 of 4
-Status: In progress
-Last activity: 2026-03-15 - Completed 08-04 personalized browse payload read paths and discovery regression coverage
+Plan: 4 of 4
+Status: Complete
+Last activity: 2026-03-18 - Completed 08-03 browse-attached personal category controls and closed Phase 8
 
-Progress: [████████--] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 41
+- Total plans completed: 43
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -44,12 +44,13 @@ Progress: [████████--] 75%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
-| 08 | 3 | 23 min | 8 min |
+| 08 | 4 | 24 min | 6 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min; earlier v1 history not itemized here
-- Trend: v1.1 phase 8 browse read-path work completed through plan 4 while 08-03 UI remains pending
+- Last 5 plans: 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min; earlier v1 history not itemized here
+- Trend: Phase 08 is complete and ready for Phase 9 planning.
 - Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
+- Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -68,6 +69,9 @@ Progress: [████████--] 75%
 - [Phase 08-personal-category-controls]: Category preference writes persist pin_rank separately from sort_order so pinning keeps the stored non-pinned order needed for later unpin recovery.
 - [Phase 08-personal-category-controls]: Browse controllers now use BuildPersonalizedCategorySidebar so movie and series read paths stay aligned with the write/reset contract.
 - [Phase 08-personal-category-controls]: Hidden selected-category browse URLs keep rendering results while exposing recovery banner metadata for the UI.
+- [Phase 08]: Manage mode stays attached to the existing desktop sidebar and mobile category sheet so personalization happens in browse.
+- [Phase 08]: Category preference changes save immediately through Inertia patch/delete requests without forcing navigation away from the current browse results.
+- [Phase 08]: Pinned and visible non-pinned categories reorder independently while hidden categories remain recoverable from a collapsed section.
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ Progress: [████████--] 75%
 
 ## Session Continuity
 
-Last session: 2026-03-15T06:21:24Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-03-18T04:18:46.257Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None

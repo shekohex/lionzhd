@@ -11,7 +11,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 
 ## Phases
 
-- [ ] **Phase 8: Personal Category Controls** - Per-user movie and series category order, pins, hide, and reset.
+- [x] **Phase 8: Personal Category Controls** - Per-user movie and series category order, pins, hide, and reset.
 - [ ] **Phase 9: Ignored Discovery Filters** - Ignored categories consistently remove titles from discovery with recovery states.
 - [ ] **Phase 10: Searchable Category Navigation** - Search categories inside web and mobile navigation.
 - [ ] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness.
@@ -34,7 +34,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 Plans:
 - [x] 08-01-PLAN.md — Add user-scoped preference storage and personalized sidebar contracts
 - [x] 08-02-PLAN.md — Add instant-save preference mutation endpoints and scoped reset validation
-- [ ] 08-03-PLAN.md — Build browse-attached desktop/mobile manage UI and recovery flows
+- [x] 08-03-PLAN.md — Build browse-attached desktop/mobile manage UI and recovery flows
 - [x] 08-04-PLAN.md — Switch movies/series browse payloads to personalized sidebar data and add read-path regression coverage
 
 ### Phase 9: Ignored Discovery Filters
@@ -81,7 +81,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 8. Personal Category Controls | 3/4 | In Progress|  |
+| 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
 | 9. Ignored Discovery Filters | 0/TBD | Not started | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |

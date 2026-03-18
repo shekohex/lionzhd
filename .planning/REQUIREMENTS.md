@@ -93,4 +93,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-18 after Phase 08 completion finalized*
+*Last updated: 2026-03-18 after Phase 09 browse recovery updates*

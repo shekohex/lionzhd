@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-04-PLAN.md
+stopped_at: Completed 09-03-PLAN.md
 last_updated: "2026-03-18T19:42:40.060Z"
-last_activity: 2026-03-18 - Completed 09-02 movie browse ignored filtering and recovery metadata
+last_activity: 2026-03-18 - Completed 09-03 series ignored browse filtering and recovery metadata
 progress:
   total_phases: 5
   completed_phases: 1
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is in progress after shipping movie browse ignored filtering and recovery metadata.
+**Current focus:** Phase 9 ignored discovery filters is in progress after shipping movie and series browse filtering plus recovery metadata.
 
 ## Current Position
 
 Phase: 9 of 12 (Ignored Discovery Filters)
 Plan: 4 of 6
 Status: In Progress
-Last activity: 2026-03-18 - Completed 09-02 movie browse ignored filtering and recovery metadata
+Last activity: 2026-03-18 - Completed 09-03 series ignored browse filtering and recovery metadata
 
 Progress: [██████████] 96%
 
@@ -48,15 +48,13 @@ Progress: [██████████] 96%
 | 09 | 4 | 25 min | 6.25 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-02 completed in 8 min; 09-03 completed in 6 min; 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min
+- Last 5 plans: 09-03 completed in 6 min; 09-02 completed in 8 min; 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min
 - Trend: Phase 09 now has movie and series browse recovery metadata in place, leaving shared mutation helpers and page UI recovery as the remaining work.
+- Phase 09-ignored-discovery-filters P03 | 6 min | 2 tasks | 2 files |
+- Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
 - Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
-- Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
 - Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
-| Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
-| Phase 09 P03 | 6 min | 2 tasks | 2 files |
-| Phase 09-ignored-discovery-filters P04 | 8 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -101,5 +99,5 @@ Progress: [██████████] 96%
 ## Session Continuity
 
 Last session: 2026-03-18T19:42:40.059Z
-Stopped at: Completed 09-04-PLAN.md
+Stopped at: Completed 09-03-PLAN.md
 Resume file: None

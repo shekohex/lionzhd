@@ -15,6 +15,7 @@ use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Category;
 use App\Models\Series;
 use App\Models\User;
+use App\Models\UserCategoryPreference;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +33,7 @@ final class SeriesController extends Controller
         $categoryId = $this->resolveCategoryId($request);
         $asOf = $this->resolveAsOf($request);
         $asOfId = $this->resolveAsOfId($request);
+        $ignoredCategoryIds = $this->resolveIgnoredSeriesCategoryIds($user);
 
         if ($categoryId !== null && ! $this->isValidSeriesCategory($categoryId)) {
             return to_route('series')->with('warning', 'Category not found. Showing all categories.');
@@ -41,6 +43,9 @@ final class SeriesController extends Controller
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             }])
+            ->when($ignoredCategoryIds !== [], static function (Builder $query) use ($ignoredCategoryIds): void {
+                $query->whereNotIn('category_id', $ignoredCategoryIds);
+            })
             ->when($categoryId !== null, function (Builder $query) use ($categoryId): void {
                 if ($categoryId === Category::UNCATEGORIZED_SERIES_PROVIDER_ID) {
                     $query->where(function (Builder $uncategorizedQuery) use ($categoryId): void {
@@ -145,6 +150,18 @@ final class SeriesController extends Controller
             ->where('in_series', true)
             ->where('provider_id', $categoryId)
             ->exists();
+    }
+
+    private function resolveIgnoredSeriesCategoryIds(User $user): array
+    {
+        return UserCategoryPreference::query()
+            ->where('user_id', $user->getKey())
+            ->where('media_type', MediaType::Series->value)
+            ->where('is_ignored', true)
+            ->pluck('category_provider_id')
+            ->filter(static fn (mixed $categoryId): bool => is_string($categoryId) && $categoryId !== '')
+            ->values()
+            ->all();
     }
 
     /**

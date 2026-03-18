@@ -232,6 +232,82 @@ it('isolates ignored series filtering from other users and movie preferences', f
     expect(seriesResultIds($response))->toBe([2501]);
 });
 
+it('keeps ignored series category recovery URLs selected without redirecting', function (): void {
+    $user = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+
+    seedPersonalizedSeriesRecord(2601, 'series-action');
+    seedPersonalizedSeriesRecord(2602, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-drama'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user, ['category' => 'series-drama']);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', 'series-drama');
+    $response->assertJsonPath('props.series.total', 0);
+    $response->assertJsonPath('props.categories.selectedCategoryIsIgnored', true);
+    $response->assertJsonPath('props.categories.selectedCategoryName', 'Drama');
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', false);
+});
+
+it('reports ignored-only all categories recovery causes for empty series browse results', function (): void {
+    $user = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+
+    seedPersonalizedSeriesRecord(2701, 'series-action');
+    seedPersonalizedSeriesRecord(2702, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => [],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-action', 'series-drama'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', null);
+    $response->assertJsonPath('props.series.total', 0);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', false);
+});
+
+it('reports mixed hidden and ignored recovery causes for empty all categories series browse results', function (): void {
+    $user = User::factory()->create();
+
+    createSeriesPersonalCategory('series-action', 'Action');
+    createSeriesPersonalCategory('series-drama', 'Drama');
+
+    seedPersonalizedSeriesRecord(2801, 'series-action');
+    seedPersonalizedSeriesRecord(2802, 'series-drama');
+
+    updateSeriesPersonalPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => [],
+        'hidden_ids' => ['series-drama'],
+        'ignored_ids' => ['series-action'],
+    ]);
+
+    $response = seriesPersonalBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.series.total', 0);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', true);
+});
+
 function seriesPersonalBrowseResponse(User $user, array $query = []): TestResponse
 {
     return test()->actingAs($user)

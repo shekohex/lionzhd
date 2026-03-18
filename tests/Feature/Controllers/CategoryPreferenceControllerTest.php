@@ -194,6 +194,196 @@ it('preserves stored non pinned order when pinning and isolates writes per user'
     ]);
 });
 
+it('accepts ignored ids, persists ignored rows separately from hidden rows, and keeps redirect back semantics for ignored snapshots', function (): void {
+    $user = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('movie-comedy', 'Comedy', inVod: true);
+    createCategory('movie-drama', 'Drama', inVod: true);
+
+    $browseUrl = route('movies', ['category' => 'movie-action', 'view' => 'grid']);
+
+    $response = test()->actingAs($user)
+        ->from($browseUrl)
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => ['movie-action'],
+            'visible_ids' => ['movie-action'],
+            'hidden_ids' => ['movie-drama'],
+            'ignored_ids' => ['movie-comedy'],
+        ]);
+
+    $response->assertRedirect($browseUrl)
+        ->assertSessionHasNoErrors();
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-action',
+        'pin_rank' => 1,
+        'is_hidden' => false,
+        'is_ignored' => false,
+    ]);
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-drama',
+        'pin_rank' => null,
+        'is_hidden' => true,
+        'is_ignored' => false,
+    ]);
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-comedy',
+        'pin_rank' => null,
+        'is_hidden' => false,
+        'is_ignored' => true,
+    ]);
+});
+
+it('preserves stored browse placement metadata when a pinned category becomes ignored', function (): void {
+    $user = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('movie-comedy', 'Comedy', inVod: true);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-action',
+        'pin_rank' => 1,
+        'sort_order' => 7,
+        'is_hidden' => false,
+    ]);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-comedy',
+        'pin_rank' => null,
+        'sort_order' => 8,
+        'is_hidden' => false,
+    ]);
+
+    test()->actingAs($user)
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => [],
+            'visible_ids' => ['movie-comedy'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['movie-action'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-action',
+        'pin_rank' => 1,
+        'sort_order' => 7,
+        'is_hidden' => false,
+        'is_ignored' => true,
+    ]);
+});
+
+it('keeps ignored writes isolated per media type and per user', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('movie-comedy', 'Comedy', inVod: true);
+    createCategory('series-crime', 'Crime', inSeries: true);
+    createCategory('series-drama', 'Drama', inSeries: true);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $otherUser->id,
+        'media_type' => MediaType::Series->value,
+        'category_provider_id' => 'series-drama',
+        'pin_rank' => null,
+        'sort_order' => 4,
+        'is_hidden' => false,
+    ]);
+
+    test()->actingAs($user)
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => [],
+            'visible_ids' => ['movie-action'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['movie-comedy'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    test()->actingAs($user)
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Series->value]), [
+            'pinned_ids' => [],
+            'visible_ids' => ['series-crime'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['series-drama'],
+        ])
+        ->assertSessionHasNoErrors();
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie->value,
+        'category_provider_id' => 'movie-comedy',
+        'is_ignored' => true,
+    ]);
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $user->id,
+        'media_type' => MediaType::Series->value,
+        'category_provider_id' => 'series-drama',
+        'is_ignored' => true,
+    ]);
+
+    assertDatabaseHas('user_category_preferences', [
+        'user_id' => $otherUser->id,
+        'media_type' => MediaType::Series->value,
+        'category_provider_id' => 'series-drama',
+        'sort_order' => 4,
+        'is_hidden' => false,
+        'is_ignored' => false,
+    ]);
+});
+
+it('rejects ignored ids that do not belong to the requested media type or fixed pseudo rows', function (): void {
+    $user = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('series-crime', 'Crime', inSeries: true);
+
+    $response = test()->actingAs($user)
+        ->from(route('movies'))
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => [],
+            'visible_ids' => ['movie-action'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['all-categories', Category::UNCATEGORIZED_VOD_PROVIDER_ID, 'series-crime'],
+        ]);
+
+    $response->assertSessionHasErrors(['ignored_ids']);
+});
+
+it('rejects overlapping visible hidden and ignored ids in the same snapshot', function (): void {
+    $user = User::factory()->create();
+
+    createCategory('movie-action', 'Action', inVod: true);
+    createCategory('movie-comedy', 'Comedy', inVod: true);
+
+    $response = test()->actingAs($user)
+        ->from(route('movies', ['category' => 'movie-action']))
+        ->patch(route('category-preferences.update', ['mediaType' => MediaType::Movie->value]), [
+            'pinned_ids' => ['movie-action'],
+            'visible_ids' => ['movie-action', 'movie-comedy'],
+            'hidden_ids' => ['movie-comedy'],
+            'ignored_ids' => ['movie-action'],
+        ]);
+
+    $response->assertRedirect(route('movies', ['category' => 'movie-action']))
+        ->assertSessionHasErrors(['visible_ids', 'hidden_ids', 'ignored_ids']);
+});
+
 it('resets only the requested media type and redirects back to the browse url', function (): void {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
@@ -270,5 +460,6 @@ function validSnapshot(): array
         'pinned_ids' => [],
         'visible_ids' => ['movie-action'],
         'hidden_ids' => [],
+        'ignored_ids' => [],
     ];
 }

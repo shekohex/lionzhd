@@ -23,5 +23,6 @@ final class CategorySidebarData extends Data
         public ?string $selectedCategoryName,
         public int $pinLimit,
         public bool $canReset,
+        public bool $selectedCategoryIsIgnored = false,
     ) {}
 }

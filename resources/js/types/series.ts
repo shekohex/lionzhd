@@ -9,10 +9,7 @@ export interface CategorySidebarItem {
 }
 
 export type PersonalizedCategorySidebarData = App.Data.CategorySidebarData;
-
-export interface CategoryBrowseFilters {
-    category: string | null;
-}
+export type CategoryBrowseFilters = App.Data.CategoryBrowseFiltersData;
 
 export interface SeriesPageProps extends SharedData {
     series: Pagination<App.Data.SeriesData & App.Data.InWatchlistData>;

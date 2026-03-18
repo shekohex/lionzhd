@@ -97,7 +97,7 @@ final class SeriesController extends Controller
 
         return Inertia::render('series/index', [
             'series' => fn () => $series,
-            'filters' => fn () => new CategoryBrowseFiltersData(category: $categoryId),
+            'filters' => fn () => new CategoryBrowseFiltersData(category: $categoryId, recovery: null),
             'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Series, $categoryId),
         ]);
     }

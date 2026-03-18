@@ -10,6 +10,11 @@ declare namespace App.Data {
     };
     export type CategoryBrowseFiltersData = {
         category?: string;
+        recovery?: App.Data.CategoryBrowseRecoveryStateData;
+    };
+    export type CategoryBrowseRecoveryStateData = {
+        allCategoriesEmptyDueToIgnored: boolean;
+        allCategoriesEmptyDueToHidden: boolean;
     };
     export type CategorySidebarData = {
         visibleItems: Array<App.Data.CategorySidebarItemData>;
@@ -18,6 +23,7 @@ declare namespace App.Data {
         selectedCategoryName?: string;
         pinLimit: number;
         canReset: boolean;
+        selectedCategoryIsIgnored: boolean;
     };
     export type CategorySidebarItemData = {
         id: string;
@@ -30,6 +36,7 @@ declare namespace App.Data {
         pinRank?: number;
         sortOrder?: number;
         isUncategorized: boolean;
+        isIgnored: boolean;
     };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;

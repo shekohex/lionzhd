@@ -56,6 +56,7 @@ final class BuildCategorySidebarItems
                     canEdit: ! $isUncategorized,
                     isPinned: false,
                     isHidden: false,
+                    isIgnored: false,
                     pinRank: null,
                     sortOrder: null,
                     isUncategorized: $isUncategorized,

@@ -8,10 +8,10 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
-final class CategoryBrowseFiltersData extends Data
+final class CategoryBrowseRecoveryStateData extends Data
 {
     public function __construct(
-        public ?string $category,
-        public ?CategoryBrowseRecoveryStateData $recovery,
+        public bool $allCategoriesEmptyDueToIgnored,
+        public bool $allCategoriesEmptyDueToHidden,
     ) {}
 }

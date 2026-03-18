@@ -93,7 +93,7 @@ final class VodStreamController extends Controller
 
         return Inertia::render('movies/index', [
             'movies' => fn () => $movies,
-            'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId),
+            'filters' => fn (): CategoryBrowseFiltersData => new CategoryBrowseFiltersData(category: $categoryId, recovery: null),
             'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Movie, $categoryId),
         ]);
     }

@@ -21,5 +21,6 @@ final class CategorySidebarItemData extends Data
         public ?int $pinRank,
         public ?int $sortOrder,
         public bool $isUncategorized,
+        public bool $isIgnored = false,
     ) {}
 }

@@ -10,10 +10,7 @@ export interface CategorySidebarItem {
 }
 
 export type PersonalizedCategorySidebarData = App.Data.CategorySidebarData;
-
-export interface CategoryBrowseFilters {
-    category: string | null;
-}
+export type CategoryBrowseFilters = App.Data.CategoryBrowseFiltersData;
 
 export interface MoviesPageProps extends SharedData {
     movies: Pagination<App.Data.VodStreamData & InWatchlist>;

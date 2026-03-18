@@ -169,6 +169,81 @@ it('ignored movie filtering is isolated from other users and series preferences'
     expect(movieBrowseNames($response))->toBe(['Movie Comedy', 'Movie Action']);
 });
 
+it('ignored movie category recovery keeps the selected URL and exposes metadata', function (): void {
+    $user = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-comedy', 'Comedy');
+
+    seedPersonalizedMovieRecord(1601, 'Movie Action', 'movie-action');
+    seedPersonalizedMovieRecord(1602, 'Movie Comedy', 'movie-comedy');
+
+    updateMoviePreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['movie-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['movie-comedy'],
+    ]);
+
+    $response = movieBrowseResponse($user, ['category' => 'movie-comedy']);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', 'movie-comedy');
+    $response->assertJsonPath('props.movies.total', 0);
+    $response->assertJsonPath('props.categories.selectedCategoryIsIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', false);
+});
+
+it('movie all categories recovery reports hidden-only empty causes', function (): void {
+    $user = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-drama', 'Drama');
+
+    seedPersonalizedMovieRecord(1701, 'Movie Action', 'movie-action');
+    seedPersonalizedMovieRecord(1702, 'Movie Drama', 'movie-drama');
+
+    updateMoviePreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => [],
+        'hidden_ids' => ['movie-action', 'movie-drama'],
+        'ignored_ids' => [],
+    ]);
+
+    $response = movieBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', null);
+    $response->assertJsonPath('props.movies.total', 0);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', false);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', true);
+});
+
+it('movie all categories recovery reports mixed hidden and ignored causes', function (): void {
+    $user = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-drama', 'Drama');
+
+    seedPersonalizedMovieRecord(1801, 'Movie Action', 'movie-action');
+    seedPersonalizedMovieRecord(1802, 'Movie Drama', 'movie-drama');
+
+    updateMoviePreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => [],
+        'hidden_ids' => ['movie-action'],
+        'ignored_ids' => ['movie-drama'],
+    ]);
+
+    $response = movieBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.movies.total', 0);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToIgnored', true);
+    $response->assertJsonPath('props.filters.recovery.allCategoriesEmptyDueToHidden', true);
+});
+
 it('resets only movie preferences and restores default order after new categories appear', function (): void {
     $user = User::factory()->create();
 

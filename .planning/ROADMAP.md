@@ -53,7 +53,7 @@ Plans:
 - [ ] 09-03-PLAN.md — Apply series browse ignored filtering and recovery metadata
 - [ ] 09-04-PLAN.md — Add shared sidebar ignore/unignore mutation affordances
 - [ ] 09-05-PLAN.md — Wire movie and series recovery UI with browser regressions
-- [ ] 09-06-PLAN.md — Add ignored preference persistence and validation flow
+- [x] 09-06-PLAN.md — Add ignored preference persistence and validation flow
 
 ### Phase 10: Searchable Category Navigation
 **Goal**: Users can quickly find categories inside navigation on both desktop and mobile surfaces.
@@ -90,7 +90,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
-| 9. Ignored Discovery Filters | 0/6 | Not started | - |
+| 9. Ignored Discovery Filters | 1/6 | In Progress | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |
 | 12. Detail Page Category Context | 0/TBD | Not started | - |

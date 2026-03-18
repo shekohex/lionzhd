@@ -17,8 +17,8 @@ Requirements for milestone `v1.1 Category Personalization & Search UX`. Each map
 
 ### Ignore Filters
 
-- [ ] **IGNR-01**: User can ignore a category for a media type so matching titles are excluded from catalog listings for that user
-- [ ] **IGNR-02**: User gets a recovery path when hidden or ignored preferences leave no visible categories or results
+- [x] **IGNR-01**: User can ignore a category for a media type so matching titles are excluded from catalog listings for that user
+- [x] **IGNR-02**: User gets a recovery path when hidden or ignored preferences leave no visible categories or results
 
 ### Search & Navigation
 
@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-03 | Phase 8 | Complete |
 | PERS-04 | Phase 8 | Complete |
 | PERS-05 | Phase 8 | Complete |
-| IGNR-01 | Phase 9 | Pending |
-| IGNR-02 | Phase 9 | Pending |
+| IGNR-01 | Phase 9 | Complete |
+| IGNR-02 | Phase 9 | Complete |
 | NAVG-01 | Phase 10 | Pending |
 | SRCH-01 | Phase 11 | Pending |
 | SRCH-02 | Phase 11 | Pending |

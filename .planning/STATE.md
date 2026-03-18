@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-status: completed
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-03-18T04:32:36.920Z"
-last_activity: 2026-03-18 - Completed 08-03 browse-attached personal category controls and closed Phase 8
+status: executing
+stopped_at: Completed 09-06-PLAN.md
+last_updated: "2026-03-18T19:20:16.877Z"
+last_activity: 2026-03-18 - Completed 09-06 ignored preference persistence and validation flow
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
-  percent: 100
+  total_plans: 10
+  completed_plans: 5
+  percent: 90
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 8 complete - ready for Phase 9 planning.
+**Current focus:** Phase 9 ignored discovery filters is in progress after shipping ignored preference persistence.
 
 ## Current Position
 
-Phase: 8 of 12 (Personal Category Controls)
-Plan: 4 of 4
-Status: Complete
-Last activity: 2026-03-18 - Completed 08-03 browse-attached personal category controls and closed Phase 8
+Phase: 9 of 12 (Ignored Discovery Filters)
+Plan: 1 of 6
+Status: In Progress
+Last activity: 2026-03-18 - Completed 09-06 ignored preference persistence and validation flow
 
-Progress: [██████████] 100%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 43
+- Total plans completed: 44
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -45,10 +45,12 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
+| 09 | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min; earlier v1 history not itemized here
-- Trend: Phase 08 is complete and ready for Phase 9 planning.
+- Last 5 plans: 09-06 completed in 5 min; 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min
+- Trend: Phase 09 has started with ignored preference persistence in place for browse and UI follow-up plans.
+- Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
 - Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
 - Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
 
@@ -72,6 +74,8 @@ Progress: [██████████] 100%
 - [Phase 08]: Manage mode stays attached to the existing desktop sidebar and mobile category sheet so personalization happens in browse.
 - [Phase 08]: Category preference changes save immediately through Inertia patch/delete requests without forcing navigation away from the current browse results.
 - [Phase 08]: Pinned and visible non-pinned categories reorder independently while hidden categories remain recoverable from a collapsed section.
+- [Phase 09]: Ignored state persists on a dedicated is_ignored flag so hidden behavior stays unchanged.
+- [Phase 09]: Ignored rows retain prior pin_rank and sort_order metadata to support future unignore restore flows.
 
 ### Pending Todos
 
@@ -84,6 +88,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-18T04:18:46.257Z
-Stopped at: Completed 08-03-PLAN.md
+Last session: 2026-03-18T19:20:16.875Z
+Stopped at: Completed 09-06-PLAN.md
 Resume file: None

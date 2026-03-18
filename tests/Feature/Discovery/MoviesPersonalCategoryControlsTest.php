@@ -85,6 +85,90 @@ it('covers hidden selected category read path smoke for movies', function (): vo
     expect(movieHiddenIds($response))->toBe(['movie-drama']);
 });
 
+it('ignored all categories excludes movies for the authenticated user', function (): void {
+    $user = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-comedy', 'Comedy');
+    createMovieCategory('movie-drama', 'Drama');
+
+    seedPersonalizedMovieRecord(1301, 'Movie Action', 'movie-action');
+    seedPersonalizedMovieRecord(1302, 'Movie Comedy', 'movie-comedy');
+    seedPersonalizedMovieRecord(1303, 'Movie Drama', 'movie-drama');
+
+    updateMoviePreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['movie-action', 'movie-drama'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['movie-comedy'],
+    ]);
+
+    $response = movieBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.movies.total', 2);
+
+    expect(movieBrowseNames($response))->toBe(['Movie Drama', 'Movie Action']);
+});
+
+it('ignored category filtering stays applied while browsing a non-ignored movie category', function (): void {
+    $user = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-comedy', 'Comedy');
+
+    seedPersonalizedMovieRecord(1401, 'Action Feature', 'movie-action');
+    seedPersonalizedMovieRecord(1402, 'Comedy Feature', 'movie-comedy');
+
+    updateMoviePreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['movie-action'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['movie-comedy'],
+    ]);
+
+    $response = movieBrowseResponse($user, ['category' => 'movie-action']);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.category', 'movie-action');
+    $response->assertJsonPath('props.movies.total', 1);
+
+    expect(movieBrowseNames($response))->toBe(['Action Feature']);
+});
+
+it('ignored movie filtering is isolated from other users and series preferences', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    createMovieCategory('movie-action', 'Action');
+    createMovieCategory('movie-comedy', 'Comedy');
+    createSeriesCategory('series-drama', 'Drama');
+
+    seedPersonalizedMovieRecord(1501, 'Movie Action', 'movie-action');
+    seedPersonalizedMovieRecord(1502, 'Movie Comedy', 'movie-comedy');
+
+    updateMoviePreferences($otherUser, [
+        'pinned_ids' => [],
+        'visible_ids' => ['movie-comedy'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['movie-action'],
+    ]);
+
+    updateSeriesPreferences($user, [
+        'pinned_ids' => [],
+        'visible_ids' => ['series-drama'],
+        'hidden_ids' => [],
+        'ignored_ids' => ['series-drama'],
+    ]);
+
+    $response = movieBrowseResponse($user);
+
+    $response->assertOk();
+    $response->assertJsonPath('props.movies.total', 2);
+
+    expect(movieBrowseNames($response))->toBe(['Movie Comedy', 'Movie Action']);
+});
+
 it('resets only movie preferences and restores default order after new categories appear', function (): void {
     $user = User::factory()->create();
 
@@ -221,6 +305,11 @@ function movieVisibleIds(TestResponse $response): array
 function movieHiddenIds(TestResponse $response): array
 {
     return collect($response->json('props.categories.hiddenItems'))->pluck('id')->all();
+}
+
+function movieBrowseNames(TestResponse $response): array
+{
+    return collect($response->json('props.movies.data'))->pluck('name')->all();
 }
 
 function personalizedMovieInertiaHeaders(): array

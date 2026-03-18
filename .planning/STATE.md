@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-06-PLAN.md
-last_updated: "2026-03-18T19:20:16.877Z"
-last_activity: 2026-03-18 - Completed 09-06 ignored preference persistence and validation flow
+stopped_at: Completed 09-01-PLAN.md
+last_updated: "2026-03-18T19:29:34.576Z"
+last_activity: 2026-03-18 - Completed 09-01 ignored sidebar and browse contract expansion
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 5
+  completed_plans: 6
   percent: 90
 ---
 
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is in progress after shipping ignored preference persistence.
+**Current focus:** Phase 9 ignored discovery filters is in progress after locking ignored-aware sidebar and browse read contracts.
 
 ## Current Position
 
 Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 1 of 6
+Plan: 2 of 6
 Status: In Progress
-Last activity: 2026-03-18 - Completed 09-06 ignored preference persistence and validation flow
+Last activity: 2026-03-18 - Completed 09-01 ignored sidebar and browse contract expansion
 
-Progress: [█████████░] 90%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 44
+- Total plans completed: 45
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -45,11 +45,12 @@ Progress: [█████████░] 90%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
-| 09 | 1 | 5 min | 5 min |
+| 09 | 2 | 11 min | 5.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-06 completed in 5 min; 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min; 08-01 completed in 7 min
-- Trend: Phase 09 has started with ignored preference persistence in place for browse and UI follow-up plans.
+- Last 5 plans: 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min
+- Trend: Phase 09 now has ignored persistence plus read-contract groundwork in place for browse filtering and recovery UI plans.
+- Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
 - Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
 - Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
@@ -76,6 +77,8 @@ Progress: [█████████░] 90%
 - [Phase 08]: Pinned and visible non-pinned categories reorder independently while hidden categories remain recoverable from a collapsed section.
 - [Phase 09]: Ignored state persists on a dedicated is_ignored flag so hidden behavior stays unchanged.
 - [Phase 09]: Ignored rows retain prior pin_rank and sort_order metadata to support future unignore restore flows.
+- [Phase 09-ignored-discovery-filters]: Recovery metadata lives under filters.recovery so later browse pages can distinguish hidden-vs-ignored empty states without new top-level props.
+- [Phase 09-ignored-discovery-filters]: Ignored categories stay in visibleItems with explicit ignored flags instead of reusing hidden-category behavior.
 
 ### Pending Todos
 
@@ -88,6 +91,6 @@ Progress: [█████████░] 90%
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:20:16.875Z
-Stopped at: Completed 09-06-PLAN.md
+Last session: 2026-03-18T19:29:00.753Z
+Stopped at: Completed 09-01-PLAN.md
 Resume file: None

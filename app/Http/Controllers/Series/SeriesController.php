@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Series;
 
 use App\Actions\BuildPersonalizedCategorySidebar;
+use App\Data\CategoryBrowseRecoveryStateData;
 use App\Data\AutoEpisodes\SeriesMonitorData;
 use App\Data\CategoryBrowseFiltersData;
+use App\Data\CategorySidebarData;
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
@@ -20,6 +22,7 @@ use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,11 +36,15 @@ final class SeriesController extends Controller
         $categoryId = $this->resolveCategoryId($request);
         $asOf = $this->resolveAsOf($request);
         $asOfId = $this->resolveAsOfId($request);
-        $ignoredCategoryIds = $this->resolveIgnoredSeriesCategoryIds($user);
 
         if ($categoryId !== null && ! $this->isValidSeriesCategory($categoryId)) {
             return to_route('series')->with('warning', 'Category not found. Showing all categories.');
         }
+
+        $seriesCategoryPreferences = $this->resolveSeriesCategoryPreferences($user);
+        $ignoredCategoryIds = $this->resolveSeriesPreferenceIds($seriesCategoryPreferences, 'is_ignored');
+        $hiddenCategoryIds = $this->resolveSeriesPreferenceIds($seriesCategoryPreferences, 'is_hidden');
+        $categories = BuildPersonalizedCategorySidebar::run($user, MediaType::Series, $categoryId);
 
         $seriesQuery = Series::query()
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
@@ -45,6 +52,9 @@ final class SeriesController extends Controller
             }])
             ->when($ignoredCategoryIds !== [], static function (Builder $query) use ($ignoredCategoryIds): void {
                 $query->whereNotIn('category_id', $ignoredCategoryIds);
+            })
+            ->when($categoryId === null && $hiddenCategoryIds !== [], static function (Builder $query) use ($hiddenCategoryIds): void {
+                $query->whereNotIn('category_id', $hiddenCategoryIds);
             })
             ->when($categoryId !== null, function (Builder $query) use ($categoryId): void {
                 if ($categoryId === Category::UNCATEGORIZED_SERIES_PROVIDER_ID) {
@@ -100,10 +110,12 @@ final class SeriesController extends Controller
             ->appends(['as_of' => $asOf, 'as_of_id' => $asOfId])
             ->withQueryString();
 
+        $recovery = $this->resolveRecoveryState($categoryId, $categories, $series->total(), $ignoredCategoryIds, $hiddenCategoryIds);
+
         return Inertia::render('series/index', [
             'series' => fn () => $series,
-            'filters' => fn () => new CategoryBrowseFiltersData(category: $categoryId, recovery: null),
-            'categories' => fn () => BuildPersonalizedCategorySidebar::run($user, MediaType::Series, $categoryId),
+            'filters' => fn () => new CategoryBrowseFiltersData(category: $categoryId, recovery: $recovery),
+            'categories' => fn () => $categories,
         ]);
     }
 
@@ -152,16 +164,64 @@ final class SeriesController extends Controller
             ->exists();
     }
 
-    private function resolveIgnoredSeriesCategoryIds(User $user): array
+    private function resolveSeriesCategoryPreferences(User $user): Collection
     {
         return UserCategoryPreference::query()
             ->where('user_id', $user->getKey())
             ->where('media_type', MediaType::Series->value)
-            ->where('is_ignored', true)
+            ->get(['category_provider_id', 'is_hidden', 'is_ignored']);
+    }
+
+    private function resolveSeriesPreferenceIds(Collection $preferences, string $column): array
+    {
+        return $preferences
+            ->filter(static fn (UserCategoryPreference $preference): bool => (bool) $preference->getAttribute($column))
             ->pluck('category_provider_id')
             ->filter(static fn (mixed $categoryId): bool => is_string($categoryId) && $categoryId !== '')
             ->values()
             ->all();
+    }
+
+    private function resolveRecoveryState(
+        ?string $categoryId,
+        CategorySidebarData $categories,
+        int $seriesTotal,
+        array $ignoredCategoryIds,
+        array $hiddenCategoryIds,
+    ): ?CategoryBrowseRecoveryStateData {
+        if ($categories->selectedCategoryIsIgnored) {
+            return new CategoryBrowseRecoveryStateData(
+                allCategoriesEmptyDueToIgnored: true,
+                allCategoriesEmptyDueToHidden: false,
+            );
+        }
+
+        if ($categoryId !== null || $seriesTotal > 0) {
+            return null;
+        }
+
+        $allCategoriesEmptyDueToIgnored = $this->seriesExistInCategories($ignoredCategoryIds);
+        $allCategoriesEmptyDueToHidden = $this->seriesExistInCategories($hiddenCategoryIds);
+
+        if (! $allCategoriesEmptyDueToIgnored && ! $allCategoriesEmptyDueToHidden) {
+            return null;
+        }
+
+        return new CategoryBrowseRecoveryStateData(
+            allCategoriesEmptyDueToIgnored: $allCategoriesEmptyDueToIgnored,
+            allCategoriesEmptyDueToHidden: $allCategoriesEmptyDueToHidden,
+        );
+    }
+
+    private function seriesExistInCategories(array $categoryIds): bool
+    {
+        if ($categoryIds === []) {
+            return false;
+        }
+
+        return Series::query()
+            ->whereIn('category_id', $categoryIds)
+            ->exists();
     }
 
     /**

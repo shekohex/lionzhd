@@ -12,7 +12,7 @@ import { useResizableSidebar } from '@/hooks/use-resizable-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { SeriesPageProps } from '@/types/series';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { GripVertical, TvIcon } from 'lucide-react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
@@ -70,7 +70,25 @@ interface SeriesResultsProps {
     isMobile: boolean;
     isSwitchingCategory: boolean;
     selectedCategory: string | null;
+    selectedCategoryIsIgnored: boolean;
+    selectedCategoryName?: string;
+    recovery: SeriesPageProps['filters']['recovery'];
     onResetToAllCategories: () => void;
+    onManageCategories: () => void;
+    onResetPreferences: () => void;
+    onUnignoreSelectedCategory: () => void;
+}
+
+function describeSeriesRecoveryState(recovery: SeriesPageProps['filters']['recovery']) {
+    if (recovery?.allCategoriesEmptyDueToIgnored && recovery?.allCategoriesEmptyDueToHidden) {
+        return 'Ignored and hidden categories are filtering every series out. Manage categories to restore your view, or reset preferences as a fallback.';
+    }
+
+    if (recovery?.allCategoriesEmptyDueToIgnored) {
+        return 'Ignored categories are filtering every series out. Manage categories to restore your view, or reset preferences as a fallback.';
+    }
+
+    return 'Hidden categories are removing every series from all categories. Manage categories to restore your view, or reset preferences as a fallback.';
 }
 
 function SeriesResults({
@@ -78,7 +96,13 @@ function SeriesResults({
     isMobile,
     isSwitchingCategory,
     selectedCategory,
+    selectedCategoryIsIgnored,
+    selectedCategoryName,
+    recovery,
     onResetToAllCategories,
+    onManageCategories,
+    onResetPreferences,
+    onUnignoreSelectedCategory,
 }: SeriesResultsProps) {
     const hasSeries = series.total > 0;
     const rememberKey = `Series/InfiniteScroll:${selectedCategory ?? 'all'}`;
@@ -101,6 +125,26 @@ function SeriesResults({
     }
 
     if (!hasSeries) {
+        if (selectedCategory !== null && selectedCategoryIsIgnored) {
+            return (
+                <EmptyState
+                    icon={<TvIcon className="h-12 w-12" />}
+                    title="This category is ignored"
+                    description={
+                        selectedCategoryName
+                            ? `"${selectedCategoryName}" is currently ignored, so its series stay hidden until you unignore it.`
+                            : 'This category is currently ignored, so its series stay hidden until you unignore it.'
+                    }
+                    className="bg-muted/30"
+                    action={
+                        <Button type="button" onClick={onUnignoreSelectedCategory}>
+                            Unignore and restore results
+                        </Button>
+                    }
+                />
+            );
+        }
+
         if (selectedCategory !== null) {
             return (
                 <EmptyState
@@ -112,6 +156,27 @@ function SeriesResults({
                         <Button type="button" variant="outline" onClick={onResetToAllCategories}>
                             Show all categories
                         </Button>
+                    }
+                />
+            );
+        }
+
+        if (recovery?.allCategoriesEmptyDueToIgnored || recovery?.allCategoriesEmptyDueToHidden) {
+            return (
+                <EmptyState
+                    icon={<TvIcon className="h-12 w-12" />}
+                    title="Your series view is empty"
+                    description={describeSeriesRecoveryState(recovery)}
+                    className="bg-muted/30"
+                    action={
+                        <div className="flex flex-col items-center gap-3 sm:flex-row">
+                            <Button type="button" onClick={onManageCategories}>
+                                Manage categories
+                            </Button>
+                            <Button type="button" variant="outline" onClick={onResetPreferences}>
+                                Reset preferences
+                            </Button>
+                        </div>
                     }
                 />
             );
@@ -199,15 +264,24 @@ export default function Series() {
     const {
         isSwitchingCategory,
         categoryLoadError,
+        manageRequestKey,
         handleSelectCategory,
         handleRetryCategories,
         handleSavePreferences,
         handleResetPreferences,
+        handleUnignoreCategory,
+        requestManageMode,
     } = useCategoryBrowser({
         routeName: 'series',
         mediaType: 'series',
         only: ['series', 'filters', 'categories'],
     });
+
+    const reloadSeries = () => {
+        router.reload({
+            only: ['series', 'filters', 'categories'],
+        });
+    };
 
     const categoryHiddenBanner = categories.selectedCategoryIsHidden ? (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3.5 text-sm text-amber-900 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
@@ -228,7 +302,17 @@ export default function Series() {
                 isMobile={isMobile}
                 isSwitchingCategory={isSwitchingCategory}
                 selectedCategory={selectedCategory}
+                selectedCategoryIsIgnored={categories.selectedCategoryIsIgnored}
+                selectedCategoryName={categories.selectedCategoryName}
+                recovery={filters.recovery}
                 onResetToAllCategories={() => handleSelectCategory(null, selectedCategory)}
+                onManageCategories={requestManageMode}
+                onResetPreferences={() => handleResetPreferences({ onSuccess: reloadSeries })}
+                onUnignoreSelectedCategory={() =>
+                    handleUnignoreCategory(selectedCategory, categories, {
+                        onSuccess: reloadSeries,
+                    })
+                }
             />
         </MediaSection>
     );
@@ -244,6 +328,7 @@ export default function Series() {
             onRetryCategories={handleRetryCategories}
             onSavePreferences={handleSavePreferences}
             onResetPreferences={handleResetPreferences}
+            manageRequestKey={manageRequestKey}
             className="w-full"
         />
     );

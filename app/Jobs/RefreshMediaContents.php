@@ -47,17 +47,6 @@ final class RefreshMediaContents implements ShouldQueue, ShouldBeUnique
      */
     public function handle(): void
     {
-        $this->applyMemoryLimit();
-
         SyncMedia::run();
-    }
-
-    private function applyMemoryLimit(): void
-    {
-        $memoryLimit = (string) config('app.sync_media_memory_limit');
-
-        if ($memoryLimit !== '') {
-            ini_set('memory_limit', $memoryLimit);
-        }
     }
 }

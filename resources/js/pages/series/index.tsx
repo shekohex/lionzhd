@@ -1,24 +1,22 @@
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
-import CategorySidebar, {
-    type CategorySidebarMutationOptions,
-    type CategorySidebarPreferencesSnapshot,
-} from '@/components/category-sidebar';
+import CategorySidebar from '@/components/category-sidebar';
 import MediaSection from '@/components/media-section';
 import { Button } from '@/components/ui/button';
 import { DualPagination } from '@/components/ui/enhanced-pagination';
+import { useElementHeight } from '@/hooks/use-element-height';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCategoryBrowser } from '@/hooks/use-category-browser';
+import { useResizableSidebar } from '@/hooks/use-resizable-sidebar';
 import AppLayout from '@/layouts/app-layout';
-import { scrollToTop } from '@/lib/scroll-utils';
 import { type BreadcrumbItem } from '@/types';
 import { SeriesPageProps } from '@/types/series';
-import type { PendingVisit } from '@inertiajs/core';
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { TvIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { GripVertical, TvIcon } from 'lucide-react';
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
+import { useRef } from 'react';
 
 const container = {
     hidden: { opacity: 0 },
@@ -41,13 +39,6 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/series',
     },
 ];
-
-const CATEGORY_LOAD_ERROR_MESSAGE = 'Unable to load categories right now. Please try again.';
-const CATEGORY_PREFERENCE_ERROR_MESSAGE = 'Unable to save your category changes right now. Please try again.';
-
-function firstCategoryPreferenceError(errors: Record<string, string>) {
-    return errors.pinned_ids ?? errors.visible_ids ?? errors.hidden_ids ?? CATEGORY_PREFERENCE_ERROR_MESSAGE;
-}
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
     return (
@@ -196,163 +187,112 @@ export default function Series() {
     const { props } = usePage<SeriesPageProps>();
     const { series, categories, filters } = props;
     const isMobile = useIsMobile();
-    const [isSwitchingCategory, setIsSwitchingCategory] = useState(false);
-    const [categoryLoadError, setCategoryLoadError] = useState<string | null>(null);
-    const categoryVisitCancelToken = useRef<{ cancel: () => void } | null>(null);
+    const resultsRef = useRef<HTMLDivElement | null>(null);
+    const { sidebarWidth, isResizing, startResizing, resetWidth } = useResizableSidebar(
+        'discovery-categories-sidebar-width',
+    );
+    const resultsHeight = useElementHeight(resultsRef);
 
     const selectedCategory = filters.category ?? null;
     const resultsKey = selectedCategory ?? 'all';
 
-    const handleCategoryVisitFinish = (visit: PendingVisit) => {
-        setIsSwitchingCategory(false);
-        categoryVisitCancelToken.current = null;
+    const {
+        isSwitchingCategory,
+        categoryLoadError,
+        handleSelectCategory,
+        handleRetryCategories,
+        handleSavePreferences,
+        handleResetPreferences,
+    } = useCategoryBrowser({
+        routeName: 'series',
+        mediaType: 'series',
+        only: ['series', 'filters', 'categories'],
+    });
 
-        if (!visit.completed && !visit.cancelled && !visit.interrupted) {
-            setCategoryLoadError(CATEGORY_LOAD_ERROR_MESSAGE);
-        }
-    };
+    const categoryHiddenBanner = categories.selectedCategoryIsHidden ? (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3.5 text-sm text-amber-900 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
+            <p className="font-semibold mb-0.5">Hidden Category Active</p>
+            <p className="opacity-80">
+                {categories.selectedCategoryName
+                    ? `"${categories.selectedCategoryName}" is currently hidden. Results stay visible until you switch categories or unhide it.`
+                    : 'This category is hidden. Results stay visible until you switch categories or unhide it.'}
+            </p>
+        </div>
+    ) : null;
 
-    useEffect(() => {
-        return () => {
-            categoryVisitCancelToken.current?.cancel();
-            categoryVisitCancelToken.current = null;
-        };
-    }, []);
+    const results = (
+        <MediaSection title="Latest TV Shows">
+            <SeriesResults
+                key={resultsKey}
+                series={series}
+                isMobile={isMobile}
+                isSwitchingCategory={isSwitchingCategory}
+                selectedCategory={selectedCategory}
+                onResetToAllCategories={() => handleSelectCategory(null, selectedCategory)}
+            />
+        </MediaSection>
+    );
 
-    const handleSelectCategory = (nextCategory: string | null) => {
-        const category = nextCategory === selectedCategory ? null : nextCategory;
-        categoryVisitCancelToken.current?.cancel();
-
-        scrollToTop('smooth');
-
-        router.visit(category ? route('series', { category }) : route('series'), {
-            method: 'get',
-            only: ['series', 'filters', 'categories'],
-            preserveState: true,
-            preserveScroll: false,
-            onCancelToken: (token) => {
-                categoryVisitCancelToken.current = token as { cancel: () => void };
-            },
-            onStart: () => {
-                setIsSwitchingCategory(true);
-                setCategoryLoadError(null);
-            },
-            onSuccess: () => {
-                setCategoryLoadError(null);
-            },
-            onError: () => {
-                setCategoryLoadError(CATEGORY_LOAD_ERROR_MESSAGE);
-                setIsSwitchingCategory(false);
-            },
-            onFinish: handleCategoryVisitFinish,
-        });
-    };
-
-    const handleRetryCategories = () => {
-        scrollToTop('instant');
-
-        router.reload({
-            only: ['series', 'filters', 'categories'],
-            onCancelToken: (token) => {
-                categoryVisitCancelToken.current = token as { cancel: () => void };
-            },
-            onStart: () => {
-                setIsSwitchingCategory(true);
-                setCategoryLoadError(null);
-            },
-            onSuccess: () => {
-                setCategoryLoadError(null);
-            },
-            onError: () => {
-                setCategoryLoadError(CATEGORY_LOAD_ERROR_MESSAGE);
-                setIsSwitchingCategory(false);
-            },
-            onFinish: handleCategoryVisitFinish,
-        });
-    };
-
-    const handleSavePreferences = (
-        payload: CategorySidebarPreferencesSnapshot,
-        options?: CategorySidebarMutationOptions,
-    ) => {
-        router.patch(
-            route('category-preferences.update', { mediaType: 'series' }),
-            {
-                pinned_ids: payload.pinnedIds,
-                visible_ids: payload.visibleIds,
-                hidden_ids: payload.hiddenIds,
-            },
-            {
-                only: ['categories', 'filters'],
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    options?.onSuccess?.();
-                },
-                onError: (errors) => {
-                    options?.onError?.(firstCategoryPreferenceError(errors as Record<string, string>));
-                },
-                onFinish: () => {
-                    options?.onFinish?.();
-                },
-            },
-        );
-    };
-
-    const handleResetPreferences = (options?: CategorySidebarMutationOptions) => {
-        router.delete(route('category-preferences.reset', { mediaType: 'series' }), {
-            only: ['categories', 'filters'],
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                options?.onSuccess?.();
-            },
-            onError: () => {
-                options?.onError?.(CATEGORY_PREFERENCE_ERROR_MESSAGE);
-            },
-            onFinish: () => {
-                options?.onFinish?.();
-            },
-        });
-    };
+    const sidebar = (
+        <CategorySidebar
+            title="Series Categories"
+            categories={categories}
+            selectedCategory={selectedCategory}
+            desktopHeight={resultsHeight}
+            onSelectCategory={(next) => handleSelectCategory(next, selectedCategory)}
+            error={categoryLoadError}
+            onRetryCategories={handleRetryCategories}
+            onSavePreferences={handleSavePreferences}
+            onResetPreferences={handleResetPreferences}
+            className="w-full"
+        />
+    );
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Series" />
 
             <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start">
-                    <CategorySidebar
-                        title="Series Categories"
-                        categories={categories}
-                        selectedCategory={selectedCategory}
-                        onSelectCategory={handleSelectCategory}
-                        error={categoryLoadError}
-                        onRetryCategories={handleRetryCategories}
-                        onSavePreferences={handleSavePreferences}
-                        onResetPreferences={handleResetPreferences}
-                    />
-
-                    <div className="min-w-0 flex-1">
-                        {categories.selectedCategoryIsHidden ? (
-                            <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-                                {categories.selectedCategoryName
-                                    ? `${categories.selectedCategoryName} is hidden for your account. Current results stay visible until you switch categories or unhide it from the manager.`
-                                    : 'This category is hidden for your account. Current results stay visible until you switch categories or unhide it from the manager.'}
-                            </div>
-                        ) : null}
-                        <MediaSection title="Latest TV Shows">
-                            <SeriesResults
-                                key={resultsKey}
-                                series={series}
-                                isMobile={isMobile}
-                                isSwitchingCategory={isSwitchingCategory}
-                                selectedCategory={selectedCategory}
-                                onResetToAllCategories={() => handleSelectCategory(null)}
-                            />
-                        </MediaSection>
+                {isMobile ? (
+                    <div className="flex flex-col gap-6 p-6">
+                        {sidebar}
+                        <div className="min-w-0 flex-1">
+                            {categoryHiddenBanner}
+                            {results}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="space-y-4 p-6">
+                        {categoryHiddenBanner}
+                        <div className="hidden items-stretch gap-2 md:flex">
+                            <div className="min-h-0 shrink-0 self-stretch" style={{ width: `${sidebarWidth}px` }}>
+                                {sidebar}
+                            </div>
+                            <div
+                                role="separator"
+                                aria-label="Resize category sidebar"
+                                aria-orientation="vertical"
+                                onPointerDown={startResizing}
+                                onDoubleClick={resetWidth}
+                                className="group relative flex w-6 shrink-0 cursor-col-resize touch-none select-none self-stretch items-center justify-center"
+                            >
+                                <div
+                                    className={
+                                        isResizing
+                                            ? 'absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-primary/80'
+                                            : 'absolute inset-y-0 left-1/2 w-px -translate-x-1/2 rounded-full bg-border/80 transition-colors group-hover:w-1 group-hover:bg-primary/70'
+                                    }
+                                />
+                                <div className="z-10 flex h-12 w-5 items-center justify-center rounded-full border bg-background shadow-md ring-1 ring-border/70 transition-all group-hover:scale-110 group-hover:bg-accent group-active:scale-95">
+                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                            </div>
+                            <div className="min-w-0 flex-1 self-stretch pl-2">
+                                <div ref={resultsRef}>{results}</div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </ErrorBoundary>
         </AppLayout>
     );

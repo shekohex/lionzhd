@@ -2,16 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
+current_phase: 09
+current_phase_name: Ignored Discovery Filters
+current_plan: 09-05
 status: executing
-stopped_at: Completed 09-03-PLAN.md
-last_updated: "2026-03-18T19:42:40.060Z"
-last_activity: 2026-03-18 - Completed 09-03 series ignored browse filtering and recovery metadata
+stopped_at: Completed 09-04-PLAN.md
+last_updated: "2026-03-18T19:45:20.047Z"
+last_activity: 2026-03-18
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
   completed_plans: 9
-  percent: 96
+  percent: 98
 ---
 
 # Project State
@@ -21,21 +24,29 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is in progress after shipping movie and series browse filtering plus recovery metadata.
+**Current focus:** Phase 9 ignored discovery filters is in progress after shipping shared ignore mutation helpers ahead of page-level recovery UI.
 
 ## Current Position
 
-Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 4 of 6
-Status: In Progress
-Last activity: 2026-03-18 - Completed 09-03 series ignored browse filtering and recovery metadata
+**Current Phase:** 09
+**Current Phase Name:** Ignored Discovery Filters
+**Current Plan:** 09-05
+**Total Plans in Phase:** 6
+**Status:** In progress
+**Last Activity:** 2026-03-18
+**Last Activity Description:** Completed 09-04 shared sidebar ignore/unignore mutation affordances
 
-Progress: [██████████] 96%
+Phase: 9 of 12 (Ignored Discovery Filters)
+Plan: 5 of 6
+Status: In Progress
+Last activity: 2026-03-18 - Completed 09-04 shared sidebar ignore/unignore mutation affordances
+
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 47
+- Total plans completed: 48
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -45,16 +56,16 @@ Progress: [██████████] 96%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
-| 09 | 4 | 25 min | 6.25 min |
+| 09 | 5 | 33 min | 6.6 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-03 completed in 6 min; 09-02 completed in 8 min; 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min
-- Trend: Phase 09 now has movie and series browse recovery metadata in place, leaving shared mutation helpers and page UI recovery as the remaining work.
+- Last 5 plans: 09-04 completed in 8 min; 09-03 completed in 6 min; 09-02 completed in 8 min; 09-01 completed in 6 min; 09-06 completed in 5 min
+- Trend: Phase 09 now has shared ignore mutation helpers in place, leaving only the page-level recovery UI and browser coverage plan.
+- Phase 09-ignored-discovery-filters P04 | 8 min | 2 tasks | 5 files |
 - Phase 09-ignored-discovery-filters P03 | 6 min | 2 tasks | 2 files |
 - Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
 - Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
-- Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -98,6 +109,6 @@ Progress: [██████████] 96%
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:42:40.059Z
-Stopped at: Completed 09-03-PLAN.md
+Last session: 2026-03-18T19:45:20.045Z
+Stopped at: Completed 09-04-PLAN.md
 Resume file: None

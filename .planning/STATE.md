@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 09
 current_phase_name: Ignored Discovery Filters
 current_plan: 09-05
-status: executing
-stopped_at: Completed 09-04-PLAN.md
-last_updated: "2026-03-18T19:45:20.047Z"
+status: verifying
+stopped_at: Completed 09-05-PLAN.md
+last_updated: "2026-03-18T19:59:31.896Z"
 last_activity: 2026-03-18
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 9
-  percent: 98
+  completed_plans: 10
+  percent: 100
 ---
 
 # Project State
@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is in progress after shipping shared ignore mutation helpers ahead of page-level recovery UI.
+**Current focus:** Phase 9 ignored discovery filters is complete and ready to hand off to Phase 10 searchable navigation work.
 
 ## Current Position
 
@@ -32,21 +32,21 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 **Current Phase Name:** Ignored Discovery Filters
 **Current Plan:** 09-05
 **Total Plans in Phase:** 6
-**Status:** In progress
+**Status:** Phase complete — ready for verification
 **Last Activity:** 2026-03-18
-**Last Activity Description:** Completed 09-04 shared sidebar ignore/unignore mutation affordances
+**Last Activity Description:** Completed 09-05 movie and series ignored recovery UI with browser regressions
 
 Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 5 of 6
-Status: In Progress
-Last activity: 2026-03-18 - Completed 09-04 shared sidebar ignore/unignore mutation affordances
+Plan: 6 of 6
+Status: Ready for Verification
+Last activity: 2026-03-18 - Completed 09-05 movie and series ignored recovery UI with browser regressions
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 48
+- Total plans completed: 49
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -56,11 +56,12 @@ Progress: [██████████] 98%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
-| 09 | 5 | 33 min | 6.6 min |
+| 09 | 6 | 40 min | 6.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-04 completed in 8 min; 09-03 completed in 6 min; 09-02 completed in 8 min; 09-01 completed in 6 min; 09-06 completed in 5 min
-- Trend: Phase 09 now has shared ignore mutation helpers in place, leaving only the page-level recovery UI and browser coverage plan.
+- Last 5 plans: 09-05 completed in 7 min; 09-04 completed in 8 min; 09-03 completed in 6 min; 09-02 completed in 8 min; 09-06 completed in 5 min
+- Trend: Phase 09 is now complete with same-URL ignored recovery UI and browser coverage across movies and series.
+- Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
 - Phase 09-ignored-discovery-filters P04 | 8 min | 2 tasks | 5 files |
 - Phase 09-ignored-discovery-filters P03 | 6 min | 2 tasks | 2 files |
 - Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
@@ -97,6 +98,8 @@ Progress: [██████████] 98%
 - [Phase 09]: Recovery metadata stays under filters.recovery, and ignored direct category URLs return an in-place empty response instead of redirecting away.
 - [Phase 09-ignored-discovery-filters]: Manage-mode recovery now uses a monotonic request key so page CTAs can open sidebar manage mode without reaching into sidebar internals.
 - [Phase 09-ignored-discovery-filters]: Ignored rows are tracked separately from pinned and normal visible groups so unignore flows can restore saved pin and sort metadata.
+- [Phase 09]: Ignored browse recovery reloads the current Inertia page after unignore/reset so selected category URLs stay stable.
+- [Phase 09]: Empty all-categories recovery prioritizes opening sidebar manage mode and keeps reset as a secondary escape hatch.
 
 ### Pending Todos
 
@@ -109,6 +112,6 @@ Progress: [██████████] 98%
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:45:20.045Z
-Stopped at: Completed 09-04-PLAN.md
+Last session: 2026-03-18T19:59:31.895Z
+Stopped at: Completed 09-05-PLAN.md
 Resume file: None

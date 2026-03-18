@@ -45,7 +45,15 @@ Plans:
   1. User can ignore a movie category and matching movies disappear from that user's movie catalog listings.
   2. User can ignore a series category and matching series disappear from that user's series catalog listings.
   3. User sees a clear recovery action when hidden or ignored preferences leave no visible categories or no catalog results.
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Extend ignored-state sidebar and browse contracts
+- [ ] 09-02-PLAN.md — Apply movie browse ignored filtering and recovery metadata
+- [ ] 09-03-PLAN.md — Apply series browse ignored filtering and recovery metadata
+- [ ] 09-04-PLAN.md — Add shared sidebar ignore/unignore mutation affordances
+- [ ] 09-05-PLAN.md — Wire movie and series recovery UI with browser regressions
+- [ ] 09-06-PLAN.md — Add ignored preference persistence and validation flow
 
 ### Phase 10: Searchable Category Navigation
 **Goal**: Users can quickly find categories inside navigation on both desktop and mobile surfaces.
@@ -82,7 +90,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
-| 9. Ignored Discovery Filters | 0/TBD | Not started | - |
+| 9. Ignored Discovery Filters | 0/6 | Not started | - |
 | 10. Searchable Category Navigation | 0/TBD | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |
 | 12. Detail Page Category Context | 0/TBD | Not started | - |

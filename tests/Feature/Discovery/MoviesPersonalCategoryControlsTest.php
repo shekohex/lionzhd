@@ -156,7 +156,7 @@ it('ignored movie filtering is isolated from other users and series preferences'
 
     updateSeriesPreferences($user, [
         'pinned_ids' => [],
-        'visible_ids' => ['series-drama'],
+        'visible_ids' => [],
         'hidden_ids' => [],
         'ignored_ids' => ['series-drama'],
     ]);

@@ -12,6 +12,7 @@ use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\Category;
 use App\Models\User;
+use App\Models\UserCategoryPreference;
 use App\Models\VodStream;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,10 +42,15 @@ final class VodStreamController extends Controller
             return to_route('movies')->with('warning', 'Category not found. Showing all categories.');
         }
 
+        $ignoredCategoryIds = $this->resolveIgnoredMovieCategoryIds($user);
+
         $moviesQuery = VodStream::query()
             ->withExists(['watchlists as in_watchlist' => function ($query) use ($user): void {
                 $query->where('user_id', $user->id);
             }])
+            ->when($ignoredCategoryIds !== [], static function (Builder $query) use ($ignoredCategoryIds): void {
+                $query->whereNotIn('category_id', $ignoredCategoryIds);
+            })
             ->when($categoryId !== null, function (Builder $query) use ($categoryId): void {
                 if ($categoryId === Category::UNCATEGORIZED_VOD_PROVIDER_ID) {
                     $query->where(static function (Builder $innerQuery) use ($categoryId): void {
@@ -126,6 +132,18 @@ final class VodStreamController extends Controller
         $resolved = (int) $asOfId;
 
         return $resolved > 0 ? $resolved : null;
+    }
+
+    private function resolveIgnoredMovieCategoryIds(User $user): array
+    {
+        return UserCategoryPreference::query()
+            ->where('user_id', $user->getKey())
+            ->where('media_type', MediaType::Movie->value)
+            ->where('is_ignored', true)
+            ->pluck('category_provider_id')
+            ->filter(static fn (mixed $value): bool => is_string($value) && $value !== '')
+            ->values()
+            ->all();
     }
 
     /**

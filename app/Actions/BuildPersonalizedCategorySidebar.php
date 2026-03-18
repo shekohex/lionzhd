@@ -80,6 +80,7 @@ final class BuildPersonalizedCategorySidebar
                 $pinRank = $preference?->pin_rank;
                 $sortOrder = $preference?->sort_order ?? $nextSortOrder++;
                 $isHidden = (bool) ($preference?->is_hidden ?? false);
+                $isIgnored = (bool) ($preference?->is_ignored ?? false);
                 $canNavigate = $count > 0 || $category->provider_id === $selectedCategoryId;
                 $canEdit = ! $isUncategorized;
 
@@ -92,6 +93,7 @@ final class BuildPersonalizedCategorySidebar
                         canEdit: $canEdit,
                         isPinned: $pinRank !== null,
                         isHidden: $isHidden,
+                        isIgnored: $isIgnored,
                         pinRank: $pinRank,
                         sortOrder: $isUncategorized ? null : $sortOrder,
                         isUncategorized: $isUncategorized,
@@ -100,6 +102,7 @@ final class BuildPersonalizedCategorySidebar
                     'pin_rank' => $pinRank,
                     'sort_order' => $sortOrder,
                     'is_hidden' => $isHidden,
+                    'is_ignored' => $isIgnored,
                 ];
             })
             ->values();
@@ -114,6 +117,10 @@ final class BuildPersonalizedCategorySidebar
 
                 if ($leftItem->isUncategorized !== $rightItem->isUncategorized) {
                     return $leftItem->isUncategorized ? 1 : -1;
+                }
+
+                if ($left['is_ignored'] !== $right['is_ignored']) {
+                    return $left['is_ignored'] ? 1 : -1;
                 }
 
                 $leftPinned = $left['pin_rank'] !== null;
@@ -173,15 +180,16 @@ final class BuildPersonalizedCategorySidebar
             ->map(static fn (array $payload): CategorySidebarItemData => $payload['item'])
             ->values();
 
-        $selectedHiddenItem = $hiddenItems->first(static fn (CategorySidebarItemData $item): bool => $item->id === $selectedCategoryId);
+        $selectedItem = $items->first(static fn (array $payload): bool => $payload['item']->id === $selectedCategoryId);
 
         return new CategorySidebarData(
             visibleItems: CategorySidebarItemData::collect($visibleItems, DataCollection::class),
             hiddenItems: CategorySidebarItemData::collect($hiddenItems, DataCollection::class),
-            selectedCategoryIsHidden: $selectedHiddenItem instanceof CategorySidebarItemData,
-            selectedCategoryName: $selectedHiddenItem instanceof CategorySidebarItemData ? $selectedHiddenItem->name : null,
+            selectedCategoryIsHidden: (bool) ($selectedItem['is_hidden'] ?? false),
+            selectedCategoryName: $selectedItem === null ? null : $selectedItem['item']->name,
             pinLimit: self::PIN_LIMIT,
             canReset: $preferences->isNotEmpty(),
+            selectedCategoryIsIgnored: (bool) ($selectedItem['is_ignored'] ?? false),
         );
     }
 
@@ -195,6 +203,7 @@ final class BuildPersonalizedCategorySidebar
             canEdit: false,
             isPinned: false,
             isHidden: false,
+            isIgnored: false,
             pinRank: null,
             sortOrder: null,
             isUncategorized: false,

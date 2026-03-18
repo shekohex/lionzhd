@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-01-PLAN.md
-last_updated: "2026-03-18T19:29:34.576Z"
-last_activity: 2026-03-18 - Completed 09-01 ignored sidebar and browse contract expansion
+stopped_at: Completed 09-04-PLAN.md
+last_updated: "2026-03-18T19:42:40.060Z"
+last_activity: 2026-03-18 - Completed 09-02 movie browse ignored filtering and recovery metadata
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 10
-  completed_plans: 6
-  percent: 90
+  completed_plans: 9
+  percent: 96
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is in progress after locking ignored-aware sidebar and browse read contracts.
+**Current focus:** Phase 9 ignored discovery filters is in progress after shipping movie browse ignored filtering and recovery metadata.
 
 ## Current Position
 
 Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 2 of 6
+Plan: 4 of 6
 Status: In Progress
-Last activity: 2026-03-18 - Completed 09-01 ignored sidebar and browse contract expansion
+Last activity: 2026-03-18 - Completed 09-02 movie browse ignored filtering and recovery metadata
 
-Progress: [█████████░] 92%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 45
+- Total plans completed: 47
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -45,15 +45,18 @@ Progress: [█████████░] 92%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
-| 09 | 2 | 11 min | 5.5 min |
+| 09 | 4 | 25 min | 6.25 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min; 08-04 completed in 5 min; 08-02 completed in 11 min
-- Trend: Phase 09 now has ignored persistence plus read-contract groundwork in place for browse filtering and recovery UI plans.
+- Last 5 plans: 09-02 completed in 8 min; 09-03 completed in 6 min; 09-01 completed in 6 min; 09-06 completed in 5 min; 08-03 completed in 1 min
+- Trend: Phase 09 now has movie and series browse recovery metadata in place, leaving shared mutation helpers and page UI recovery as the remaining work.
 - Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
 - Phase 08-personal-category-controls P04 | 5 min | 2 tasks | 4 files |
 - Phase 08-personal-category-controls P03 | 1 min | 3 tasks | 7 files |
+| Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
+| Phase 09 P03 | 6 min | 2 tasks | 2 files |
+| Phase 09-ignored-discovery-filters P04 | 8 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -79,6 +82,12 @@ Progress: [█████████░] 92%
 - [Phase 09]: Ignored rows retain prior pin_rank and sort_order metadata to support future unignore restore flows.
 - [Phase 09-ignored-discovery-filters]: Recovery metadata lives under filters.recovery so later browse pages can distinguish hidden-vs-ignored empty states without new top-level props.
 - [Phase 09-ignored-discovery-filters]: Ignored categories stay in visibleItems with explicit ignored flags instead of reusing hidden-category behavior.
+- [Phase 09-ignored-discovery-filters]: Movie all-categories browse excludes hidden categories, but selected hidden URLs still keep Phase 8 continuity while ignored URLs recover in place.
+- [Phase 09-ignored-discovery-filters]: Movie browse recovery flags are emitted only when hidden or ignored preferences point at categories that actually contain movies.
+- [Phase 09]: Series browse now excludes ignored categories on every listing, while hidden categories are suppressed only on all-categories so direct hidden URLs keep Phase 8 behavior.
+- [Phase 09]: Recovery metadata stays under filters.recovery, and ignored direct category URLs return an in-place empty response instead of redirecting away.
+- [Phase 09-ignored-discovery-filters]: Manage-mode recovery now uses a monotonic request key so page CTAs can open sidebar manage mode without reaching into sidebar internals.
+- [Phase 09-ignored-discovery-filters]: Ignored rows are tracked separately from pinned and normal visible groups so unignore flows can restore saved pin and sort metadata.
 
 ### Pending Todos
 
@@ -91,6 +100,6 @@ Progress: [█████████░] 92%
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:29:00.753Z
-Stopped at: Completed 09-01-PLAN.md
+Last session: 2026-03-18T19:42:40.059Z
+Stopped at: Completed 09-04-PLAN.md
 Resume file: None

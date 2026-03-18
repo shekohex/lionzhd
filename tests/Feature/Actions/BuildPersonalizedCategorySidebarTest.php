@@ -146,6 +146,85 @@ it('moves hidden categories into a hidden collection and exposes hidden selectio
     expect($sidebar->canReset)->toBeTrue();
 });
 
+it('keeps ignored categories visible and sorts them below non ignored rows', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    personalizedSidebarCreateCategory('alpha', 'Alpha');
+    personalizedSidebarCreateCategory('beta', 'Beta');
+    personalizedSidebarCreateCategory('gamma', 'Gamma');
+
+    personalizedSidebarCreateMovie('alpha');
+    personalizedSidebarCreateMovie('beta');
+    personalizedSidebarCreateMovie('gamma');
+
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'alpha', sortOrder: 0);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'beta', sortOrder: 1, isIgnored: true);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'gamma', sortOrder: 2);
+
+    actingAs($user);
+
+    $builder = app(BuildPersonalizedCategorySidebar::class);
+    $sidebar = $builder($user, MediaType::Movie);
+
+    expect(personalizedSidebarVisibleIds($sidebar))->toBe(['alpha', 'gamma', 'beta']);
+    expect(personalizedSidebarVisibleItem($sidebar, 'beta')->isIgnored)->toBeTrue();
+    expect(personalizedSidebarVisibleItem($sidebar, 'beta')->isHidden)->toBeFalse();
+    expect($sidebar->visibleItems->last()->id)->toBe(Category::UNCATEGORIZED_VOD_PROVIDER_ID);
+});
+
+it('marks selected ignored categories without moving them into hidden items', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    personalizedSidebarCreateCategory('alpha', 'Alpha');
+    personalizedSidebarCreateCategory('beta', 'Beta');
+
+    personalizedSidebarCreateMovie('alpha');
+    personalizedSidebarCreateMovie('beta');
+
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'alpha', sortOrder: 0);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'beta', sortOrder: 1, isIgnored: true);
+
+    actingAs($user);
+
+    $builder = app(BuildPersonalizedCategorySidebar::class);
+    $sidebar = $builder($user, MediaType::Movie, 'beta');
+
+    expect(personalizedSidebarVisibleIds($sidebar))->toBe(['alpha', 'beta']);
+    expect(personalizedSidebarHiddenIds($sidebar))->toBe([]);
+    expect($sidebar->selectedCategoryIsHidden)->toBeFalse();
+    expect($sidebar->selectedCategoryIsIgnored)->toBeTrue();
+    expect($sidebar->selectedCategoryName)->toBe('Beta');
+});
+
+it('keeps ignored and hidden categories in separate collections', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    personalizedSidebarCreateCategory('alpha', 'Alpha');
+    personalizedSidebarCreateCategory('beta', 'Beta');
+    personalizedSidebarCreateCategory('gamma', 'Gamma');
+
+    personalizedSidebarCreateMovie('alpha');
+    personalizedSidebarCreateMovie('beta');
+    personalizedSidebarCreateMovie('gamma');
+
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'alpha', sortOrder: 0, isIgnored: true);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'beta', sortOrder: 1, isHidden: true);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'gamma', sortOrder: 2);
+
+    actingAs($user);
+
+    $builder = app(BuildPersonalizedCategorySidebar::class);
+    $sidebar = $builder($user, MediaType::Movie);
+
+    expect(personalizedSidebarVisibleIds($sidebar))->toBe(['gamma', 'alpha']);
+    expect(personalizedSidebarHiddenIds($sidebar))->toBe(['beta']);
+    expect(personalizedSidebarVisibleItem($sidebar, 'alpha')->isIgnored)->toBeTrue();
+    expect($sidebar->hiddenItems->first()?->isIgnored)->toBeFalse();
+});
+
 it('keeps all categories first and uncategorized last without exposing fixed rows as editable', function (): void {
     /** @var User $user */
     $user = User::factory()->create();
@@ -245,7 +324,7 @@ function personalizedSidebarCreateSeries(string $categoryId): void
     ]);
 }
 
-function personalizedSidebarInsertPreference(User $user, MediaType $mediaType, string $categoryProviderId, int $sortOrder, ?int $pinRank = null, bool $isHidden = false): void
+function personalizedSidebarInsertPreference(User $user, MediaType $mediaType, string $categoryProviderId, int $sortOrder, ?int $pinRank = null, bool $isHidden = false, bool $isIgnored = false): void
 {
     DB::table('user_category_preferences')->insert([
         'user_id' => $user->getKey(),
@@ -254,6 +333,7 @@ function personalizedSidebarInsertPreference(User $user, MediaType $mediaType, s
         'pin_rank' => $pinRank,
         'sort_order' => $sortOrder,
         'is_hidden' => $isHidden,
+        'is_ignored' => $isIgnored,
         'created_at' => now(),
         'updated_at' => now(),
     ]);

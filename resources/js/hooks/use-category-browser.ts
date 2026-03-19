@@ -147,6 +147,7 @@ export function useCategoryBrowser({ routeName, mediaType, only }: UseCategoryBr
                 pinned_ids: payload.pinnedIds,
                 visible_ids: payload.visibleIds,
                 hidden_ids: payload.hiddenIds,
+                ignored_ids: payload.ignoredIds,
             },
             {
                 only: ['categories', 'filters'],

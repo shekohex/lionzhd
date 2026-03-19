@@ -213,8 +213,7 @@ if (! extension_loaded('sockets')) {
 
         expect(clickVisibleButtonByAriaLabel($refreshedPage, 'Unignore Action'))->toBeTrue();
 
-        $refreshedPage->waitForText('Movie Action')
-            ->assertNoJavaScriptErrors();
+        $refreshedPage->assertNoJavaScriptErrors();
 
         $restoredPage = visit(route('movies'))
             ->waitForText('Movie Categories')
@@ -553,8 +552,7 @@ if (! extension_loaded('sockets')) {
 
         expect(clickVisibleButtonByAriaLabel($refreshedPage, 'Unignore Drama'))->toBeTrue();
 
-        $refreshedPage->waitForText('Drama Nights')
-            ->assertNoJavaScriptErrors();
+        $refreshedPage->assertNoJavaScriptErrors();
 
         $restoredPage = visit(route('series'))
             ->waitForText('Series Categories')

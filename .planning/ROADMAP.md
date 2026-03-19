@@ -64,7 +64,12 @@ Plans:
   1. User can search movie categories in the web sidebar and narrow the list to matching categories.
   2. User can search series categories in the web sidebar and choose a filtered match without losing navigation context.
   3. User can search categories in mobile navigation for the active media type and jump to a matching category.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Create searchable navigation contracts and regression harness
+- [ ] 10-02-PLAN.md — Add desktop inline search-first sidebar results
+- [ ] 10-03-PLAN.md — Extend searchable navigation to mobile browse/manage flows
 
 ### Phase 11: Correct Search Mode UX
 **Goal**: Users can trust media-type search filtering, layout mode, and URL-driven navigation across refreshes and deep links.
@@ -92,6 +97,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
 | 9. Ignored Discovery Filters | 7/7 | Complete | 2026-03-19 |
-| 10. Searchable Category Navigation | 0/TBD | Not started | - |
+| 10. Searchable Category Navigation | 0/3 | Not started | - |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |
 | 12. Detail Page Category Context | 0/TBD | Not started | - |

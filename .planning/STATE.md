@@ -4,16 +4,16 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 09
 current_phase_name: Ignored Discovery Filters
-current_plan: 09-05
-status: verifying
-stopped_at: Completed 09-05-PLAN.md
-last_updated: "2026-03-18T19:59:31.896Z"
-last_activity: 2026-03-18
+current_plan: 09-07
+status: ready_for_verification
+stopped_at: Completed 09-07-PLAN.md
+last_updated: "2026-03-19T00:15:55.494Z"
+last_activity: 2026-03-19
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 10
-  completed_plans: 10
+  total_plans: 11
+  completed_plans: 11
   percent: 100
 ---
 
@@ -30,23 +30,23 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Current Phase:** 09
 **Current Phase Name:** Ignored Discovery Filters
-**Current Plan:** 09-05
-**Total Plans in Phase:** 6
+**Current Plan:** 09-07
+**Total Plans in Phase:** 7
 **Status:** Phase complete — ready for verification
-**Last Activity:** 2026-03-18
-**Last Activity Description:** Completed 09-05 movie and series ignored recovery UI with browser regressions
+**Last Activity:** 2026-03-19
+**Last Activity Description:** Completed 09-07 ignored browse payload persistence fix with browser regressions
 
 Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 6 of 6
+Plan: 7 of 7
 Status: Ready for Verification
-Last activity: 2026-03-18 - Completed 09-05 movie and series ignored recovery UI with browser regressions
+Last activity: 2026-03-19 - Completed 09-07 ignored browse payload persistence fix with browser regressions
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 49
+- Total plans completed: 50
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -56,11 +56,12 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
-| 09 | 6 | 40 min | 6.7 min |
+| 09 | 7 | 55 min | 7.9 min |
 
 **Recent Trend:**
-- Last 5 plans: 09-05 completed in 7 min; 09-04 completed in 8 min; 09-03 completed in 6 min; 09-02 completed in 8 min; 09-06 completed in 5 min
-- Trend: Phase 09 is now complete with same-URL ignored recovery UI and browser coverage across movies and series.
+- Last 5 plans: 09-07 completed in 15 min; 09-05 completed in 7 min; 09-04 completed in 8 min; 09-03 completed in 6 min; 09-02 completed in 8 min
+- Trend: Phase 09 is now complete with ignored browse persistence fixed across desktop, mobile, and targeted recovery flows.
+- Phase 09-ignored-discovery-filters P07 | 15 min | 1 task | 2 files |
 - Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
 - Phase 09-ignored-discovery-filters P04 | 8 min | 2 tasks | 5 files |
 - Phase 09-ignored-discovery-filters P03 | 6 min | 2 tasks | 2 files |
@@ -100,6 +101,8 @@ Progress: [██████████] 100%
 - [Phase 09-ignored-discovery-filters]: Ignored rows are tracked separately from pinned and normal visible groups so unignore flows can restore saved pin and sort metadata.
 - [Phase 09]: Ignored browse recovery reloads the current Inertia page after unignore/reset so selected category URLs stay stable.
 - [Phase 09]: Empty all-categories recovery prioritizes opening sidebar manage mode and keeps reset as a secondary escape hatch.
+- [Phase 09-ignored-discovery-filters]: Shared category preference PATCH requests must always send ignored_ids alongside pinned, visible, and hidden ids.
+- [Phase 09-ignored-discovery-filters]: Ignore persistence regressions are locked with fresh-load browser assertions so the categories+filters partial reload contract stays unchanged.
 
 ### Pending Todos
 
@@ -112,6 +115,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-18T19:59:31.895Z
-Stopped at: Completed 09-05-PLAN.md
+Last session: 2026-03-19T00:15:55.492Z
+Stopped at: Completed 09-07-PLAN.md
 Resume file: None

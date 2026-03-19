@@ -175,6 +175,187 @@ if (! extension_loaded('sockets')) {
             ->assertNoJavaScriptErrors();
     })->group('browser');
 
+    it('persists desktop movie ignore and unignore actions across refresh without leaving browse', function (): void {
+        $user = User::factory()->create();
+
+        createMovieCategory('movie-action', 'Action');
+        createMovieCategory('movie-comedy', 'Comedy');
+
+        seedMovieRecord(53_101, 'Movie Action', 'movie-action');
+        seedMovieRecord(53_102, 'Movie Comedy', 'movie-comedy');
+
+        test()->actingAs($user);
+
+        $page = visit(route('movies'))
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Action')
+            ->waitForText('Movie Comedy')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($page, 'Ignore Action'))->toBeTrue();
+
+        $page->waitForText('Movie Comedy')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('movies', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBeNull();
+
+        $refreshedPage = visit(route('movies'))
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Comedy')
+            ->assertDontSee('Movie Action')
+            ->assertNoJavaScriptErrors();
+
+        $ignoredMetrics = ignoredRowMetrics($refreshedPage, 'Action');
+
+        expect($ignoredMetrics['found'])->toBeTrue();
+        expect($ignoredMetrics['className'])->toContain('bg-muted/25');
+
+        expect(clickVisibleButtonByAriaLabel($refreshedPage, 'Unignore Action'))->toBeTrue();
+
+        $refreshedPage->waitForText('Movie Action')
+            ->assertNoJavaScriptErrors();
+
+        $restoredPage = visit(route('movies'))
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Action')
+            ->waitForText('Movie Comedy')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($restoredPage, 'Action');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+    })->group('browser');
+
+    it('persists mobile movie manage-mode ignore and unignore actions across refresh without leaving browse', function (): void {
+        $user = User::factory()->create();
+
+        createMovieCategory('movie-action', 'Action');
+        createMovieCategory('movie-comedy', 'Comedy');
+
+        seedMovieRecord(53_201, 'Movie Action', 'movie-action');
+        seedMovieRecord(53_202, 'Movie Comedy', 'movie-comedy');
+
+        test()->actingAs($user);
+
+        $page = visit(route('movies'))
+            ->resize(390, 844)
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Action')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($page, 'Movie Categories'))->toBeTrue();
+
+        $page->waitForText('Manage')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($page, 'Manage'))->toBeTrue();
+
+        $page->waitForText('Preferences')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($page, 'Ignore Action'))->toBeTrue();
+
+        $page->waitForText('Ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('movies', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBeNull();
+
+        $reopenedPage = visit(route('movies'))
+            ->resize(390, 844)
+            ->waitForText('Movie Categories')
+            ->assertDontSee('Movie Action')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($reopenedPage, 'Movie Categories'))->toBeTrue();
+
+        $reopenedPage->waitForText('Manage')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($reopenedPage, 'Manage'))->toBeTrue();
+
+        $reopenedPage->waitForText('Ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($reopenedPage, 'Unignore Action'))->toBeTrue();
+
+        $reopenedPage->assertNoJavaScriptErrors();
+
+        $restoredPage = visit(route('movies'))
+            ->resize(390, 844)
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Action')
+            ->waitForText('Movie Comedy')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($restoredPage, 'Movie Categories'))->toBeTrue();
+
+        $restoredPage->waitForText('Action')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($restoredPage, 'Action');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+    })->group('browser');
+
+    it('restores only the selected ignored movie category when multiple ignored categories exist', function (): void {
+        $user = User::factory()->create();
+
+        createMovieCategory('movie-action', 'Action');
+        createMovieCategory('movie-comedy', 'Comedy');
+        createMovieCategory('movie-drama', 'Drama');
+
+        seedMovieRecord(53_301, 'Movie Action', 'movie-action');
+        seedMovieRecord(53_302, 'Movie Comedy', 'movie-comedy');
+        seedMovieRecord(53_303, 'Movie Drama', 'movie-drama');
+
+        updateCategoryPreferences($user, MediaType::Movie, route('movies'), [
+            'pinned_ids' => [],
+            'visible_ids' => ['movie-drama'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['movie-action', 'movie-comedy'],
+        ]);
+
+        test()->actingAs($user);
+
+        $page = visit(route('movies', ['category' => 'movie-action']))
+            ->waitForText('Movie Categories')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+
+        $page->click('Unignore and restore results')
+            ->waitForText('Movie Action')
+            ->assertDontSee('This category is ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('movies', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('movie-action');
+
+        $allCategoriesPage = visit(route('movies'))
+            ->waitForText('Movie Categories')
+            ->waitForText('Movie Action')
+            ->waitForText('Movie Drama')
+            ->assertDontSee('Movie Comedy')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($allCategoriesPage, 'Action');
+        $remainingIgnoredMetrics = ignoredRowMetrics($allCategoriesPage, 'Comedy');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+        expect($remainingIgnoredMetrics['found'])->toBeTrue();
+        expect($remainingIgnoredMetrics['className'])->toContain('bg-muted/25');
+
+        $allCategoriesPage->click('Comedy')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+    })->group('browser');
+
     it('shows series ignored category recovery in place and restores results on the same url after unignore', function (): void {
         $user = User::factory()->create();
 
@@ -333,6 +514,187 @@ if (! extension_loaded('sockets')) {
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
     })->group('browser');
+
+    it('persists desktop series ignore and unignore actions across refresh without leaving browse', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-comedy', 'Comedy');
+
+        seedSeriesRecord(63_101, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(63_102, 'Comedy Nights', 'series-comedy');
+
+        test()->actingAs($user);
+
+        $page = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->waitForText('Drama Nights')
+            ->waitForText('Comedy Nights')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($page, 'Ignore Drama'))->toBeTrue();
+
+        $page->waitForText('Comedy Nights')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBeNull();
+
+        $refreshedPage = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->waitForText('Comedy Nights')
+            ->assertDontSee('Drama Nights')
+            ->assertNoJavaScriptErrors();
+
+        $ignoredMetrics = ignoredRowMetrics($refreshedPage, 'Drama');
+
+        expect($ignoredMetrics['found'])->toBeTrue();
+        expect($ignoredMetrics['className'])->toContain('bg-muted/25');
+
+        expect(clickVisibleButtonByAriaLabel($refreshedPage, 'Unignore Drama'))->toBeTrue();
+
+        $refreshedPage->waitForText('Drama Nights')
+            ->assertNoJavaScriptErrors();
+
+        $restoredPage = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->waitForText('Drama Nights')
+            ->waitForText('Comedy Nights')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($restoredPage, 'Drama');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+    })->group('browser');
+
+    it('persists mobile series manage-mode ignore and unignore actions across refresh without leaving browse', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-comedy', 'Comedy');
+
+        seedSeriesRecord(63_201, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(63_202, 'Comedy Nights', 'series-comedy');
+
+        test()->actingAs($user);
+
+        $page = visit(route('series'))
+            ->resize(390, 844)
+            ->waitForText('Series Categories')
+            ->waitForText('Drama Nights')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($page, 'Series Categories'))->toBeTrue();
+
+        $page->waitForText('Manage')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($page, 'Manage'))->toBeTrue();
+
+        $page->waitForText('Preferences')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($page, 'Ignore Drama'))->toBeTrue();
+
+        $page->waitForText('Ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBeNull();
+
+        $reopenedPage = visit(route('series'))
+            ->resize(390, 844)
+            ->waitForText('Series Categories')
+            ->assertDontSee('Drama Nights')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($reopenedPage, 'Series Categories'))->toBeTrue();
+
+        $reopenedPage->waitForText('Manage')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($reopenedPage, 'Manage'))->toBeTrue();
+
+        $reopenedPage->waitForText('Ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByAriaLabel($reopenedPage, 'Unignore Drama'))->toBeTrue();
+
+        $reopenedPage->assertNoJavaScriptErrors();
+
+        $restoredPage = visit(route('series'))
+            ->resize(390, 844)
+            ->waitForText('Series Categories')
+            ->waitForText('Drama Nights')
+            ->waitForText('Comedy Nights')
+            ->assertNoJavaScriptErrors();
+
+        expect(clickVisibleButtonByText($restoredPage, 'Series Categories'))->toBeTrue();
+
+        $restoredPage->waitForText('Drama')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($restoredPage, 'Drama');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+    })->group('browser');
+
+    it('restores only the selected ignored series category when multiple ignored categories exist', function (): void {
+        $user = User::factory()->create();
+
+        createSeriesCategory('series-drama', 'Drama');
+        createSeriesCategory('series-comedy', 'Comedy');
+        createSeriesCategory('series-thriller', 'Thriller');
+
+        seedSeriesRecord(63_301, 'Drama Nights', 'series-drama');
+        seedSeriesRecord(63_302, 'Comedy Nights', 'series-comedy');
+        seedSeriesRecord(63_303, 'Thriller Nights', 'series-thriller');
+
+        updateCategoryPreferences($user, MediaType::Series, route('series'), [
+            'pinned_ids' => [],
+            'visible_ids' => ['series-thriller'],
+            'hidden_ids' => [],
+            'ignored_ids' => ['series-drama', 'series-comedy'],
+        ]);
+
+        test()->actingAs($user);
+
+        $page = visit(route('series', ['category' => 'series-drama']))
+            ->waitForText('Series Categories')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+
+        $page->click('Unignore and restore results')
+            ->waitForText('Drama Nights')
+            ->assertDontSee('This category is ignored')
+            ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('series-drama');
+
+        $allCategoriesPage = visit(route('series'))
+            ->waitForText('Series Categories')
+            ->waitForText('Drama Nights')
+            ->waitForText('Thriller Nights')
+            ->assertDontSee('Comedy Nights')
+            ->assertNoJavaScriptErrors();
+
+        $restoredMetrics = ignoredRowMetrics($allCategoriesPage, 'Drama');
+        $remainingIgnoredMetrics = ignoredRowMetrics($allCategoriesPage, 'Comedy');
+
+        expect($restoredMetrics['found'])->toBeTrue();
+        expect($restoredMetrics['className'])->not->toContain('bg-muted/25');
+        expect($remainingIgnoredMetrics['found'])->toBeTrue();
+        expect($remainingIgnoredMetrics['className'])->toContain('bg-muted/25');
+
+        $allCategoriesPage->click('Comedy')
+            ->waitForText('This category is ignored')
+            ->assertSee('Unignore and restore results')
+            ->assertNoJavaScriptErrors();
+    })->group('browser');
 }
 
 function createMovieCategory(string $providerId, string $name): void
@@ -436,6 +798,42 @@ function ignoredRowMetrics(object $page, string $label): array
                 className: button?.className ?? '',
                 rowText: button?.closest('[class*="group/row"]')?.textContent?.replace(/\s+/g, ' ').trim() ?? button?.textContent?.trim() ?? '',
             };
+        }
+    JS));
+}
+
+function clickVisibleButtonByAriaLabel(object $page, string $label): bool
+{
+    $labelJson = json_encode($label, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__LABEL__', $labelJson, <<<'JS'
+        () => {
+            const label = __LABEL__;
+            const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                candidate.getAttribute('aria-label') === label && candidate.offsetParent !== null
+            );
+
+            button?.click();
+
+            return Boolean(button);
+        }
+    JS));
+}
+
+function clickVisibleButtonByText(object $page, string $text): bool
+{
+    $textJson = json_encode($text, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__TEXT__', $textJson, <<<'JS'
+        () => {
+            const text = __TEXT__;
+            const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                candidate.textContent?.trim() === text && candidate.offsetParent !== null
+            );
+
+            button?.click();
+
+            return Boolean(button);
         }
     JS));
 }

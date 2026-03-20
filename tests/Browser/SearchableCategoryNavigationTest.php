@@ -26,6 +26,8 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
+        expect(searchInputAppearsBelowSidebarTitle($page, 'Movie Categories'))->toBeTrue();
+
         expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
         $page->waitForText('Movie Categories')
@@ -40,18 +42,17 @@ if (! extension_loaded('sockets')) {
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
         expect($results)->not->toContain('Uncategorized');
-        expect($results)->toContain('Drama');
-        expect($results)->toContain('Action Drama');
+        expect($results)->toBe(['Drama', 'Dramedy', 'Action Drama']);
+        expect(visibleHighlightedSegments($page))->toContain('Dra');
 
         $page->assertSee('dra')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'unc');
+        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
+        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
+        expect(pressSearchKey($page, 'Enter'))->toBeTrue();
 
-        $uncategorizedResults = visibleSearchResults($page);
-
-        expect(array_key_last($uncategorizedResults))->not->toBeNull();
-        expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
+        expect(waitForLocationToContain($page, 'category=movie-action-drama'))->toBeTrue();
     })->group('browser');
 
     it('desktop series search ranks fuzzy hits, hides all categories, and keeps uncategorized last', function (): void {
@@ -63,6 +64,8 @@ if (! extension_loaded('sockets')) {
             ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
+
+        expect(searchInputAppearsBelowSidebarTitle($page, 'Series Categories'))->toBeTrue();
 
         expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
@@ -78,10 +81,27 @@ if (! extension_loaded('sockets')) {
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
         expect($results)->not->toContain('Uncategorized');
-        expect($results)->toContain('Drama');
-        expect($results)->toContain('Action Drama');
+        expect($results)->toBe(['Drama', 'Dramedy', 'Action Drama']);
+        expect(visibleHighlightedSegments($page))->toContain('Dra');
 
         $page->assertSee('dra')
+            ->assertNoJavaScriptErrors();
+
+        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
+        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
+        expect(pressSearchKey($page, 'Enter'))->toBeTrue();
+
+        expect(waitForLocationToContain($page, 'category=series-action-drama'))->toBeTrue();
+    })->group('browser');
+
+    it('desktop movie search keeps uncategorized last and offers guided clear-search recovery', function (): void {
+        $user = User::factory()->create();
+
+        seedSearchableMovieFixture();
+
+        $page = loginAndVisitSearchPage($user, route('movies'))
+            ->resize(1280, 900)
+            ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
         typeInlineSearchQuery($page, 'unc');
@@ -90,6 +110,40 @@ if (! extension_loaded('sockets')) {
 
         expect(array_key_last($uncategorizedResults))->not->toBeNull();
         expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
+
+        typeInlineSearchQuery($page, 'zzz');
+
+        expect(noMatchStateText($page))->toContain('No categories match your search.');
+        expect(noMatchStateText($page))->toContain('Try a different category name or clear the current query.');
+        expect(noMatchStateText($page))->not->toContain('hidden');
+        expect(clickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
+        expect(searchInputValue($page))->toBe('');
+    })->group('browser');
+
+    it('desktop series search keeps uncategorized last and offers guided clear-search recovery', function (): void {
+        $user = User::factory()->create();
+
+        seedSearchableSeriesFixture();
+
+        $page = loginAndVisitSearchPage($user, route('series'))
+            ->resize(1280, 900)
+            ->waitForText('Series Categories')
+            ->assertNoJavaScriptErrors();
+
+        typeInlineSearchQuery($page, 'unc');
+
+        $uncategorizedResults = visibleSearchResults($page);
+
+        expect(array_key_last($uncategorizedResults))->not->toBeNull();
+        expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
+
+        typeInlineSearchQuery($page, 'zzz');
+
+        expect(noMatchStateText($page))->toContain('No categories match your search.');
+        expect(noMatchStateText($page))->toContain('Try a different category name or clear the current query.');
+        expect(noMatchStateText($page))->not->toContain('hidden');
+        expect(clickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
+        expect(searchInputValue($page))->toBe('');
     })->group('browser');
 
     it('mobile movie search works in browse and manage modes, closes on select, and resets on reopen', function (): void {
@@ -344,7 +398,7 @@ function typeInlineSearchQuery(object $page, string $query): void
 function visibleSearchResults(object $page): array
 {
     return $page->script(<<<'JS'
-        () => Array.from(document.querySelectorAll('[cmdk-item], [role="option"], button'))
+        () => Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
             .filter((candidate) => candidate.offsetParent !== null)
             .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
             .filter((text) => text !== '')
@@ -385,11 +439,136 @@ function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
     return true;
 }
 
+function pressSearchKey(object $page, string $key): string|bool
+{
+    $keyJson = json_encode($key, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__KEY__', $keyJson, <<<'JS'
+        () => {
+            const items = Array.from(document.querySelectorAll('[cmdk-item]')).filter((candidate) => candidate.offsetParent !== null);
+
+            if (items.length === 0) {
+                return false;
+            }
+
+            const key = __KEY__;
+
+            if (key === 'Enter') {
+                const selectedItem = items.find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true');
+                selectedItem?.click();
+
+                return Boolean(selectedItem);
+            }
+
+            const currentIndex = items.findIndex((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true');
+            const nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, items.length - 1);
+
+            items.forEach((candidate, index) => {
+                if (index === nextIndex) {
+                    candidate.setAttribute('aria-selected', 'true');
+                    candidate.setAttribute('data-selected', 'true');
+                } else {
+                    candidate.setAttribute('aria-selected', 'false');
+                    candidate.setAttribute('data-selected', 'false');
+                }
+            });
+
+            return items[nextIndex]?.textContent?.replace(/\s+/g, ' ').trim() ?? false;
+        }
+    JS));
+}
+
 function searchInputValue(object $page): string
 {
     return $page->script(<<<'JS'
         () => Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled)?.value ?? ''
     JS);
+}
+
+function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
+{
+    $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
+        () => {
+            const heading = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3')).find((candidate) =>
+                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
+            );
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+
+            if (! heading || ! input) {
+                return false;
+            }
+
+            return input.getBoundingClientRect().top >= heading.getBoundingClientRect().bottom - 8;
+        }
+    JS));
+}
+
+function visibleHighlightedSegments(object $page): array
+{
+    return $page->script(<<<'JS'
+        () => Array.from(document.querySelectorAll('[cmdk-item] .font-semibold'))
+            .filter((candidate) => candidate.offsetParent !== null)
+            .map((candidate) => candidate.textContent?.trim() ?? '')
+            .filter((text) => text !== '')
+    JS);
+}
+
+function selectedSearchResultText(object $page): string
+{
+    return $page->script(<<<'JS'
+        () => {
+            const selectedItem = Array.from(document.querySelectorAll('[cmdk-item]'))
+                .filter((candidate) => candidate.offsetParent !== null)
+                .find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true' || candidate.dataset.selected === 'true');
+
+            return selectedItem?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+        }
+    JS);
+}
+
+function noMatchStateText(object $page): string
+{
+    return $page->script(<<<'JS'
+        () => {
+            const commandSurface = Array.from(document.querySelectorAll('[cmdk-root], [data-slot="command-list"], [data-slot="command-empty"]'))
+                .find((candidate) => candidate.offsetParent !== null);
+
+            return commandSurface?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+        }
+    JS);
+}
+
+function currentLocation(object $page): string
+{
+    return $page->script(<<<'JS'
+        () => `${window.location.pathname}${window.location.search}`
+    JS);
+}
+
+function waitForLocationToContain(object $page, string $needle): bool
+{
+    $needleJson = json_encode($needle, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__NEEDLE__', $needleJson, <<<'JS'
+        async () => {
+            const needle = __NEEDLE__;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 3000) {
+                const current = `${window.location.pathname}${window.location.search}`;
+
+                if (current.includes(needle)) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS));
 }
 
 function clickVisibleButtonByText(object $page, string $text): bool

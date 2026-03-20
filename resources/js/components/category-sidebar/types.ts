@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 
 export type CategorySidebarData = App.Data.CategorySidebarData;
 export type CategorySidebarItem = App.Data.CategorySidebarItemData;
+export const CATEGORY_SIDEBAR_ALL_CATEGORIES_ID = 'all-categories';
 
 export interface CategorySidebarPreferencesSnapshot {
     pinnedIds: string[];

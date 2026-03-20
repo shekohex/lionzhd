@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 10
 current_phase_name: searchable category navigation
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 10-01-PLAN.md
-last_updated: "2026-03-20T13:41:25.862Z"
+stopped_at: Completed 10-02-PLAN.md
+last_updated: "2026-03-20T14:11:05.501Z"
 last_activity: 2026-03-20
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 14
-  completed_plans: 12
-  percent: 96
+  completed_plans: 13
+  percent: 98
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 10 searchable navigation contracts and regressions are complete; desktop inline search wiring is next.
+**Current focus:** Phase 10 desktop inline search is complete; mobile searchable navigation is next.
 
 ## Current Position
 
 **Current Phase:** 10
 **Current Phase Name:** searchable category navigation
-**Current Plan:** 2
+**Current Plan:** 3
 **Total Plans in Phase:** 3
-**Status:** In Progress
+**Status:** Ready to execute
 **Last Activity:** 2026-03-20
-**Last Activity Description:** Completed 10-01 searchable navigation contracts and regression harness
+**Last Activity Description:** Completed 10-02 desktop inline search-first sidebar results and browser coverage
 
 Phase: 10 of 12 (Searchable Category Navigation)
-Plan: 1 of 3
+Plan: 2 of 3 completed
 Status: In Progress
-Last activity: 2026-03-20 - Completed 10-01 searchable navigation contracts and regression harness
+Last activity: 2026-03-20 - Completed 10-02 desktop inline search-first sidebar results and browser coverage
 
-Progress: [██████████] 96%
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -69,6 +69,7 @@ Progress: [██████████] 96%
 - Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
 | Phase 10 P01 | 6min | 3 tasks | 5 files |
+| Phase 10 P02 | 24 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Progress: [██████████] 96%
 - [Phase 09-ignored-discovery-filters]: Ignore persistence regressions are locked with fresh-load browser assertions so the categories+filters partial reload contract stays unchanged.
 - [Phase 10]: Shared sidebar search logic now lives in a dedicated search.tsx module with exported normalization, ranking, highlighting, and cmdk renderer entrypoints.
 - [Phase 10]: Sidebar search inputs derive from visibleItems only, excluding the synthetic all-categories row while keeping matching uncategorized anchored last.
+- [Phase 10]: Desktop search state stays in CategorySidebar and only swaps browse rows for ranked cmdk results when the query is non-empty.
+- [Phase 10]: Desktop browser coverage is split between ranked keyboard selection and no-match recovery scenarios so the full contract stays deterministic for movies and series.
 
 ### Pending Todos
 
@@ -118,6 +121,6 @@ Progress: [██████████] 96%
 
 ## Session Continuity
 
-Last session: 2026-03-20T13:41:25.860Z
-Stopped at: Completed 10-01-PLAN.md
+Last session: 2026-03-20T14:11:05.499Z
+Stopped at: Completed 10-02-PLAN.md
 Resume file: None

@@ -243,6 +243,67 @@ it('keeps all categories first and uncategorized last without exposing fixed row
     expect(personalizedSidebarVisibleItem($sidebar, Category::UNCATEGORIZED_VOD_PROVIDER_ID)->canEdit)->toBeFalse();
 });
 
+it('search derives visible inputs from visible items while keeping ignored rows searchable and hidden rows out of results', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    personalizedSidebarCreateCategory('alpha', 'Alpha');
+    personalizedSidebarCreateCategory('beta', 'Beta');
+    personalizedSidebarCreateCategory('gamma', 'Gamma');
+    personalizedSidebarCreateCategory(Category::UNCATEGORIZED_VOD_PROVIDER_ID, 'Uncategorized');
+
+    personalizedSidebarCreateMovie('alpha');
+    personalizedSidebarCreateMovie('beta');
+    personalizedSidebarCreateMovie('gamma');
+    personalizedSidebarCreateMovie(Category::UNCATEGORIZED_VOD_PROVIDER_ID);
+
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'alpha', sortOrder: 0);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'beta', sortOrder: 1, isHidden: true);
+    personalizedSidebarInsertPreference($user, MediaType::Movie, 'gamma', sortOrder: 2, isIgnored: true);
+
+    actingAs($user);
+
+    $builder = app(BuildPersonalizedCategorySidebar::class);
+    $sidebar = $builder($user, MediaType::Movie);
+    $searchableVisibleIds = $sidebar->visibleItems
+        ->toCollection()
+        ->reject(static fn (CategorySidebarItemData $item): bool => $item->id === 'all-categories')
+        ->pluck('id')
+        ->values()
+        ->all();
+
+    expect($searchableVisibleIds)->toBe(['alpha', 'gamma', Category::UNCATEGORIZED_VOD_PROVIDER_ID]);
+    expect(personalizedSidebarVisibleIds($sidebar))->toBe(['alpha', 'gamma']);
+    expect(personalizedSidebarHiddenIds($sidebar))->toBe(['beta']);
+    expect(personalizedSidebarVisibleItem($sidebar, 'gamma')->isIgnored)->toBeTrue();
+    expect(personalizedSidebarVisibleItem($sidebar, 'gamma')->isHidden)->toBeFalse();
+});
+
+it('search keeps all categories synthetic and leaves uncategorized as the last visible match candidate', function (): void {
+    /** @var User $user */
+    $user = User::factory()->create();
+
+    personalizedSidebarCreateCategory('alpha', 'Alpha');
+    personalizedSidebarCreateCategory(Category::UNCATEGORIZED_VOD_PROVIDER_ID, 'Uncategorized');
+
+    personalizedSidebarCreateMovie('alpha');
+    personalizedSidebarCreateMovie(Category::UNCATEGORIZED_VOD_PROVIDER_ID);
+
+    actingAs($user);
+
+    $builder = app(BuildPersonalizedCategorySidebar::class);
+    $sidebar = $builder($user, MediaType::Movie);
+    $visibleItems = $sidebar->visibleItems->toCollection();
+    $searchMatches = $visibleItems
+        ->reject(static fn (CategorySidebarItemData $item): bool => $item->id === 'all-categories')
+        ->values();
+
+    expect($visibleItems->first()?->id)->toBe('all-categories');
+    expect($searchMatches->last()?->id)->toBe(Category::UNCATEGORIZED_VOD_PROVIDER_ID);
+    expect($searchMatches->last()?->isUncategorized)->toBeTrue();
+    expect($searchMatches->last()?->canEdit)->toBeFalse();
+});
+
 function personalizedSidebarVisibleIds(CategorySidebarData $sidebar): array
 {
     return $sidebar->visibleItems
@@ -278,7 +339,7 @@ function personalizedSidebarVisibleItem(CategorySidebarData $sidebar, string $id
 
 function personalizedSidebarCreateCategory(string $providerId, string $name, bool $inVod = true, bool $inSeries = false): void
 {
-    Category::query()->create([
+    Category::query()->updateOrCreate(['provider_id' => $providerId], [
         'provider_id' => $providerId,
         'name' => $name,
         'in_vod' => $inVod,

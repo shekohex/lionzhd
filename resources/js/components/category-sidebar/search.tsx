@@ -259,7 +259,7 @@ function scoreCategorySearchResult(normalizedQuery: string, label: string): numb
 }
 
 function scoreSubsequenceMatch(query: string, label: string): number | null {
-    if (query === '') {
+    if (query === '' || query.length < 4) {
         return null;
     }
 

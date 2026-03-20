@@ -140,10 +140,10 @@ export default function CategorySidebar(props: CategorySidebarProps) {
     }, [manageRequestKey]);
 
     useEffect(() => {
-        if (view !== 'browse') {
+        if (view !== 'browse' && !isMobileSheetOpen) {
             setQuery('');
         }
-    }, [view]);
+    }, [isMobileSheetOpen, view]);
 
     const runSave = (
         nextPinnedItems: CategorySidebarItem[],
@@ -269,15 +269,25 @@ export default function CategorySidebar(props: CategorySidebarProps) {
     };
 
     const handleSelectAndClose = (id: string | null) => {
-        onSelectCategory(id);
+        setView('browse');
         setQuery('');
         setIsMobileSheetOpen(false);
+
+        if (typeof window === 'undefined') {
+            onSelectCategory(id);
+
+            return;
+        }
+
+        window.setTimeout(() => {
+            onSelectCategory(id);
+        }, 0);
     };
 
     const trimmedQuery = query.trim();
-    const isDesktopSearchActive = view === 'browse' && trimmedQuery !== '';
-    const desktopSearchResults = useMemo(() => {
-        if (!isDesktopSearchActive) {
+    const isSearchActive = trimmedQuery !== '';
+    const searchResults = useMemo(() => {
+        if (!isSearchActive) {
             return [];
         }
 
@@ -286,7 +296,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
             items: [...pinnedItems, ...visibleItems, ...ignoredVisibleItems],
             uncategorizedItem,
         });
-    }, [ignoredVisibleItems, isDesktopSearchActive, pinnedItems, trimmedQuery, uncategorizedItem, visibleItems]);
+    }, [ignoredVisibleItems, isSearchActive, pinnedItems, trimmedQuery, uncategorizedItem, visibleItems]);
 
     const commonManageProps = {
         pinnedItems,
@@ -351,8 +361,8 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         <div className="px-4 pb-2">
                             <CategorySidebarSearchResults
                                 query={query}
-                                results={desktopSearchResults}
-                                showResults={isDesktopSearchActive}
+                                results={searchResults}
+                                showResults={view === 'browse' && isSearchActive}
                                 className="border-border/70 shadow-none"
                                 onQueryChange={setQuery}
                                 onSelectCategory={handleSelectAndClose}
@@ -365,7 +375,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         <div className="space-y-4 p-4 pt-2">
                             {view === 'manage' ? (
                                 <CategorySidebarManage {...manageProps} />
-                            ) : isDesktopSearchActive ? null : (
+                            ) : isSearchActive ? null : (
                                 <CategorySidebarBrowse {...browseProps} />
                             )}
                         </div>
@@ -387,17 +397,34 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                             {title}
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="bottom" className="flex flex-col h-[90vh] w-full max-w-none rounded-t-2xl p-0 outline-none">
+                    <SheetContent
+                        side="bottom"
+                        role="dialog"
+                        onOpenAutoFocus={(event) => event.preventDefault()}
+                        className="flex flex-col h-[90vh] w-full max-w-none rounded-t-2xl p-0 outline-none"
+                    >
                         <SheetHeader className="px-6 py-4 border-b">
                             <SheetTitle className="text-left font-bold">{view === 'manage' ? `${title} Manager` : title}</SheetTitle>
                         </SheetHeader>
 
                         <div className="flex-1 overflow-y-auto px-6 py-6">
-                            {view === 'manage' ? (
-                                <CategorySidebarManage {...manageProps} isMobile />
-                            ) : (
-                                <CategorySidebarBrowse {...browseProps} isMobile />
-                            )}
+                            <div className="space-y-6">
+                                <CategorySidebarSearchResults
+                                    query={query}
+                                    results={searchResults}
+                                    showResults={isSearchActive}
+                                    className="border-border/70 shadow-none"
+                                    onQueryChange={setQuery}
+                                    onSelectCategory={handleSelectAndClose}
+                                    onClear={() => setQuery('')}
+                                />
+
+                                {isSearchActive ? null : view === 'manage' ? (
+                                    <CategorySidebarManage {...manageProps} isMobile />
+                                ) : (
+                                    <CategorySidebarBrowse {...browseProps} isMobile />
+                                )}
+                            </div>
                         </div>
 
                         {view === 'manage' && (

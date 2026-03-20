@@ -94,7 +94,7 @@ export function useCategoryBrowser({ routeName, mediaType, only }: UseCategoryBr
         router.visit(category ? route(routeName, { category }) : route(routeName), {
             method: 'get',
             only,
-            preserveState: true,
+            preserveState: false,
             preserveScroll: false,
             onCancelToken: (token) => {
                 categoryVisitCancelToken.current = token as { cancel: () => void };

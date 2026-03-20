@@ -19,138 +19,138 @@ if (! extension_loaded('sockets')) {
     it('desktop movie search ranks fuzzy hits, hides all categories, and keeps uncategorized last', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableMovieFixture();
+        searchableNavigationSeedMovieFixture();
 
-        $page = loginAndVisitSearchPage($user, route('movies'))
+        $page = searchableNavigationLoginAndVisitPage($user, route('movies'))
             ->resize(1280, 900)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsBelowSidebarTitle($page, 'Movie Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputAppearsBelowSidebarTitle($page, 'Movie Categories'))->toBeTrue();
 
-        expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
         $page->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'dra');
+        searchableNavigationTypeInlineSearchQuery($page, 'dra');
 
-        expect(searchInputValue($page))->toBe('dra');
+        expect(searchableNavigationSearchInputValue($page))->toBe('dra');
 
-        $results = visibleSearchResults($page);
+        $results = searchableNavigationVisibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
         expect($results)->not->toContain('Uncategorized');
         expect($results)->toBe(['Drama', 'Dramedy', 'Action Drama']);
-        expect(visibleHighlightedSegments($page))->toContain('Dra');
+        expect(searchableNavigationVisibleHighlightedSegments($page))->toContain('Dra');
 
         $page->assertSee('dra')
             ->assertNoJavaScriptErrors();
 
-        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
-        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
-        expect(pressSearchKey($page, 'Enter'))->toBeTrue();
+        expect(searchableNavigationPressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
+        expect(searchableNavigationPressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
+        expect(searchableNavigationPressSearchKey($page, 'Enter'))->toBeTrue();
 
-        expect(waitForLocationToContain($page, 'category=movie-action-drama'))->toBeTrue();
+        expect(searchableNavigationWaitForLocationToContain($page, 'category=movie-action-drama'))->toBeTrue();
     })->group('browser');
 
     it('desktop series search ranks fuzzy hits, hides all categories, and keeps uncategorized last', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableSeriesFixture();
+        searchableNavigationSeedSeriesFixture();
 
-        $page = loginAndVisitSearchPage($user, route('series'))
+        $page = searchableNavigationLoginAndVisitPage($user, route('series'))
             ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsBelowSidebarTitle($page, 'Series Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputAppearsBelowSidebarTitle($page, 'Series Categories'))->toBeTrue();
 
-        expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
         $page->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'dra');
+        searchableNavigationTypeInlineSearchQuery($page, 'dra');
 
-        expect(searchInputValue($page))->toBe('dra');
+        expect(searchableNavigationSearchInputValue($page))->toBe('dra');
 
-        $results = visibleSearchResults($page);
+        $results = searchableNavigationVisibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
         expect($results)->not->toContain('Uncategorized');
         expect($results)->toBe(['Drama', 'Dramedy', 'Action Drama']);
-        expect(visibleHighlightedSegments($page))->toContain('Dra');
+        expect(searchableNavigationVisibleHighlightedSegments($page))->toContain('Dra');
 
         $page->assertSee('dra')
             ->assertNoJavaScriptErrors();
 
-        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
-        expect(pressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
-        expect(pressSearchKey($page, 'Enter'))->toBeTrue();
+        expect(searchableNavigationPressSearchKey($page, 'ArrowDown'))->toBe('Dramedy');
+        expect(searchableNavigationPressSearchKey($page, 'ArrowDown'))->toBe('Action Drama');
+        expect(searchableNavigationPressSearchKey($page, 'Enter'))->toBeTrue();
 
-        expect(waitForLocationToContain($page, 'category=series-action-drama'))->toBeTrue();
+        expect(searchableNavigationWaitForLocationToContain($page, 'category=series-action-drama'))->toBeTrue();
     })->group('browser');
 
     it('desktop movie search keeps uncategorized last and offers guided clear-search recovery', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableMovieFixture();
+        searchableNavigationSeedMovieFixture();
 
-        $page = loginAndVisitSearchPage($user, route('movies'))
+        $page = searchableNavigationLoginAndVisitPage($user, route('movies'))
             ->resize(1280, 900)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'unc');
+        searchableNavigationTypeInlineSearchQuery($page, 'unc');
 
-        $uncategorizedResults = visibleSearchResults($page);
+        $uncategorizedResults = searchableNavigationVisibleSearchResults($page);
 
         expect(array_key_last($uncategorizedResults))->not->toBeNull();
         expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
 
-        typeInlineSearchQuery($page, 'zzz');
+        searchableNavigationTypeInlineSearchQuery($page, 'zzz');
 
-        expect(noMatchStateText($page))->toContain('No categories match your search.');
-        expect(noMatchStateText($page))->toContain('Try a different category name or clear the current query.');
-        expect(noMatchStateText($page))->not->toContain('hidden');
-        expect(clickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
-        expect(searchInputValue($page))->toBe('');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('No categories match your search.');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('Try a different category name or clear the current query.');
+        expect(searchableNavigationNoMatchStateText($page))->not->toContain('hidden');
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
+        expect(searchableNavigationSearchInputValue($page))->toBe('');
     })->group('browser');
 
     it('desktop series search keeps uncategorized last and offers guided clear-search recovery', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableSeriesFixture();
+        searchableNavigationSeedSeriesFixture();
 
-        $page = loginAndVisitSearchPage($user, route('series'))
+        $page = searchableNavigationLoginAndVisitPage($user, route('series'))
             ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'unc');
+        searchableNavigationTypeInlineSearchQuery($page, 'unc');
 
-        $uncategorizedResults = visibleSearchResults($page);
+        $uncategorizedResults = searchableNavigationVisibleSearchResults($page);
 
         expect(array_key_last($uncategorizedResults))->not->toBeNull();
         expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
 
-        typeInlineSearchQuery($page, 'zzz');
+        searchableNavigationTypeInlineSearchQuery($page, 'zzz');
 
-        expect(noMatchStateText($page))->toContain('No categories match your search.');
-        expect(noMatchStateText($page))->toContain('Try a different category name or clear the current query.');
-        expect(noMatchStateText($page))->not->toContain('hidden');
-        expect(clickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
-        expect(searchInputValue($page))->toBe('');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('No categories match your search.');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('Try a different category name or clear the current query.');
+        expect(searchableNavigationNoMatchStateText($page))->not->toContain('hidden');
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Clear search'))->toBeTrue();
+        expect(searchableNavigationSearchInputValue($page))->toBe('');
     })->group('browser');
 
     it('mobile movie search works in browse and manage modes, closes on select, and resets on reopen', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableMovieFixture();
-        updateCategoryPreferences($user, MediaType::Movie, route('movies'), [
+        searchableNavigationSeedMovieFixture();
+        searchableNavigationUpdateCategoryPreferences($user, MediaType::Movie, route('movies'), [
             'pinned_ids' => [],
             'visible_ids' => ['movie-drama', 'movie-action-drama', 'movie-uncategorized'],
             'hidden_ids' => ['movie-comedy'],
@@ -164,64 +164,64 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(openMobileSheet($page, 'Movie Categories'))->toBeTrue();
+        expect(searchableNavigationOpenMobileSheet($page, 'Movie Categories'))->toBeTrue();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsNearMobileSheetTop($page, 'Movie Categories'))->toBeTrue();
-        expect(searchInputIsFocused($page))->toBeFalse();
+        expect(searchableNavigationSearchInputAppearsNearMobileSheetTop($page, 'Movie Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputIsFocused($page))->toBeFalse();
 
-        typeInlineSearchQuery($page, 'dram');
+        searchableNavigationTypeInlineSearchQuery($page, 'dram');
 
-        $browseResults = visibleSearchResults($page);
+        $browseResults = searchableNavigationVisibleSearchResults($page);
 
         expect($browseResults)->not->toContain('All categories');
         expect($browseResults)->toContain('Drama');
         expect($browseResults)->toContain('Action Drama');
         expect(implode(' ', $browseResults))->toContain('Dramedy');
 
-        expect(clickVisibleButtonByText($page, 'Drama'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Drama'))->toBeTrue();
 
-        expect(waitForLocationToContain($page, 'category=movie-drama'))->toBeTrue();
-        expect(waitForMobileSheetToClose($page))->toBeTrue();
+        expect(searchableNavigationWaitForLocationToContain($page, 'category=movie-drama'))->toBeTrue();
+        expect(searchableNavigationWaitForMobileSheetToClose($page))->toBeTrue();
         $page->assertNoJavaScriptErrors();
-        expect(waitForVisibleButtonByText($page, 'Movie Categories'))->toBeTrue();
+        expect(searchableNavigationWaitForVisibleButtonByText($page, 'Movie Categories'))->toBeTrue();
 
         $page->assertNoJavaScriptErrors();
 
-        expect(openMobileSheet($page, 'Movie Categories'))->toBeTrue();
-        expect(searchInputValue($page))->toBe('');
-        expect(searchInputIsFocused($page))->toBeFalse();
+        expect(searchableNavigationOpenMobileSheet($page, 'Movie Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputValue($page))->toBe('');
+        expect(searchableNavigationSearchInputIsFocused($page))->toBeFalse();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
 
-        expect(clickVisibleButtonByText($page, 'Manage'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Manage'))->toBeTrue();
 
         $page->waitForText('Preferences')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'dram');
+        searchableNavigationTypeInlineSearchQuery($page, 'dram');
 
-        $manageResults = visibleSearchResults($page);
+        $manageResults = searchableNavigationVisibleSearchResults($page);
 
         expect($manageResults)->not->toContain('All categories');
         expect($manageResults)->toContain('Drama');
         expect($manageResults)->toContain('Action Drama');
         expect(implode(' ', $manageResults))->toContain('Dramedy');
 
-        typeInlineSearchQuery($page, 'com');
+        searchableNavigationTypeInlineSearchQuery($page, 'com');
 
-        expect(noMatchStateText($page))->toContain('No categories match your search.');
-        expect(implode(' ', visibleSearchResults($page)))->not->toContain('Comedy');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('No categories match your search.');
+        expect(implode(' ', searchableNavigationVisibleSearchResults($page)))->not->toContain('Comedy');
     })->group('browser');
 
     it('mobile series search works in browse and manage modes, closes on select, and resets on reopen', function (): void {
         $user = User::factory()->create();
 
-        seedSearchableSeriesFixture();
-        updateCategoryPreferences($user, MediaType::Series, route('series'), [
+        searchableNavigationSeedSeriesFixture();
+        searchableNavigationUpdateCategoryPreferences($user, MediaType::Series, route('series'), [
             'pinned_ids' => [],
             'visible_ids' => ['series-drama', 'series-action-drama', 'series-uncategorized'],
             'hidden_ids' => ['series-comedy'],
@@ -235,60 +235,60 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(openMobileSheet($page, 'Series Categories'))->toBeTrue();
+        expect(searchableNavigationOpenMobileSheet($page, 'Series Categories'))->toBeTrue();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsNearMobileSheetTop($page, 'Series Categories'))->toBeTrue();
-        expect(searchInputIsFocused($page))->toBeFalse();
+        expect(searchableNavigationSearchInputAppearsNearMobileSheetTop($page, 'Series Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputIsFocused($page))->toBeFalse();
 
-        typeInlineSearchQuery($page, 'dram');
+        searchableNavigationTypeInlineSearchQuery($page, 'dram');
 
-        $browseResults = visibleSearchResults($page);
+        $browseResults = searchableNavigationVisibleSearchResults($page);
 
         expect($browseResults)->not->toContain('All categories');
         expect($browseResults)->toContain('Drama');
         expect($browseResults)->toContain('Action Drama');
         expect(implode(' ', $browseResults))->toContain('Dramedy');
 
-        expect(clickVisibleButtonByText($page, 'Drama'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Drama'))->toBeTrue();
 
-        expect(waitForLocationToContain($page, 'category=series-drama'))->toBeTrue();
-        expect(waitForMobileSheetToClose($page))->toBeTrue();
-        expect(waitForVisibleButtonByText($page, 'Series Categories'))->toBeTrue();
+        expect(searchableNavigationWaitForLocationToContain($page, 'category=series-drama'))->toBeTrue();
+        expect(searchableNavigationWaitForMobileSheetToClose($page))->toBeTrue();
+        expect(searchableNavigationWaitForVisibleButtonByText($page, 'Series Categories'))->toBeTrue();
 
         $page->assertNoJavaScriptErrors();
 
-        expect(openMobileSheet($page, 'Series Categories'))->toBeTrue();
-        expect(searchInputValue($page))->toBe('');
-        expect(searchInputIsFocused($page))->toBeFalse();
+        expect(searchableNavigationOpenMobileSheet($page, 'Series Categories'))->toBeTrue();
+        expect(searchableNavigationSearchInputValue($page))->toBe('');
+        expect(searchableNavigationSearchInputIsFocused($page))->toBeFalse();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
 
-        expect(clickVisibleButtonByText($page, 'Manage'))->toBeTrue();
+        expect(searchableNavigationClickVisibleButtonByText($page, 'Manage'))->toBeTrue();
 
         $page->waitForText('Preferences')
             ->assertNoJavaScriptErrors();
 
-        typeInlineSearchQuery($page, 'dram');
+        searchableNavigationTypeInlineSearchQuery($page, 'dram');
 
-        $manageResults = visibleSearchResults($page);
+        $manageResults = searchableNavigationVisibleSearchResults($page);
 
         expect($manageResults)->not->toContain('All categories');
         expect($manageResults)->toContain('Drama');
         expect($manageResults)->toContain('Action Drama');
         expect(implode(' ', $manageResults))->toContain('Dramedy');
 
-        typeInlineSearchQuery($page, 'com');
+        searchableNavigationTypeInlineSearchQuery($page, 'com');
 
-        expect(noMatchStateText($page))->toContain('No categories match your search.');
-        expect(implode(' ', visibleSearchResults($page)))->not->toContain('Comedy');
+        expect(searchableNavigationNoMatchStateText($page))->toContain('No categories match your search.');
+        expect(implode(' ', searchableNavigationVisibleSearchResults($page)))->not->toContain('Comedy');
     })->group('browser');
 }
 
-function loginAndVisitSearchPage(User $user, string $url): object
+function searchableNavigationLoginAndVisitPage(User $user, string $url): object
 {
     visit(route('login'))
         ->waitForText('Log in to your account')
@@ -301,7 +301,7 @@ function loginAndVisitSearchPage(User $user, string $url): object
     return visit($url);
 }
 
-function createMovieCategory(string $providerId, string $name): void
+function searchableNavigationCreateMovieCategory(string $providerId, string $name): void
 {
     Category::query()->create([
         'provider_id' => $providerId,
@@ -312,7 +312,7 @@ function createMovieCategory(string $providerId, string $name): void
     ]);
 }
 
-function createSeriesCategory(string $providerId, string $name): void
+function searchableNavigationCreateSeriesCategory(string $providerId, string $name): void
 {
     Category::query()->create([
         'provider_id' => $providerId,
@@ -323,37 +323,37 @@ function createSeriesCategory(string $providerId, string $name): void
     ]);
 }
 
-function seedSearchableMovieFixture(): void
+function searchableNavigationSeedMovieFixture(): void
 {
-    createMovieCategory('movie-drama', 'Drama');
-    createMovieCategory('movie-action-drama', 'Action Drama');
-    createMovieCategory('movie-dramedy', 'Dramedy');
-    createMovieCategory('movie-comedy', 'Comedy');
-    createMovieCategory('movie-uncategorized', 'Uncategorized');
+    searchableNavigationCreateMovieCategory('movie-drama', 'Drama');
+    searchableNavigationCreateMovieCategory('movie-action-drama', 'Action Drama');
+    searchableNavigationCreateMovieCategory('movie-dramedy', 'Dramedy');
+    searchableNavigationCreateMovieCategory('movie-comedy', 'Comedy');
+    searchableNavigationCreateMovieCategory('movie-uncategorized', 'Uncategorized');
 
-    seedMovieRecord(71_001, 'Drama Story', 'movie-drama');
-    seedMovieRecord(71_002, 'Action Drama Story', 'movie-action-drama');
-    seedMovieRecord(71_003, 'Dramedy Story', 'movie-dramedy');
-    seedMovieRecord(71_004, 'Comedy Story', 'movie-comedy');
-    seedMovieRecord(71_005, 'Uncategorized Movie', 'movie-uncategorized');
+    searchableNavigationSeedMovieRecord(71_001, 'Drama Story', 'movie-drama');
+    searchableNavigationSeedMovieRecord(71_002, 'Action Drama Story', 'movie-action-drama');
+    searchableNavigationSeedMovieRecord(71_003, 'Dramedy Story', 'movie-dramedy');
+    searchableNavigationSeedMovieRecord(71_004, 'Comedy Story', 'movie-comedy');
+    searchableNavigationSeedMovieRecord(71_005, 'Uncategorized Movie', 'movie-uncategorized');
 }
 
-function seedSearchableSeriesFixture(): void
+function searchableNavigationSeedSeriesFixture(): void
 {
-    createSeriesCategory('series-drama', 'Drama');
-    createSeriesCategory('series-action-drama', 'Action Drama');
-    createSeriesCategory('series-dramedy', 'Dramedy');
-    createSeriesCategory('series-comedy', 'Comedy');
-    createSeriesCategory('series-uncategorized', 'Uncategorized');
+    searchableNavigationCreateSeriesCategory('series-drama', 'Drama');
+    searchableNavigationCreateSeriesCategory('series-action-drama', 'Action Drama');
+    searchableNavigationCreateSeriesCategory('series-dramedy', 'Dramedy');
+    searchableNavigationCreateSeriesCategory('series-comedy', 'Comedy');
+    searchableNavigationCreateSeriesCategory('series-uncategorized', 'Uncategorized');
 
-    seedSeriesRecord(72_001, 'Drama Nights', 'series-drama');
-    seedSeriesRecord(72_002, 'Action Drama Nights', 'series-action-drama');
-    seedSeriesRecord(72_003, 'Dramedy Nights', 'series-dramedy');
-    seedSeriesRecord(72_004, 'Comedy Nights', 'series-comedy');
-    seedSeriesRecord(72_005, 'Uncategorized Nights', 'series-uncategorized');
+    searchableNavigationSeedSeriesRecord(72_001, 'Drama Nights', 'series-drama');
+    searchableNavigationSeedSeriesRecord(72_002, 'Action Drama Nights', 'series-action-drama');
+    searchableNavigationSeedSeriesRecord(72_003, 'Dramedy Nights', 'series-dramedy');
+    searchableNavigationSeedSeriesRecord(72_004, 'Comedy Nights', 'series-comedy');
+    searchableNavigationSeedSeriesRecord(72_005, 'Uncategorized Nights', 'series-uncategorized');
 }
 
-function seedMovieRecord(int $streamId, string $name, string $categoryId): void
+function searchableNavigationSeedMovieRecord(int $streamId, string $name, string $categoryId): void
 {
     VodStream::withoutSyncingToSearch(static function () use ($streamId, $name, $categoryId): void {
         VodStream::unguarded(static function () use ($streamId, $name, $categoryId): void {
@@ -371,7 +371,7 @@ function seedMovieRecord(int $streamId, string $name, string $categoryId): void
     });
 }
 
-function seedSeriesRecord(int $seriesId, string $name, string $categoryId): void
+function searchableNavigationSeedSeriesRecord(int $seriesId, string $name, string $categoryId): void
 {
     DB::table('series')->insert([
         'series_id' => $seriesId,
@@ -392,7 +392,7 @@ function seedSeriesRecord(int $seriesId, string $name, string $categoryId): void
     ]);
 }
 
-function updateCategoryPreferences(User $user, MediaType $mediaType, string $from, array $payload): void
+function searchableNavigationUpdateCategoryPreferences(User $user, MediaType $mediaType, string $from, array $payload): void
 {
     test()->actingAs($user)
         ->from($from)
@@ -401,12 +401,12 @@ function updateCategoryPreferences(User $user, MediaType $mediaType, string $fro
         ->assertSessionHasNoErrors();
 }
 
-function openMobileSheet(object $page, string $triggerText): bool
+function searchableNavigationOpenMobileSheet(object $page, string $triggerText): bool
 {
-    return clickVisibleButtonByText($page, $triggerText);
+    return searchableNavigationClickVisibleButtonByText($page, $triggerText);
 }
 
-function typeInlineSearchQuery(object $page, string $query): void
+function searchableNavigationTypeInlineSearchQuery(object $page, string $query): void
 {
     $queryJson = json_encode($query, JSON_THROW_ON_ERROR);
 
@@ -438,7 +438,7 @@ function typeInlineSearchQuery(object $page, string $query): void
     $page->assertNoJavaScriptErrors();
 }
 
-function visibleSearchResults(object $page): array
+function searchableNavigationVisibleSearchResults(object $page): array
 {
     return $page->script(<<<'JS'
         () => {
@@ -457,7 +457,7 @@ function visibleSearchResults(object $page): array
     JS);
 }
 
-function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
+function searchableNavigationSelectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
 {
     $countJson = json_encode($arrowDownCount, JSON_THROW_ON_ERROR);
 
@@ -497,7 +497,7 @@ function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
     return true;
 }
 
-function pressSearchKey(object $page, string $key): string|bool
+function searchableNavigationPressSearchKey(object $page, string $key): string|bool
 {
     $keyJson = json_encode($key, JSON_THROW_ON_ERROR);
 
@@ -542,7 +542,7 @@ function pressSearchKey(object $page, string $key): string|bool
     JS));
 }
 
-function searchInputValue(object $page): string
+function searchableNavigationSearchInputValue(object $page): string
 {
     return $page->script(<<<'JS'
         () => {
@@ -558,7 +558,7 @@ function searchInputValue(object $page): string
     JS);
 }
 
-function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
+function searchableNavigationSearchInputAppearsBelowSidebarTitle(object $page, string $title): bool
 {
     $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
 
@@ -584,7 +584,7 @@ function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
     JS));
 }
 
-function searchInputAppearsNearMobileSheetTop(object $page, string $title): bool
+function searchableNavigationSearchInputAppearsNearMobileSheetTop(object $page, string $title): bool
 {
     $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
 
@@ -604,7 +604,7 @@ function searchInputAppearsNearMobileSheetTop(object $page, string $title): bool
     JS));
 }
 
-function searchInputIsFocused(object $page): bool
+function searchableNavigationSearchInputIsFocused(object $page): bool
 {
     return $page->script(<<<'JS'
         () => {
@@ -621,7 +621,7 @@ function searchInputIsFocused(object $page): bool
     JS);
 }
 
-function visibleHighlightedSegments(object $page): array
+function searchableNavigationVisibleHighlightedSegments(object $page): array
 {
     return $page->script(<<<'JS'
         () => {
@@ -640,7 +640,7 @@ function visibleHighlightedSegments(object $page): array
     JS);
 }
 
-function selectedSearchResultText(object $page): string
+function searchableNavigationSelectedSearchResultText(object $page): string
 {
     return $page->script(<<<'JS'
         () => {
@@ -659,7 +659,7 @@ function selectedSearchResultText(object $page): string
     JS);
 }
 
-function noMatchStateText(object $page): string
+function searchableNavigationNoMatchStateText(object $page): string
 {
     return $page->script(<<<'JS'
         () => {
@@ -677,14 +677,14 @@ function noMatchStateText(object $page): string
     JS);
 }
 
-function currentLocation(object $page): string
+function searchableNavigationCurrentLocation(object $page): string
 {
     return $page->script(<<<'JS'
         () => `${window.location.pathname}${window.location.search}`
     JS);
 }
 
-function waitForLocationToContain(object $page, string $needle): bool
+function searchableNavigationWaitForLocationToContain(object $page, string $needle): bool
 {
     $needleJson = json_encode($needle, JSON_THROW_ON_ERROR);
 
@@ -708,7 +708,7 @@ function waitForLocationToContain(object $page, string $needle): bool
     JS));
 }
 
-function waitForMobileSheetToClose(object $page): bool
+function searchableNavigationWaitForMobileSheetToClose(object $page): bool
 {
     return $page->script(<<<'JS'
         async () => {
@@ -735,7 +735,7 @@ function waitForMobileSheetToClose(object $page): bool
     JS);
 }
 
-function waitForVisibleButtonByText(object $page, string $text): bool
+function searchableNavigationWaitForVisibleButtonByText(object $page, string $text): bool
 {
     $textJson = json_encode($text, JSON_THROW_ON_ERROR);
 
@@ -767,7 +767,7 @@ function waitForVisibleButtonByText(object $page, string $text): bool
     JS));
 }
 
-function clickVisibleButtonByText(object $page, string $text): bool
+function searchableNavigationClickVisibleButtonByText(object $page, string $text): bool
 {
     $textJson = json_encode($text, JSON_THROW_ON_ERROR);
 

@@ -157,7 +157,9 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-dramedy'],
         ]);
 
-        $page = loginAndVisitSearchPage($user, route('movies'))
+        test()->actingAs($user);
+
+        $page = visit(route('movies'))
             ->resize(390, 844)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
@@ -166,6 +168,9 @@ if (! extension_loaded('sockets')) {
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
+
+        expect(searchInputAppearsNearMobileSheetTop($page, 'Movie Categories'))->toBeTrue();
+        expect(searchInputIsFocused($page))->toBeFalse();
 
         typeInlineSearchQuery($page, 'dram');
 
@@ -209,7 +214,9 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-dramedy'],
         ]);
 
-        $page = loginAndVisitSearchPage($user, route('series'))
+        test()->actingAs($user);
+
+        $page = visit(route('series'))
             ->resize(390, 844)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
@@ -218,6 +225,9 @@ if (! extension_loaded('sockets')) {
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
+
+        expect(searchInputAppearsNearMobileSheetTop($page, 'Series Categories'))->toBeTrue();
+        expect(searchInputIsFocused($page))->toBeFalse();
 
         typeInlineSearchQuery($page, 'dram');
 
@@ -503,6 +513,39 @@ function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
             return input.getBoundingClientRect().top >= heading.getBoundingClientRect().bottom - 8;
         }
     JS));
+}
+
+function searchInputAppearsNearMobileSheetTop(object $page, string $title): bool
+{
+    $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
+        () => {
+            const heading = Array.from(document.querySelectorAll('[role="dialog"] h1, [role="dialog"] h2, [role="dialog"] h3')).find((candidate) =>
+                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
+            );
+            const input = Array.from(document.querySelectorAll('[role="dialog"] input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+
+            if (! heading || ! input) {
+                return false;
+            }
+
+            const delta = input.getBoundingClientRect().top - heading.getBoundingClientRect().bottom;
+
+            return delta >= 0 && delta <= 120;
+        }
+    JS));
+}
+
+function searchInputIsFocused(object $page): bool
+{
+    return $page->script(<<<'JS'
+        () => {
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+
+            return Boolean(input) && document.activeElement === input;
+        }
+    JS);
 }
 
 function visibleHighlightedSegments(object $page): array

@@ -26,11 +26,19 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
+        expect(searchInputAppearsBelowSidebarTitle($page, 'Movie Categories'))->toBeTrue();
+
+        expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
+
+        $page->waitForText('Movie Categories')
+            ->assertNoJavaScriptErrors();
+
         typeInlineSearchQuery($page, 'dra');
 
         $results = visibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
+        expect($results)->not->toContain('Comedy');
         expect($results)->toContain('Drama');
         expect($results)->toContain('Action Drama');
         expect(array_key_last($results))->not->toBeNull();
@@ -55,11 +63,19 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
+        expect(searchInputAppearsBelowSidebarTitle($page, 'Series Categories'))->toBeTrue();
+
+        expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
+
+        $page->waitForText('Series Categories')
+            ->assertNoJavaScriptErrors();
+
         typeInlineSearchQuery($page, 'dra');
 
         $results = visibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
+        expect($results)->not->toContain('Comedy');
         expect($results)->toContain('Drama');
         expect($results)->toContain('Action Drama');
         expect(array_key_last($results))->not->toBeNull();
@@ -327,6 +343,30 @@ function searchInputValue(object $page): string
     return $page->script(<<<'JS'
         () => document.querySelector('input[placeholder="Search categories"]')?.value ?? ''
     JS);
+}
+
+function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
+{
+    $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
+        () => {
+            const heading = Array.from(document.querySelectorAll('h1, h2, h3')).find((candidate) =>
+                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
+            );
+
+            const input = document.querySelector('input[placeholder="Search categories"]');
+
+            if (! heading || ! input || input.offsetParent === null) {
+                return false;
+            }
+
+            const headingRect = heading.getBoundingClientRect();
+            const inputRect = input.getBoundingClientRect();
+
+            return inputRect.top >= headingRect.bottom && Math.abs(inputRect.left - headingRect.left) < 80;
+        }
+    JS));
 }
 
 function clickVisibleButtonByText(object $page, string $text): bool

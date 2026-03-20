@@ -97,6 +97,6 @@ Plans:
 |-------|----------------|--------|-----------|
 | 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
 | 9. Ignored Discovery Filters | 7/7 | Complete | 2026-03-19 |
-| 10. Searchable Category Navigation | 0/3 | Not started | - |
+| 10. Searchable Category Navigation | 1/3 | In Progress|  |
 | 11. Correct Search Mode UX | 0/TBD | Not started | - |
 | 12. Detail Page Category Context | 0/TBD | Not started | - |

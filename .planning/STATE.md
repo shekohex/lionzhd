@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 10
 current_phase_name: searchable category navigation
-current_plan: Not started
-status: planning
-stopped_at: Completed 09-07-PLAN.md
-last_updated: "2026-03-19T00:24:02.759Z"
-last_activity: 2026-03-19
+current_plan: 2
+status: executing
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-03-20T13:41:25.862Z"
+last_activity: 2026-03-20
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_plans: 14
+  completed_plans: 12
+  percent: 96
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 9 ignored discovery filters is complete and ready to hand off to Phase 10 searchable navigation work.
+**Current focus:** Phase 10 searchable navigation contracts and regressions are complete; desktop inline search wiring is next.
 
 ## Current Position
 
 **Current Phase:** 10
 **Current Phase Name:** searchable category navigation
-**Current Plan:** Not started
-**Total Plans in Phase:** 7
-**Status:** Ready to plan
-**Last Activity:** 2026-03-19
-**Last Activity Description:** Phase 09 complete, transitioned to Phase 10
+**Current Plan:** 2
+**Total Plans in Phase:** 3
+**Status:** In Progress
+**Last Activity:** 2026-03-20
+**Last Activity Description:** Completed 10-01 searchable navigation contracts and regression harness
 
-Phase: 9 of 12 (Ignored Discovery Filters)
-Plan: 7 of 7
-Status: Ready for Verification
-Last activity: 2026-03-19 - Completed 09-07 ignored browse payload persistence fix with browser regressions
+Phase: 10 of 12 (Searchable Category Navigation)
+Plan: 1 of 3
+Status: In Progress
+Last activity: 2026-03-20 - Completed 10-01 searchable navigation contracts and regression harness
 
-Progress: [██████████] 100%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 100%
 - Phase 09-ignored-discovery-filters P02 | 8 min | 2 tasks | 2 files |
 - Phase 09-ignored-discovery-filters P01 | 6 min | 2 tasks | 12 files |
 - Phase 09-ignored-discovery-filters P06 | 5 min | 1 task | 6 files |
+| Phase 10 P01 | 6min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,8 @@ Progress: [██████████] 100%
 - [Phase 09]: Empty all-categories recovery prioritizes opening sidebar manage mode and keeps reset as a secondary escape hatch.
 - [Phase 09-ignored-discovery-filters]: Shared category preference PATCH requests must always send ignored_ids alongside pinned, visible, and hidden ids.
 - [Phase 09-ignored-discovery-filters]: Ignore persistence regressions are locked with fresh-load browser assertions so the categories+filters partial reload contract stays unchanged.
+- [Phase 10]: Shared sidebar search logic now lives in a dedicated search.tsx module with exported normalization, ranking, highlighting, and cmdk renderer entrypoints.
+- [Phase 10]: Sidebar search inputs derive from visibleItems only, excluding the synthetic all-categories row while keeping matching uncategorized anchored last.
 
 ### Pending Todos
 
@@ -115,6 +118,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-19T00:15:55.492Z
-Stopped at: Completed 09-07-PLAN.md
+Last session: 2026-03-20T13:41:25.860Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None

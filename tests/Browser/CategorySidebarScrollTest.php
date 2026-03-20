@@ -20,9 +20,8 @@ if (! extension_loaded('sockets')) {
 
         seedMovieSidebarOverflowFixture();
 
-        test()->actingAs($user);
-
-        $metrics = visit(route('movies'))
+        $metrics = loginAndVisit($user, route('movies'))
+            ->resize(1280, 900)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors()
             ->script(<<<'JS'
@@ -85,9 +84,8 @@ if (! extension_loaded('sockets')) {
 
         seedSeriesSidebarOverflowFixture();
 
-        test()->actingAs($user);
-
-        $metrics = visit(route('series'))
+        $metrics = loginAndVisit($user, route('series'))
+            ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors()
             ->script(<<<'JS'
@@ -144,6 +142,19 @@ if (! extension_loaded('sockets')) {
         expect($metrics['scrollHeight'])->toBeGreaterThan($metrics['clientHeight']);
         expect($metrics['after'])->toBeGreaterThan($metrics['before']);
     })->group('browser');
+}
+
+function loginAndVisit(User $user, string $url): object
+{
+    visit(route('login'))
+        ->waitForText('Log in to your account')
+        ->fill('Email address', $user->email)
+        ->fill('Password', 'password')
+        ->press('Log in')
+        ->waitForText('Discover')
+        ->assertNoJavaScriptErrors();
+
+    return visit($url);
 }
 
 function seedMovieSidebarOverflowFixture(): void

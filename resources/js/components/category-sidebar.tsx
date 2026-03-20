@@ -6,6 +6,7 @@ import { ArrowLeft, ListFilterIcon } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { CategorySidebarBrowse } from './category-sidebar/browse';
 import { CategorySidebarManage } from './category-sidebar/manage';
+import { buildCategorySearchResults, CategorySidebarSearchResults } from './category-sidebar/search';
 import {
     CategorySidebarData,
     CategorySidebarItem,
@@ -102,6 +103,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
     const [view, setView] = useState<'browse' | 'manage'>('browse');
     const [feedback, setFeedback] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [query, setQuery] = useState('');
 
     const [pinnedItems, setPinnedItems] = useState<CategorySidebarItem[]>([]);
     const [visibleItems, setVisibleItems] = useState<CategorySidebarItem[]>([]);
@@ -121,6 +123,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         setIgnoredVisibleItems(nextGroups.ignoredVisibleItems);
         setHiddenItems(nextGroups.hiddenItems);
         setFeedback(null);
+        setQuery('');
     }, [categories]);
 
     useEffect(() => {
@@ -135,6 +138,12 @@ export default function CategorySidebar(props: CategorySidebarProps) {
             setIsMobileSheetOpen(true);
         }
     }, [manageRequestKey]);
+
+    useEffect(() => {
+        if (view !== 'browse') {
+            setQuery('');
+        }
+    }, [view]);
 
     const runSave = (
         nextPinnedItems: CategorySidebarItem[],
@@ -261,8 +270,23 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
     const handleSelectAndClose = (id: string | null) => {
         onSelectCategory(id);
+        setQuery('');
         setIsMobileSheetOpen(false);
     };
+
+    const trimmedQuery = query.trim();
+    const isDesktopSearchActive = view === 'browse' && trimmedQuery !== '';
+    const desktopSearchResults = useMemo(() => {
+        if (!isDesktopSearchActive) {
+            return [];
+        }
+
+        return buildCategorySearchResults({
+            query: trimmedQuery,
+            items: [...pinnedItems, ...visibleItems, ...ignoredVisibleItems],
+            uncategorizedItem,
+        });
+    }, [ignoredVisibleItems, isDesktopSearchActive, pinnedItems, trimmedQuery, uncategorizedItem, visibleItems]);
 
     const commonManageProps = {
         pinnedItems,
@@ -323,11 +347,25 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         )}
                     </div>
 
+                    {view === 'browse' && (
+                        <div className="px-4 pb-2">
+                            <CategorySidebarSearchResults
+                                query={query}
+                                results={desktopSearchResults}
+                                showResults={isDesktopSearchActive}
+                                className="border-border/70 shadow-none"
+                                onQueryChange={setQuery}
+                                onSelectCategory={handleSelectAndClose}
+                                onClear={() => setQuery('')}
+                            />
+                        </div>
+                    )}
+
                     <ScrollArea className="min-h-0 h-full flex-1">
                         <div className="space-y-4 p-4 pt-2">
                             {view === 'manage' ? (
                                 <CategorySidebarManage {...manageProps} />
-                            ) : (
+                            ) : isDesktopSearchActive ? null : (
                                 <CategorySidebarBrowse {...browseProps} />
                             )}
                         </div>
@@ -338,7 +376,10 @@ export default function CategorySidebar(props: CategorySidebarProps) {
             <div className="md:hidden">
                 <Sheet open={isMobileSheetOpen} onOpenChange={(open) => {
                     setIsMobileSheetOpen(open);
-                    if (!open) setView('browse');
+                    if (!open) {
+                        setView('browse');
+                        setQuery('');
+                    }
                 }}>
                     <SheetTrigger asChild>
                         <Button type="button" variant="outline" className="w-full justify-start gap-2 h-11 font-semibold shadow-sm border-muted-foreground/20">

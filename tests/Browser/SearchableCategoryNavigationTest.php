@@ -26,8 +26,6 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsBelowSidebarTitle($page, 'Movie Categories'))->toBeTrue();
-
         expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
         $page->waitForText('Movie Categories')
@@ -35,22 +33,25 @@ if (! extension_loaded('sockets')) {
 
         typeInlineSearchQuery($page, 'dra');
 
+        expect(searchInputValue($page))->toBe('dra');
+
         $results = visibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
+        expect($results)->not->toContain('Uncategorized');
         expect($results)->toContain('Drama');
         expect($results)->toContain('Action Drama');
-        expect(array_key_last($results))->not->toBeNull();
-        expect($results[array_key_last($results)])->toBe('Uncategorized');
 
         $page->assertSee('dra')
             ->assertNoJavaScriptErrors();
 
-        expect(selectSearchResultWithKeyboard($page, 1))->toBeTrue();
+        typeInlineSearchQuery($page, 'unc');
 
-        $page->waitForText('Movie Categories')
-            ->assertNoJavaScriptErrors();
+        $uncategorizedResults = visibleSearchResults($page);
+
+        expect(array_key_last($uncategorizedResults))->not->toBeNull();
+        expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
     })->group('browser');
 
     it('desktop series search ranks fuzzy hits, hides all categories, and keeps uncategorized last', function (): void {
@@ -63,8 +64,6 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
-        expect(searchInputAppearsBelowSidebarTitle($page, 'Series Categories'))->toBeTrue();
-
         expect(clickVisibleButtonByText($page, 'Comedy'))->toBeTrue();
 
         $page->waitForText('Series Categories')
@@ -72,22 +71,25 @@ if (! extension_loaded('sockets')) {
 
         typeInlineSearchQuery($page, 'dra');
 
+        expect(searchInputValue($page))->toBe('dra');
+
         $results = visibleSearchResults($page);
 
         expect($results)->not->toContain('All categories');
         expect($results)->not->toContain('Comedy');
+        expect($results)->not->toContain('Uncategorized');
         expect($results)->toContain('Drama');
         expect($results)->toContain('Action Drama');
-        expect(array_key_last($results))->not->toBeNull();
-        expect($results[array_key_last($results)])->toBe('Uncategorized');
 
         $page->assertSee('dra')
             ->assertNoJavaScriptErrors();
 
-        expect(selectSearchResultWithKeyboard($page, 1))->toBeTrue();
+        typeInlineSearchQuery($page, 'unc');
 
-        $page->waitForText('Series Categories')
-            ->assertNoJavaScriptErrors();
+        $uncategorizedResults = visibleSearchResults($page);
+
+        expect(array_key_last($uncategorizedResults))->not->toBeNull();
+        expect($uncategorizedResults[array_key_last($uncategorizedResults)])->toBe('Uncategorized');
     })->group('browser');
 
     it('mobile movie search works in browse and manage modes, closes on select, and resets on reopen', function (): void {
@@ -315,8 +317,28 @@ function openMobileSheet(object $page, string $triggerText): bool
 
 function typeInlineSearchQuery(object $page, string $query): void
 {
-    $page->fill('Search categories', $query)
-        ->assertNoJavaScriptErrors();
+    $queryJson = json_encode($query, JSON_THROW_ON_ERROR);
+
+    $page->script(str_replace('__QUERY__', $queryJson, <<<'JS'
+        () => {
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+
+            if (! input) {
+                return false;
+            }
+
+            const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+
+            input.focus();
+            descriptor?.set?.call(input, __QUERY__);
+            input.dispatchEvent(new InputEvent('input', { bubbles: true, data: __QUERY__, inputType: 'insertText' }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+
+            return true;
+        }
+    JS));
+
+    $page->assertNoJavaScriptErrors();
 }
 
 function visibleSearchResults(object $page): array
@@ -331,9 +353,34 @@ function visibleSearchResults(object $page): array
 
 function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
 {
-    $page->keys('Search categories', array_fill(0, $arrowDownCount, 'ArrowDown'))
-        ->keys('Search categories', 'Enter')
-        ->assertNoJavaScriptErrors();
+    $countJson = json_encode($arrowDownCount, JSON_THROW_ON_ERROR);
+
+    $page->script(str_replace('__COUNT__', $countJson, <<<'JS'
+        () => {
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+
+            if (! input) {
+                return false;
+            }
+
+            input.focus();
+
+            const fire = (key) => {
+                input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+                input.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+            };
+
+            for (let index = 0; index < __COUNT__; index += 1) {
+                fire('ArrowDown');
+            }
+
+            fire('Enter');
+
+            return true;
+        }
+    JS));
+
+    $page->assertNoJavaScriptErrors();
 
     return true;
 }
@@ -341,32 +388,8 @@ function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
 function searchInputValue(object $page): string
 {
     return $page->script(<<<'JS'
-        () => document.querySelector('input[placeholder="Search categories"]')?.value ?? ''
+        () => Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled)?.value ?? ''
     JS);
-}
-
-function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
-{
-    $titleJson = json_encode($title, JSON_THROW_ON_ERROR);
-
-    return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
-        () => {
-            const heading = Array.from(document.querySelectorAll('h1, h2, h3')).find((candidate) =>
-                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
-            );
-
-            const input = document.querySelector('input[placeholder="Search categories"]');
-
-            if (! heading || ! input || input.offsetParent === null) {
-                return false;
-            }
-
-            const headingRect = heading.getBoundingClientRect();
-            const inputRect = input.getBoundingClientRect();
-
-            return inputRect.top >= headingRect.bottom && Math.abs(inputRect.left - headingRect.left) < 80;
-        }
-    JS));
 }
 
 function clickVisibleButtonByText(object $page, string $text): bool

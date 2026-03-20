@@ -18,6 +18,7 @@ export interface CategorySidebarSearchResult {
 export interface CategorySidebarSearchResultsProps {
     query: string;
     results: CategorySidebarSearchResult[];
+    showResults?: boolean;
     placeholder?: string;
     emptyTitle?: string;
     emptyDescription?: string;
@@ -112,6 +113,7 @@ export function buildCategorySearchResults(args: {
 export function CategorySidebarSearchResults({
     query,
     results,
+    showResults = true,
     placeholder = 'Search categories',
     emptyTitle = 'No categories match your search.',
     emptyDescription = 'Try a different category name or clear the current query.',
@@ -123,33 +125,35 @@ export function CategorySidebarSearchResults({
     return (
         <Command loop shouldFilter={false} className={cn('rounded-lg border bg-background', className)}>
             <CommandInput value={query} onValueChange={onQueryChange} placeholder={placeholder} />
-            <CommandList>
-                <CommandEmpty>
-                    <div className="space-y-3 px-4 py-6 text-center">
-                        <div className="space-y-1">
-                            <p className="text-sm font-semibold">{emptyTitle}</p>
-                            <p className="text-xs text-muted-foreground">{emptyDescription}</p>
-                        </div>
-                        <Button type="button" variant="outline" size="sm" onClick={onClear}>
-                            Clear search
-                        </Button>
-                    </div>
-                </CommandEmpty>
-                {results.map((result) => (
-                    <CommandItem key={result.item.id} value={result.item.id} keywords={[normalizeCategorySearchQuery(result.item.name)]} onSelect={() => onSelectCategory(result.item.id)}>
-                        <div className="flex w-full items-start justify-between gap-3">
-                            <div className="min-w-0 text-left text-sm leading-5">
-                                {result.segments.map((segment, index) => (
-                                    <Fragment key={`${result.item.id}-${index}`}>
-                                        {segment.matched ? <span className="font-semibold text-foreground">{segment.text}</span> : <span className="text-muted-foreground">{segment.text}</span>}
-                                    </Fragment>
-                                ))}
+            {showResults && (
+                <CommandList>
+                    <CommandEmpty>
+                        <div className="space-y-3 px-4 py-6 text-center">
+                            <div className="space-y-1">
+                                <p className="text-sm font-semibold">{emptyTitle}</p>
+                                <p className="text-xs text-muted-foreground">{emptyDescription}</p>
                             </div>
-                            {result.item.isIgnored && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Ignored</span>}
+                            <Button type="button" variant="outline" size="sm" onClick={onClear}>
+                                Clear search
+                            </Button>
                         </div>
-                    </CommandItem>
-                ))}
-            </CommandList>
+                    </CommandEmpty>
+                    {results.map((result) => (
+                        <CommandItem key={result.item.id} value={result.item.id} keywords={[normalizeCategorySearchQuery(result.item.name)]} onSelect={() => onSelectCategory(result.item.id)}>
+                            <div className="flex w-full items-start justify-between gap-3">
+                                <div className="min-w-0 text-left text-sm leading-5">
+                                    {result.segments.map((segment, index) => (
+                                        <Fragment key={`${result.item.id}-${index}`}>
+                                            {segment.matched ? <span className="font-semibold text-foreground">{segment.text}</span> : <span className="text-muted-foreground">{segment.text}</span>}
+                                        </Fragment>
+                                    ))}
+                                </div>
+                                {result.item.isIgnored && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Ignored</span>}
+                            </div>
+                        </CommandItem>
+                    ))}
+                </CommandList>
+            )}
         </Command>
     );
 }

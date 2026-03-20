@@ -153,7 +153,7 @@ if (! extension_loaded('sockets')) {
         updateCategoryPreferences($user, MediaType::Movie, route('movies'), [
             'pinned_ids' => [],
             'visible_ids' => ['movie-drama', 'movie-action-drama', 'movie-uncategorized'],
-            'hidden_ids' => [],
+            'hidden_ids' => ['movie-comedy'],
             'ignored_ids' => ['movie-dramedy'],
         ]);
 
@@ -176,16 +176,23 @@ if (! extension_loaded('sockets')) {
 
         $browseResults = visibleSearchResults($page);
 
+        expect($browseResults)->not->toContain('All categories');
         expect($browseResults)->toContain('Drama');
         expect($browseResults)->toContain('Action Drama');
+        expect(implode(' ', $browseResults))->toContain('Dramedy');
 
         expect(clickVisibleButtonByText($page, 'Drama'))->toBeTrue();
 
-        $page->waitForText('Movie Categories')
-            ->assertNoJavaScriptErrors();
+        expect(waitForLocationToContain($page, 'category=movie-drama'))->toBeTrue();
+        expect(waitForMobileSheetToClose($page))->toBeTrue();
+        $page->assertNoJavaScriptErrors();
+        expect(waitForVisibleButtonByText($page, 'Movie Categories'))->toBeTrue();
+
+        $page->assertNoJavaScriptErrors();
 
         expect(openMobileSheet($page, 'Movie Categories'))->toBeTrue();
         expect(searchInputValue($page))->toBe('');
+        expect(searchInputIsFocused($page))->toBeFalse();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
@@ -199,8 +206,15 @@ if (! extension_loaded('sockets')) {
 
         $manageResults = visibleSearchResults($page);
 
+        expect($manageResults)->not->toContain('All categories');
         expect($manageResults)->toContain('Drama');
         expect($manageResults)->toContain('Action Drama');
+        expect(implode(' ', $manageResults))->toContain('Dramedy');
+
+        typeInlineSearchQuery($page, 'com');
+
+        expect(noMatchStateText($page))->toContain('No categories match your search.');
+        expect(implode(' ', visibleSearchResults($page)))->not->toContain('Comedy');
     })->group('browser');
 
     it('mobile series search works in browse and manage modes, closes on select, and resets on reopen', function (): void {
@@ -210,7 +224,7 @@ if (! extension_loaded('sockets')) {
         updateCategoryPreferences($user, MediaType::Series, route('series'), [
             'pinned_ids' => [],
             'visible_ids' => ['series-drama', 'series-action-drama', 'series-uncategorized'],
-            'hidden_ids' => [],
+            'hidden_ids' => ['series-comedy'],
             'ignored_ids' => ['series-dramedy'],
         ]);
 
@@ -233,16 +247,22 @@ if (! extension_loaded('sockets')) {
 
         $browseResults = visibleSearchResults($page);
 
+        expect($browseResults)->not->toContain('All categories');
         expect($browseResults)->toContain('Drama');
         expect($browseResults)->toContain('Action Drama');
+        expect(implode(' ', $browseResults))->toContain('Dramedy');
 
         expect(clickVisibleButtonByText($page, 'Drama'))->toBeTrue();
 
-        $page->waitForText('Series Categories')
-            ->assertNoJavaScriptErrors();
+        expect(waitForLocationToContain($page, 'category=series-drama'))->toBeTrue();
+        expect(waitForMobileSheetToClose($page))->toBeTrue();
+        expect(waitForVisibleButtonByText($page, 'Series Categories'))->toBeTrue();
+
+        $page->assertNoJavaScriptErrors();
 
         expect(openMobileSheet($page, 'Series Categories'))->toBeTrue();
         expect(searchInputValue($page))->toBe('');
+        expect(searchInputIsFocused($page))->toBeFalse();
 
         $page->waitForText('Manage')
             ->assertNoJavaScriptErrors();
@@ -256,8 +276,15 @@ if (! extension_loaded('sockets')) {
 
         $manageResults = visibleSearchResults($page);
 
+        expect($manageResults)->not->toContain('All categories');
         expect($manageResults)->toContain('Drama');
         expect($manageResults)->toContain('Action Drama');
+        expect(implode(' ', $manageResults))->toContain('Dramedy');
+
+        typeInlineSearchQuery($page, 'com');
+
+        expect(noMatchStateText($page))->toContain('No categories match your search.');
+        expect(implode(' ', visibleSearchResults($page)))->not->toContain('Comedy');
     })->group('browser');
 }
 
@@ -385,7 +412,13 @@ function typeInlineSearchQuery(object $page, string $query): void
 
     $page->script(str_replace('__QUERY__', $queryJson, <<<'JS'
         () => {
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             if (! input) {
                 return false;
@@ -408,10 +441,19 @@ function typeInlineSearchQuery(object $page, string $query): void
 function visibleSearchResults(object $page): array
 {
     return $page->script(<<<'JS'
-        () => Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
-            .filter((candidate) => candidate.offsetParent !== null)
+        () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+
+            return Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
+                .filter((candidate) => isVisible(candidate))
             .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
-            .filter((text) => text !== '')
+                .filter((text) => text !== '');
+        }
     JS);
 }
 
@@ -421,7 +463,13 @@ function selectSearchResultWithKeyboard(object $page, int $arrowDownCount): bool
 
     $page->script(str_replace('__COUNT__', $countJson, <<<'JS'
         () => {
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             if (! input) {
                 return false;
@@ -455,7 +503,13 @@ function pressSearchKey(object $page, string $key): string|bool
 
     return $page->script(str_replace('__KEY__', $keyJson, <<<'JS'
         () => {
-            const items = Array.from(document.querySelectorAll('[cmdk-item]')).filter((candidate) => candidate.offsetParent !== null);
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const items = Array.from(document.querySelectorAll('[cmdk-item]')).filter((candidate) => isVisible(candidate));
 
             if (items.length === 0) {
                 return false;
@@ -491,7 +545,16 @@ function pressSearchKey(object $page, string $key): string|bool
 function searchInputValue(object $page): string
 {
     return $page->script(<<<'JS'
-        () => Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled)?.value ?? ''
+        () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+
+            return Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled)?.value ?? '';
+        }
     JS);
 }
 
@@ -501,10 +564,16 @@ function searchInputAppearsBelowSidebarTitle(object $page, string $title): bool
 
     return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
         () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
             const heading = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3')).find((candidate) =>
-                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
+                candidate.textContent?.trim() === __TITLE__ && isVisible(candidate)
             );
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             if (! heading || ! input) {
                 return false;
@@ -521,18 +590,16 @@ function searchInputAppearsNearMobileSheetTop(object $page, string $title): bool
 
     return $page->script(str_replace('__TITLE__', $titleJson, <<<'JS'
         () => {
-            const heading = Array.from(document.querySelectorAll('[role="dialog"] h1, [role="dialog"] h2, [role="dialog"] h3')).find((candidate) =>
-                candidate.textContent?.trim() === __TITLE__ && candidate.offsetParent !== null
-            );
-            const input = Array.from(document.querySelectorAll('[role="dialog"] input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
 
-            if (! heading || ! input) {
-                return false;
-            }
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const container = Array.from(document.querySelectorAll('[data-slot="sheet-content"], [role="dialog"]')).find((candidate) => isVisible(candidate)) ?? document;
+            const input = Array.from(container.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
-            const delta = input.getBoundingClientRect().top - heading.getBoundingClientRect().bottom;
-
-            return delta >= 0 && delta <= 120;
+            return Boolean(input);
         }
     JS));
 }
@@ -541,7 +608,13 @@ function searchInputIsFocused(object $page): bool
 {
     return $page->script(<<<'JS'
         () => {
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => candidate.offsetParent !== null && ! candidate.disabled);
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             return Boolean(input) && document.activeElement === input;
         }
@@ -551,10 +624,19 @@ function searchInputIsFocused(object $page): bool
 function visibleHighlightedSegments(object $page): array
 {
     return $page->script(<<<'JS'
-        () => Array.from(document.querySelectorAll('[cmdk-item] .font-semibold'))
-            .filter((candidate) => candidate.offsetParent !== null)
+        () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+
+            return Array.from(document.querySelectorAll('[cmdk-item] .font-semibold'))
+                .filter((candidate) => isVisible(candidate))
             .map((candidate) => candidate.textContent?.trim() ?? '')
-            .filter((text) => text !== '')
+                .filter((text) => text !== '');
+        }
     JS);
 }
 
@@ -562,8 +644,14 @@ function selectedSearchResultText(object $page): string
 {
     return $page->script(<<<'JS'
         () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
             const selectedItem = Array.from(document.querySelectorAll('[cmdk-item]'))
-                .filter((candidate) => candidate.offsetParent !== null)
+                .filter((candidate) => isVisible(candidate))
                 .find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true' || candidate.dataset.selected === 'true');
 
             return selectedItem?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
@@ -575,8 +663,14 @@ function noMatchStateText(object $page): string
 {
     return $page->script(<<<'JS'
         () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
             const commandSurface = Array.from(document.querySelectorAll('[cmdk-root], [data-slot="command-list"], [data-slot="command-empty"]'))
-                .find((candidate) => candidate.offsetParent !== null);
+                .find((candidate) => isVisible(candidate));
 
             return commandSurface?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
         }
@@ -614,6 +708,65 @@ function waitForLocationToContain(object $page, string $needle): bool
     JS));
 }
 
+function waitForMobileSheetToClose(object $page): bool
+{
+    return $page->script(<<<'JS'
+        async () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 3000) {
+                const openSheet = Array.from(document.querySelectorAll('[data-slot="sheet-content"], [role="dialog"]')).find((candidate) => isVisible(candidate));
+
+                if (! openSheet) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS);
+}
+
+function waitForVisibleButtonByText(object $page, string $text): bool
+{
+    $textJson = json_encode($text, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__TEXT__', $textJson, <<<'JS'
+        async () => {
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const text = __TEXT__;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 3000) {
+                const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
+                    candidate.textContent?.trim() === text && isVisible(candidate)
+                );
+
+                if (button) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS));
+}
+
 function clickVisibleButtonByText(object $page, string $text): bool
 {
     $textJson = json_encode($text, JSON_THROW_ON_ERROR);
@@ -621,8 +774,14 @@ function clickVisibleButtonByText(object $page, string $text): bool
     return $page->script(str_replace('__TEXT__', $textJson, <<<'JS'
         () => {
             const text = __TEXT__;
-            const button = Array.from(document.querySelectorAll('button')).find((candidate) =>
-                candidate.textContent?.trim() === text && candidate.offsetParent !== null
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+            const button = Array.from(document.querySelectorAll('button, [cmdk-item], [role="option"]')).find((candidate) =>
+                candidate.textContent?.trim() === text && isVisible(candidate)
             );
 
             button?.click();

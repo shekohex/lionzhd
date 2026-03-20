@@ -67,9 +67,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Create searchable navigation contracts and regression harness
-- [ ] 10-02-PLAN.md — Add desktop inline search-first sidebar results
-- [ ] 10-03-PLAN.md — Extend searchable navigation to mobile browse/manage flows
+- [x] 10-01-PLAN.md — Create searchable navigation contracts and regression harness
+- [x] 10-02-PLAN.md — Add desktop inline search-first sidebar results
+- [x] 10-03-PLAN.md — Extend searchable navigation to mobile browse/manage flows
 
 ### Phase 11: Correct Search Mode UX
 **Goal**: Users can trust media-type search filtering, layout mode, and URL-driven navigation across refreshes and deep links.

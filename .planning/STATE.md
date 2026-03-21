@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 11
 current_phase_name: correct search mode ux
-current_plan: Not started
-status: planning
-stopped_at: Phase 10 complete, transitioned to Phase 11
-last_updated: "2026-03-20T14:54:13Z"
-last_activity: 2026-03-20
+current_plan: 2
+status: ready
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-03-21T20:07:28.821Z"
+last_activity: 2026-03-21
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 14
-  completed_plans: 14
-  percent: 98
+  total_plans: 56
+  completed_plans: 54
+  percent: 96
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 11 planning can start against the verified searchable navigation foundation.
+**Current focus:** Phase 11 execution is underway with the canonical `/search` contract locked for upcoming page rewiring.
 
 ## Current Position
 
 **Current Phase:** 11
 **Current Phase Name:** correct search mode ux
-**Current Plan:** Not started
+**Current Plan:** 2
 **Total Plans in Phase:** 3
-**Status:** Ready to plan
-**Last Activity:** 2026-03-20
-**Last Activity Description:** Phase 10 complete, transitioned to Phase 11
+**Status:** Ready to execute
+**Last Activity:** 2026-03-21
+**Last Activity Description:** Completed 11-01 canonical /search contract and regression scaffold
 
 Phase: 11 of 12 (Correct Search Mode UX)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-03-20 - Phase 10 complete, transitioned to Phase 11
+Plan: 2 of 3
+Status: Ready to execute
+Last activity: 2026-03-21 - Completed 11-01 canonical /search contract and regression scaffold
 
-Progress: [██████████] 98%
+Progress: [██████████] 96%
 
 ## Performance Metrics
 
@@ -66,6 +66,7 @@ Progress: [██████████] 98%
 - Phase 10-searchable-category-navigation P01 | 6 min | 3 tasks | 5 files |
 - Phase 09-ignored-discovery-filters P07 | 15 min | 1 task | 2 files |
 - Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
+| Phase 11 P01 | 2 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -108,6 +109,8 @@ Progress: [██████████] 98%
 - [Phase 10-searchable-category-navigation]: Mobile browse and manage now share one shell-owned category search surface with reset-on-close behavior.
 - [Phase 10-searchable-category-navigation]: Category selection visits now remount the page to avoid mobile sheet transition crashes during navigation.
 - [Phase 10-searchable-category-navigation]: Short subsequence-only fuzzy matches are ignored so mobile and desktop search results stay relevant.
+- [Phase 11]: SearchMediaData now preserves raw q for the UI while exposing normalized execution query and resolved media_type/sort_by helpers.
+- [Phase 11]: SearchController returns only the chosen media type in filtered mode and keeps explicit URL params authoritative over typed magic words.
 
 ### Pending Todos
 
@@ -120,6 +123,6 @@ Progress: [██████████] 98%
 
 ## Session Continuity
 
-Last session: 2026-03-20T14:54:13Z
-Stopped at: Phase 10 complete, transitioned to Phase 11
+Last session: 2026-03-21T20:07:28.820Z
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None

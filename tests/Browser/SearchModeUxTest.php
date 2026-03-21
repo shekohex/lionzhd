@@ -163,36 +163,50 @@ if (! extension_loaded('sockets')) {
         $user = User::factory()->create();
 
         searchModeUxSeedFixture();
+        searchModeUxSeedMovieRecord(81_003, 'Galaxy Movie Two', 'movie-fixture');
+        searchModeUxSeedMovieRecord(81_004, 'Galaxy Movie Three', 'movie-fixture');
+        searchModeUxSeedMovieRecord(81_005, 'Galaxy Movie Four', 'movie-fixture');
+        searchModeUxSeedMovieRecord(81_006, 'Galaxy Movie Five', 'movie-fixture');
+        searchModeUxSeedSeriesRecord(82_003, 'Galaxy Series Two', 'series-fixture');
+        searchModeUxSeedSeriesRecord(82_004, 'Galaxy Series Three', 'series-fixture');
+        searchModeUxSeedSeriesRecord(82_005, 'Galaxy Series Four', 'series-fixture');
+        searchModeUxSeedSeriesRecord(82_006, 'Galaxy Series Five', 'series-fixture');
 
-        $page = searchModeUxLoginAndVisitPage($user, route('search.full', [
-            'q' => 'Galaxy',
-            'media_type' => 'movie',
-            'sort_by' => 'rating',
-            'page' => 2,
-        ]))
+        $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
             ->resize(1440, 960)
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
 
-        expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy', 'media_type=movie', 'sort_by=rating', 'page=2']))->toBeTrue();
-        expect(searchModeUxActiveMode($page))->toBe('movie');
+        expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy']))->toBeTrue();
+        expect(searchModeUxActiveMode($page))->toBe('all');
+        expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(5);
+        expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(5);
+
+        expect(searchModeUxClickSectionLink($page, 'Movies', 'page=2'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'page', '2'))->toBeTrue();
+        expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
+        expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
 
         searchModeUxHistoryBack($page);
 
-        expect(searchModeUxWaitForLocationToContain($page, '/search'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'page', null))->toBeTrue();
+        expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(5);
+        expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(5);
 
         searchModeUxHistoryForward($page);
 
-        expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy', 'media_type=movie', 'sort_by=rating', 'page=2']))->toBeTrue();
+        expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy', 'page=2']))->toBeTrue();
+        expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
+        expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
 
         $page = searchModeUxRefreshPage($page)
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
 
-        expect(searchModeUxCurrentLocation($page))->toContain('media_type=movie');
-        expect(searchModeUxCurrentLocation($page))->toContain('sort_by=rating');
         expect(searchModeUxCurrentLocation($page))->toContain('page=2');
-        expect(searchModeUxActiveMode($page))->toBe('movie');
+        expect(searchModeUxActiveMode($page))->toBe('all');
+        expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
+        expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
     })->group('browser');
 }
 
@@ -524,6 +538,67 @@ function searchModeUxWaitForBodyText(object $page, string $needle): bool
     JS));
 }
 
+function searchModeUxVisibleResultCount(object $page, string $sectionTitle, string $hrefFragment): int
+{
+    $sectionTitleJson = json_encode($sectionTitle, JSON_THROW_ON_ERROR);
+    $hrefFragmentJson = json_encode($hrefFragment, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace(['__SECTION__', '__HREF__'], [$sectionTitleJson, $hrefFragmentJson], <<<'JS'
+        () => {
+            const sectionTitle = __SECTION__;
+            const hrefFragment = __HREF__;
+            const section = Array.from(document.querySelectorAll('section')).find((candidate) => {
+                const heading = candidate.querySelector('h2');
+
+                return heading?.textContent?.replace(/\s+/g, ' ').trim() === sectionTitle;
+            });
+
+            if (! section) {
+                return 0;
+            }
+
+            return section.querySelectorAll(`a[href*="${hrefFragment}"]`).length;
+        }
+    JS));
+}
+
+function searchModeUxClickSectionLink(object $page, string $sectionTitle, string $hrefFragment): bool
+{
+    $sectionTitleJson = json_encode($sectionTitle, JSON_THROW_ON_ERROR);
+    $hrefFragmentJson = json_encode($hrefFragment, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace(['__SECTION__', '__HREF__'], [$sectionTitleJson, $hrefFragmentJson], <<<'JS'
+        () => {
+            const sectionTitle = __SECTION__;
+            const hrefFragment = __HREF__;
+            const section = Array.from(document.querySelectorAll('section')).find((candidate) => {
+                const heading = candidate.querySelector('h2');
+
+                return heading?.textContent?.replace(/\s+/g, ' ').trim() === sectionTitle;
+            });
+
+            if (! section) {
+                return false;
+            }
+
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+
+            const control = Array.from(section.querySelectorAll('a')).find((candidate) =>
+                candidate.href.includes(hrefFragment) && isVisible(candidate)
+            );
+
+            control?.click();
+
+            return Boolean(control);
+        }
+    JS));
+}
+
 function searchModeUxClickVisibleTab(object $page, string $text): bool
 {
     $textJson = json_encode($text, JSON_THROW_ON_ERROR);
@@ -537,7 +612,7 @@ function searchModeUxClickVisibleTab(object $page, string $text): bool
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const tab = Array.from(document.querySelectorAll('[role="tab"], button')).find((candidate) =>
+            const tab = Array.from(document.querySelectorAll('[role="tab"], button, a')).find((candidate) =>
                 candidate.textContent?.replace(/\s+/g, ' ').trim().includes(text) && isVisible(candidate)
             );
 

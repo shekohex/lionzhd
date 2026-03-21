@@ -140,6 +140,23 @@ if (! extension_loaded('sockets')) {
         expect(searchModeUxActiveLayout($page))->toBe('filtered');
         expect(searchModeUxVisibleSectionHeadings($page))->toContain('Movies only');
         expect(searchModeUxVisibleSectionHeadings($page))->not->toContain('TV Series');
+        expect(searchModeUxVisibleBodyText($page))->toContain('Movies only');
+        expect(searchModeUxVisibleBodyText($page))->toContain('1 movie result for "Galaxy type:movie"');
+
+        $emptyPage = searchModeUxLoginAndVisitPage($user, route('search.full', [
+            'q' => 'Nothing type:movie',
+            'media_type' => 'movie',
+        ]))
+            ->resize(1440, 960)
+            ->waitForText('Search the entire media library')
+            ->assertNoJavaScriptErrors();
+
+        expect(searchModeUxWaitForLocationToContain($emptyPage, 'media_type=movie'))->toBeTrue();
+        expect(searchModeUxActiveMode($emptyPage))->toBe('movie');
+        expect(searchModeUxActiveLayout($emptyPage))->toBe('filtered');
+        expect(searchModeUxVisibleBodyText($emptyPage))->toContain('No movies found');
+        expect(searchModeUxVisibleBodyText($emptyPage))->toContain('Try editing or clearing your search query.');
+        expect(searchModeUxVisibleBodyText($emptyPage))->not->toContain('Try searching TV series');
     })->group('browser');
 
     it('restores search state across refresh and history', function (): void {
@@ -473,6 +490,13 @@ function searchModeUxVisibleSectionHeadings(object $page): array
         () => Array.from(document.querySelectorAll('h1, h2, h3'))
             .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
             .filter((text) => text !== '')
+    JS);
+}
+
+function searchModeUxVisibleBodyText(object $page): string
+{
+    return $page->script(<<<'JS'
+        () => document.body.textContent?.replace(/\s+/g, ' ').trim() ?? ''
     JS);
 }
 

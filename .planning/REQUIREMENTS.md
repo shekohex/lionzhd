@@ -25,7 +25,7 @@ Requirements for milestone `v1.1 Category Personalization & Search UX`. Each map
 - [x] **NAVG-01**: User can search categories within sidebar or navigation on web and mobile
 - [x] **SRCH-01**: User can switch search media type between all, movies, and series and see UI state stay in sync with the URL
 - [x] **SRCH-02**: User sees only matching media-type results when search is filtered to movies or series
-- [ ] **SRCH-03**: User sees movie-only or series-only search results in a full-width result mode
+- [x] **SRCH-03**: User sees movie-only or series-only search results in a full-width result mode
 - [x] **SRCH-04**: User can refresh, deep-link, and use back or forward navigation without losing correct search mode behavior
 
 ### Detail Context
@@ -81,7 +81,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | NAVG-01 | Phase 10 | Complete |
 | SRCH-01 | Phase 11 | Complete |
 | SRCH-02 | Phase 11 | Complete |
-| SRCH-03 | Phase 11 | Pending |
+| SRCH-03 | Phase 11 | Complete |
 | SRCH-04 | Phase 11 | Complete |
 | CTXT-01 | Phase 12 | Pending |
 | CTXT-02 | Phase 12 | Pending |

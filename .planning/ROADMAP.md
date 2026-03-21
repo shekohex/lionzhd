@@ -14,7 +14,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 8: Personal Category Controls** - Per-user movie and series category order, pins, hide, and reset.
 - [x] **Phase 9: Ignored Discovery Filters** - Ignored categories consistently remove titles from discovery with recovery states.
 - [x] **Phase 10: Searchable Category Navigation** - Search categories inside web and mobile navigation. (completed 2026-03-20)
-- [ ] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness.
+- [x] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness. (completed 2026-03-21)
 - [ ] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages.
 
 ## Phase Details
@@ -83,9 +83,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 11-01-PLAN.md — Canonicalize `/search` params and scaffold search-mode regressions
-- [ ] 11-02-PLAN.md — Move full-search state into the page and add segmented mode tabs
-- [ ] 11-03-PLAN.md — Render filtered full-width results and lock pagination/history restoration
+- [x] 11-01-PLAN.md — Canonicalize `/search` params and scaffold search-mode regressions
+- [x] 11-02-PLAN.md — Move full-search state into the page and add segmented mode tabs
+- [x] 11-03-PLAN.md — Render filtered full-width results and lock pagination/history restoration
 
 ### Phase 12: Detail Page Category Context
 **Goal**: Users can see full category context on title detail pages.
@@ -103,5 +103,5 @@ Plans:
 | 8. Personal Category Controls | 4/4 | Complete | 2026-03-18 |
 | 9. Ignored Discovery Filters | 7/7 | Complete | 2026-03-19 |
 | 10. Searchable Category Navigation | 3/3 | Complete    | 2026-03-20 |
-| 11. Correct Search Mode UX | 2/3 | In Progress|  |
+| 11. Correct Search Mode UX | 3/3 | Complete   | 2026-03-21 |
 | 12. Detail Page Category Context | 0/TBD | Not started | - |

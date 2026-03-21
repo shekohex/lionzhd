@@ -5,16 +5,16 @@ milestone_name: milestone
 current_phase: 11
 current_phase_name: correct search mode ux
 current_plan: 3
-status: executing
-stopped_at: Completed 11-02-PLAN.md
-last_updated: "2026-03-21T20:37:12.767Z"
+status: verifying
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-03-21T21:04:45.107Z"
 last_activity: 2026-03-21
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 17
-  completed_plans: 16
-  percent: 96
+  completed_plans: 17
+  percent: 98
 ---
 
 # Project State
@@ -24,7 +24,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 11 is ready for its final filtered-layout plan after shipping page-owned `/search` state, segmented mode tabs, and committed history sync.
+**Current focus:** Phase 11 is complete and ready to transition into Phase 12 detail-page category context work.
 
 ## Current Position
 
@@ -32,16 +32,16 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 **Current Phase Name:** correct search mode ux
 **Current Plan:** 3
 **Total Plans in Phase:** 3
-**Status:** Executing
+**Status:** Phase complete — ready for verification
 **Last Activity:** 2026-03-21
-**Last Activity Description:** Completed 11-02 page-owned search state and segmented mode tab sync
+**Last Activity Description:** Completed 11-03 filtered search layout and committed pagination restoration
 
 Phase: 11 of 12 (Correct Search Mode UX)
 Plan: 3 of 3
-Status: Executing
-Last activity: 2026-03-21 - Completed 11-02 page-owned search state and segmented mode tab sync
+Status: Phase complete — ready for verification
+Last activity: 2026-03-21 - Completed 11-03 filtered search layout and committed pagination restoration
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ Progress: [██████████] 98%
 - Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
 | Phase 11 P01 | 2 min | 3 tasks | 4 files |
 | Phase 11 P02 | 24 min | 3 tasks | 3 files |
+| Phase 11 P03 | 21 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -114,6 +115,8 @@ Progress: [██████████] 98%
 - [Phase 11]: SearchController returns only the chosen media type in filtered mode and keeps explicit URL params authoritative over typed magic words.
 - [Phase 11]: Full-page /search now keeps draft query text local in the page while the URL and server props remain the committed source of truth.
 - [Phase 11]: Committed search actions build one canonical search URL so mode, sort, clear, submit, and history restoration move together.
+- [Phase 11]: Filtered search keeps one visible media section with explicit mode-specific summary and empty-state copy.
+- [Phase 11]: All-mode search pagination now uses one shared committed URL so refresh and browser history replay both sections together.
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ Progress: [██████████] 98%
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:37:12.765Z
-Stopped at: Completed 11-02-PLAN.md
+Last session: 2026-03-21T21:04:45.105Z
+Stopped at: Completed 11-03-PLAN.md
 Resume file: None

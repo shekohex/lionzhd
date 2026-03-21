@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Pagination } from '@/components/ui/pagination';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { FullSearchResult } from '@/types/search';
@@ -53,10 +54,19 @@ const FILTER_OPTIONS = {
     ],
 };
 
+interface SearchVisitOverrides {
+    q?: string | null;
+    page?: number;
+    per_page?: number;
+    media_type?: App.Enums.MediaType;
+    sort_by?: App.Enums.SearchSortby;
+}
+
 export default function Search() {
     const { props } = usePage<FullSearchResult>();
     const [draftQuery, setDraftQuery] = useState(props.filters.q ?? '');
     const [isCommitting, setIsCommitting] = useState(false);
+    const activeMode = props.filters.media_type === 'movie' || props.filters.media_type === 'series' ? props.filters.media_type : 'all';
 
     useEffect(() => {
         setDraftQuery(props.filters.q ?? '');
@@ -64,11 +74,7 @@ export default function Search() {
 
     const performSearch = useCallback(
         (
-            overrides: Partial<App.Data.SearchMediaData> & {
-                q?: string | null;
-                media_type?: App.Enums.MediaType;
-                sort_by?: App.Enums.SearchSortby;
-            } = {},
+            overrides: SearchVisitOverrides = {},
             options: { preserveScroll?: boolean } = {},
         ) => {
             const hasMediaTypeOverride = Object.prototype.hasOwnProperty.call(overrides, 'media_type');
@@ -112,6 +118,16 @@ export default function Search() {
         performSearch({ sort_by: value as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false });
     };
 
+    const handleModeChange = (value: string) => {
+        const nextMode = value === 'all' ? undefined : (value as App.Enums.MediaType);
+
+        if (nextMode === props.filters.media_type || (value === 'all' && !props.filters.media_type)) {
+            return;
+        }
+
+        performSearch({ q: draftQuery, media_type: nextMode, page: 1 }, { preserveScroll: false });
+    };
+
     // Calculate combined search results
     const allResults = useMemo(() => [...(props.movies?.data ?? []), ...(props.series?.data ?? [])], [props]);
     const hasResults = allResults.length > 0;
@@ -134,7 +150,10 @@ export default function Search() {
                                 value={draftQuery}
                                 onValueChange={setDraftQuery}
                                 onSubmit={handleSearch}
-                                onClear={() => setDraftQuery('')}
+                                onClear={() => {
+                                    setDraftQuery('');
+                                    performSearch({ q: null, page: 1 }, { preserveScroll: false });
+                                }}
                                 defaultPerPage={10}
                                 fullWidth
                                 autoFocus
@@ -142,21 +161,21 @@ export default function Search() {
                         </div>
                     </div>
 
-                    {/* Active filters */}
+                    <Tabs value={activeMode} onValueChange={handleModeChange} className="mt-4 w-full">
+                        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl p-1">
+                            <TabsTrigger value="all" className="py-2" onClick={() => handleModeChange('all')}>
+                                All
+                            </TabsTrigger>
+                            <TabsTrigger value="movie" className="py-2" onClick={() => handleModeChange('movie')}>
+                                Movies
+                            </TabsTrigger>
+                            <TabsTrigger value="series" className="py-2" onClick={() => handleModeChange('series')}>
+                                TV Series
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {props.filters.media_type && (
-                            <Badge variant="outline" className="flex items-center gap-1 py-1 pr-1 pl-2">
-                                <span>Type: {props.filters.media_type}</span>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-4 w-4"
-                                    onClick={() => performSearch({ media_type: undefined, page: 1 }, { preserveScroll: false })}
-                                >
-                                    <XIcon className="h-3 w-3" />
-                                </Button>
-                            </Badge>
-                        )}
                         {props.filters.sort_by && (
                             <Badge variant="outline" className="flex items-center gap-1 py-1 pr-1 pl-2">
                                 <span>Sort: {props.filters.sort_by}</span>
@@ -175,39 +194,7 @@ export default function Search() {
                     </div>
                 </div>
 
-                {/* Quick filters */}
                 <div className="mx-auto mt-2 flex w-full max-w-3xl gap-2">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" size="sm" className="flex items-center">
-                                    <FilterIcon className="mr-2 h-4 w-4" />
-                                Media Type
-                                <ChevronDownIcon className="ml-2 h-3 w-3" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-48">
-                            <div className="space-y-2">
-                                <Button
-                                    variant={props.filters.media_type ? 'default' : 'ghost'}
-                                    className="w-full justify-start"
-                                    onClick={() => performSearch({ media_type: undefined, page: 1 }, { preserveScroll: false })}
-                                >
-                                    All
-                                </Button>
-                                {FILTER_OPTIONS.type.map((option) => (
-                                    <Button
-                                        key={option.value}
-                                        variant={props.filters.media_type === option.value ? 'default' : 'ghost'}
-                                        className="w-full justify-start"
-                                        onClick={() => handleFilterSelect('type', option.value)}
-                                    >
-                                        {option.label}
-                                    </Button>
-                                ))}
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="outline" size="sm" className="flex items-center">

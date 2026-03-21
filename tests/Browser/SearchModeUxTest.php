@@ -55,18 +55,18 @@ if (! extension_loaded('sockets')) {
 
         expect(searchModeUxClickVisibleTab($page, 'Movies'))->toBeTrue();
         expect(searchModeUxWaitForLocationToContain($page, 'media_type=movie'))->toBeTrue();
-        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy+Draft');
+        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy%20Draft');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
         expect(searchModeUxActiveMode($page))->toBe('movie');
 
         expect(searchModeUxClickVisibleTab($page, 'TV Series'))->toBeTrue();
         expect(searchModeUxWaitForLocationToContain($page, 'media_type=series'))->toBeTrue();
-        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy+Draft');
+        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy%20Draft');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
         expect(searchModeUxActiveMode($page))->toBe('series');
 
         expect(searchModeUxClickVisibleTab($page, 'All'))->toBeTrue();
-        expect(searchModeUxWaitForSearchUrl($page, ['/search', 'q=Galaxy+Draft']))->toBeTrue();
+        expect(searchModeUxWaitForSearchUrl($page, ['/search', 'q=Galaxy%20Draft']))->toBeTrue();
         expect(searchModeUxCurrentLocation($page))->not->toContain('media_type=');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
         expect(searchModeUxActiveMode($page))->toBe('all');

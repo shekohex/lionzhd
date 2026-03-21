@@ -152,6 +152,20 @@ export default function Search() {
     const seriesSectionCount = formatResultCount(props.series?.total ?? 0, 'TV series result');
     const filteredEmptyTitle = activeMode === 'movie' ? 'No movies found' : 'No TV series found';
     const filteredEntryTitle = activeMode === 'movie' ? 'Search movies only' : 'Search TV series only';
+    const sharedPaginationLinks = useMemo(() => {
+        if (activeMode === 'movie') {
+            return props.movies?.links ?? [];
+        }
+
+        if (activeMode === 'series') {
+            return props.series?.links ?? [];
+        }
+
+        const movieLinks = props.movies?.links ?? [];
+        const seriesLinks = props.series?.links ?? [];
+
+        return movieLinks.length >= seriesLinks.length ? movieLinks : seriesLinks;
+    }, [activeMode, props.movies, props.series]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -353,17 +367,6 @@ export default function Search() {
                                                     ))}
                                                 </motion.div>
 
-                                                {/* Movies pagination - with section-specific partial reload */}
-                                                {props.movies?.links && props.movies.links.length > 3 && (
-                                                    <div className="mt-8 flex justify-center">
-                                                        <Pagination
-                                                            links={props.movies.links}
-                                                            preserveState={true}
-                                                            prefetch={true}
-                                                            only={['movies', 'filters']}
-                                                        />
-                                                    </div>
-                                                )}
                                             </MediaSection>
                                         )}
 
@@ -390,18 +393,13 @@ export default function Search() {
                                                     ))}
                                                 </motion.div>
 
-                                                {/* Series pagination - with section-specific partial reload */}
-                                                {props.series?.links && props.series.links.length > 3 && (
-                                                    <div className="mt-8 flex justify-center">
-                                                        <Pagination
-                                                            links={props.series.links}
-                                                            preserveState={true}
-                                                            prefetch={true}
-                                                            only={['series', 'filters']}
-                                                        />
-                                                    </div>
-                                                )}
                                             </MediaSection>
+                                        )}
+
+                                        {sharedPaginationLinks.length > 0 && (
+                                            <div className="mt-10 flex justify-center">
+                                                <Pagination links={sharedPaginationLinks} preserveState={true} prefetch={true} />
+                                            </div>
                                         )}
                                     </>
                                 )}

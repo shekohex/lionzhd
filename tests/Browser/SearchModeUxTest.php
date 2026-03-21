@@ -167,10 +167,12 @@ if (! extension_loaded('sockets')) {
         searchModeUxSeedMovieRecord(81_004, 'Galaxy Movie Three', 'movie-fixture');
         searchModeUxSeedMovieRecord(81_005, 'Galaxy Movie Four', 'movie-fixture');
         searchModeUxSeedMovieRecord(81_006, 'Galaxy Movie Five', 'movie-fixture');
+        searchModeUxSeedMovieRecord(81_007, 'Galaxy Movie Six', 'movie-fixture');
         searchModeUxSeedSeriesRecord(82_003, 'Galaxy Series Two', 'series-fixture');
         searchModeUxSeedSeriesRecord(82_004, 'Galaxy Series Three', 'series-fixture');
         searchModeUxSeedSeriesRecord(82_005, 'Galaxy Series Four', 'series-fixture');
         searchModeUxSeedSeriesRecord(82_006, 'Galaxy Series Five', 'series-fixture');
+        searchModeUxSeedSeriesRecord(82_007, 'Galaxy Series Six', 'series-fixture');
 
         $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
             ->resize(1440, 960)
@@ -182,7 +184,7 @@ if (! extension_loaded('sockets')) {
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(5);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(5);
 
-        expect(searchModeUxClickSectionLink($page, 'Movies', 'page=2'))->toBeTrue();
+        expect(searchModeUxClickPaginationLink($page, 'page=2'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'page', '2'))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
@@ -562,24 +564,13 @@ function searchModeUxVisibleResultCount(object $page, string $sectionTitle, stri
     JS));
 }
 
-function searchModeUxClickSectionLink(object $page, string $sectionTitle, string $hrefFragment): bool
+function searchModeUxClickPaginationLink(object $page, string $hrefFragment): bool
 {
-    $sectionTitleJson = json_encode($sectionTitle, JSON_THROW_ON_ERROR);
     $hrefFragmentJson = json_encode($hrefFragment, JSON_THROW_ON_ERROR);
 
-    return $page->script(str_replace(['__SECTION__', '__HREF__'], [$sectionTitleJson, $hrefFragmentJson], <<<'JS'
+    return $page->script(str_replace('__HREF__', $hrefFragmentJson, <<<'JS'
         () => {
-            const sectionTitle = __SECTION__;
             const hrefFragment = __HREF__;
-            const section = Array.from(document.querySelectorAll('section')).find((candidate) => {
-                const heading = candidate.querySelector('h2');
-
-                return heading?.textContent?.replace(/\s+/g, ' ').trim() === sectionTitle;
-            });
-
-            if (! section) {
-                return false;
-            }
 
             const isVisible = (candidate) => {
                 const rect = candidate.getBoundingClientRect();
@@ -588,7 +579,7 @@ function searchModeUxClickSectionLink(object $page, string $sectionTitle, string
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
 
-            const control = Array.from(section.querySelectorAll('a')).find((candidate) =>
+            const control = Array.from(document.querySelectorAll('a')).find((candidate) =>
                 candidate.href.includes(hrefFragment) && isVisible(candidate)
             );
 

@@ -77,19 +77,21 @@ export default function Search() {
             overrides: SearchVisitOverrides = {},
             options: { preserveScroll?: boolean } = {},
         ) => {
+            const hasQueryOverride = Object.prototype.hasOwnProperty.call(overrides, 'q');
             const hasMediaTypeOverride = Object.prototype.hasOwnProperty.call(overrides, 'media_type');
             const hasSortByOverride = Object.prototype.hasOwnProperty.call(overrides, 'sort_by');
-            const rawQuery = overrides.q ?? draftQuery;
+            const rawQuery = hasQueryOverride ? (overrides.q ?? '') : draftQuery;
+            const searchUrl = route('search.full', {
+                q: hasQueryOverride ? rawQuery : (rawQuery.trim() ? rawQuery : undefined),
+                page: overrides.page ?? props.filters.page ?? 1,
+                per_page: props.filters.per_page,
+                media_type: hasMediaTypeOverride ? overrides.media_type : props.filters.media_type,
+                sort_by: hasSortByOverride ? overrides.sort_by : props.filters.sort_by,
+            });
 
             router.get(
-                route('search.full'),
-                {
-                    q: rawQuery?.trim() ? rawQuery : null,
-                    page: overrides.page ?? props.filters.page ?? 1,
-                    per_page: props.filters.per_page,
-                    media_type: hasMediaTypeOverride ? overrides.media_type : props.filters.media_type,
-                    sort_by: hasSortByOverride ? overrides.sort_by : props.filters.sort_by,
-                },
+                searchUrl,
+                {},
                 {
                     preserveState: true,
                     preserveScroll: options.preserveScroll ?? false,
@@ -150,10 +152,7 @@ export default function Search() {
                                 value={draftQuery}
                                 onValueChange={setDraftQuery}
                                 onSubmit={handleSearch}
-                                onClear={() => {
-                                    setDraftQuery('');
-                                    performSearch({ q: null, page: 1 }, { preserveScroll: false });
-                                }}
+                                onClear={() => setDraftQuery('')}
                                 defaultPerPage={10}
                                 fullWidth
                                 autoFocus
@@ -227,6 +226,19 @@ export default function Search() {
                             </div>
                         </PopoverContent>
                     </Popover>
+
+                    {(draftQuery || props.filters.q) && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setDraftQuery('');
+                                performSearch({ q: null, page: 1 }, { preserveScroll: false });
+                            }}
+                        >
+                            Reset search
+                        </Button>
+                    )}
                 </div>
 
                 {/* Search results */}

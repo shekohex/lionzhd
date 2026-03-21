@@ -46,30 +46,80 @@ if (! extension_loaded('sockets')) {
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
 
+        $initialHistoryLength = searchModeUxHistoryLength($page);
+
         expect(searchModeUxActiveMode($page))->toBe('all');
-        expect(searchModeUxCurrentLocation($page))->toContain('/search?q=Galaxy');
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy');
+        expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy');
 
         expect(searchModeUxTypeSearchQuery($page, 'Galaxy Draft'))->toBeTrue();
         searchModeUxWait($page, 150);
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy');
+        expect(searchModeUxHistoryLength($page))->toBe($initialHistoryLength);
 
         expect(searchModeUxClickVisibleTab($page, 'Movies'))->toBeTrue();
-        expect(searchModeUxWaitForLocationToContain($page, 'media_type=movie'))->toBeTrue();
-        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy%20Draft');
+        expect(searchModeUxWaitForQueryParam($page, 'media_type', 'movie'))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy Draft');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
         expect(searchModeUxActiveMode($page))->toBe('movie');
 
-        expect(searchModeUxClickVisibleTab($page, 'TV Series'))->toBeTrue();
-        expect(searchModeUxWaitForLocationToContain($page, 'media_type=series'))->toBeTrue();
-        expect(searchModeUxCurrentLocation($page))->toContain('q=Galaxy%20Draft');
+        expect(searchModeUxClickVisibleTab($page, 'Sort By'))->toBeTrue();
+        expect(searchModeUxClickVisibleTab($page, 'Rating'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'sort_by', 'rating'))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy Draft');
+        expect(searchModeUxActiveMode($page))->toBe('movie');
+
+        expect(searchModeUxClickVisibleTab($page, 'Reset search'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'media_type'))->toBe('movie');
+        expect(searchModeUxCurrentQueryParam($page, 'sort_by'))->toBe('rating');
+        expect(searchModeUxSearchQueryValue($page))->toBe('');
+
+        expect(searchModeUxTypeSearchQuery($page, 'Nebula'))->toBeTrue();
+        searchModeUxWait($page, 150);
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('');
+        expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
+
+        expect(searchModeUxSubmitSearch($page))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'q', 'Nebula'))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'media_type'))->toBe('movie');
+        expect(searchModeUxCurrentQueryParam($page, 'sort_by'))->toBe('rating');
+        expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
+
+        searchModeUxHistoryBack($page);
+        expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
+        expect(searchModeUxSearchQueryValue($page))->toBe('');
+        expect(searchModeUxActiveMode($page))->toBe('movie');
+
+        searchModeUxHistoryBack($page);
+        expect(searchModeUxWaitForQueryParam($page, 'q', 'Galaxy Draft'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'sort_by', 'rating'))->toBeTrue();
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
+        expect(searchModeUxActiveMode($page))->toBe('movie');
+
+        searchModeUxHistoryForward($page);
+        expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
+
+        searchModeUxHistoryForward($page);
+        expect(searchModeUxWaitForQueryParam($page, 'q', 'Nebula'))->toBeTrue();
+
+        expect(searchModeUxClickVisibleTab($page, 'TV Series'))->toBeTrue();
+        expect(searchModeUxWaitForQueryParam($page, 'media_type', 'series'))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
+        expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
         expect(searchModeUxActiveMode($page))->toBe('series');
 
         expect(searchModeUxClickVisibleTab($page, 'All'))->toBeTrue();
-        expect(searchModeUxWaitForSearchUrl($page, ['/search', 'q=Galaxy%20Draft']))->toBeTrue();
-        expect(searchModeUxCurrentLocation($page))->not->toContain('media_type=');
-        expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
+        expect(searchModeUxWaitForQueryParam($page, 'media_type', null))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
+        expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
         expect(searchModeUxActiveMode($page))->toBe('all');
+
+        searchModeUxHistoryBack($page);
+        expect(searchModeUxWaitForQueryParam($page, 'media_type', 'series'))->toBeTrue();
+        expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
+        expect(searchModeUxActiveMode($page))->toBe('series');
     })->group('browser');
 
     it('renders filtered full width layout', function (): void {
@@ -199,6 +249,15 @@ function searchModeUxCurrentLocation(object $page): string
     JS);
 }
 
+function searchModeUxCurrentQueryParam(object $page, string $parameter): ?string
+{
+    $parameterJson = json_encode($parameter, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__PARAMETER__', $parameterJson, <<<'JS'
+        () => new URLSearchParams(window.location.search).get(__PARAMETER__)
+    JS));
+}
+
 function searchModeUxHistoryLength(object $page): int
 {
     return $page->script(<<<'JS'
@@ -275,6 +334,33 @@ function searchModeUxWaitForLocationToContain(object $page, string $needle): boo
     return searchModeUxWaitForSearchUrl($page, [$needle]);
 }
 
+function searchModeUxWaitForQueryParam(object $page, string $parameter, ?string $value): bool
+{
+    $parameterJson = json_encode($parameter, JSON_THROW_ON_ERROR);
+    $valueJson = json_encode($value, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace(['__PARAMETER__', '__VALUE__'], [$parameterJson, $valueJson], <<<'JS'
+        async () => {
+            const parameter = __PARAMETER__;
+            const value = __VALUE__;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 3000) {
+                const params = new URLSearchParams(window.location.search);
+                const currentValue = params.get(parameter);
+
+                if (value === null ? currentValue === null : currentValue === value) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS));
+}
+
 function searchModeUxHistoryBack(object $page): void
 {
     $page->script(<<<'JS'
@@ -300,6 +386,24 @@ function searchModeUxHistoryForward(object $page): void
 function searchModeUxRefreshPage(object $page): object
 {
     return visit(searchModeUxCurrentLocation($page));
+}
+
+function searchModeUxSubmitSearch(object $page): bool
+{
+    return $page->script(<<<'JS'
+        () => {
+            const input = document.querySelector('input[type="search"]');
+            const form = input?.closest('form');
+
+            if (! form) {
+                return false;
+            }
+
+            form.requestSubmit();
+
+            return true;
+        }
+    JS);
 }
 
 function searchModeUxActiveMode(object $page): ?string
@@ -386,7 +490,7 @@ function searchModeUxClickVisibleTab(object $page, string $text): bool
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
             const tab = Array.from(document.querySelectorAll('[role="tab"], button')).find((candidate) =>
-                candidate.textContent?.trim() === text && isVisible(candidate)
+                candidate.textContent?.replace(/\s+/g, ' ').trim().includes(text) && isVisible(candidate)
             );
 
             tab?.click();

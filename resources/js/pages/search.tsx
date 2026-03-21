@@ -11,10 +11,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { FullSearchResult } from '@/types/search';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ChevronDownIcon, FilterIcon, LoaderIcon, SearchIcon, XIcon } from 'lucide-react';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
 // Animation variants
@@ -53,85 +53,63 @@ const FILTER_OPTIONS = {
     ],
 };
 
-const filterNameMap = (filterName: string) => (filterName === 'type' ? 'media_type' : filterName);
-
-// Parse a search query for magic words
-function parseSearchQuery(query: string) {
-    const filters: Record<string, string> = {};
-    let baseQuery = query;
-
-    // Extract magic filter words
-    const filterRegex = /(type|sort):([^\s]+)/g;
-    let match;
-
-    while ((match = filterRegex.exec(query)) !== null) {
-        const [fullMatch, filterName, filterValue] = match;
-        if (filterName && filterValue) {
-            filters[filterNameMap(filterName)] = filterValue;
-            baseQuery = baseQuery.replace(fullMatch, '');
-        }
-    }
-
-    // Clean up the base query
-    baseQuery = baseQuery.trim();
-
-    return { baseQuery, filters };
-}
-
 export default function Search() {
     const { props } = usePage<FullSearchResult>();
-    const { data, setData, get, processing } = useForm<App.Data.SearchMediaData>(props.filters);
+    const [draftQuery, setDraftQuery] = useState(props.filters.q ?? '');
+    const [isCommitting, setIsCommitting] = useState(false);
 
-    // Parse query for magic words
-    const parsedQuery = useMemo(() => {
-        return data.q ? parseSearchQuery(data.q) : { baseQuery: '', filters: {} };
-    }, [data.q]);
+    useEffect(() => {
+        setDraftQuery(props.filters.q ?? '');
+    }, [props.filters.q]);
 
     const performSearch = useCallback(
-        (options: { preserveState?: boolean; preserveScroll?: boolean } = {}) => {
-            const defaultOptions = { preserveState: true, preserveScroll: true };
-            const searchOptions = { ...defaultOptions, ...options };
+        (
+            overrides: Partial<App.Data.SearchMediaData> & {
+                q?: string | null;
+                media_type?: App.Enums.MediaType;
+                sort_by?: App.Enums.SearchSortby;
+            } = {},
+            options: { preserveScroll?: boolean } = {},
+        ) => {
+            const hasMediaTypeOverride = Object.prototype.hasOwnProperty.call(overrides, 'media_type');
+            const hasSortByOverride = Object.prototype.hasOwnProperty.call(overrides, 'sort_by');
+            const rawQuery = overrides.q ?? draftQuery;
 
-            get(route('search.full'), searchOptions);
+            router.get(
+                route('search.full'),
+                {
+                    q: rawQuery?.trim() ? rawQuery : null,
+                    page: overrides.page ?? props.filters.page ?? 1,
+                    per_page: props.filters.per_page,
+                    media_type: hasMediaTypeOverride ? overrides.media_type : props.filters.media_type,
+                    sort_by: hasSortByOverride ? overrides.sort_by : props.filters.sort_by,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: options.preserveScroll ?? false,
+                    onStart: () => setIsCommitting(true),
+                    onFinish: () => setIsCommitting(false),
+                },
+            );
         },
-        [get],
+        [draftQuery, props.filters.media_type, props.filters.page, props.filters.per_page, props.filters.sort_by],
     );
 
-    // Apply filters from parsed query
-    useEffect(() => {
-        if (parsedQuery.filters.media_type && parsedQuery.filters.media_type !== data.media_type) {
-            setData('media_type', parsedQuery.filters.media_type as App.Enums.MediaType);
-        }
-
-        if (parsedQuery.filters.sort_by && parsedQuery.filters.sort_by !== data.sort_by) {
-            setData('sort_by', parsedQuery.filters.sort_by as App.Enums.SearchSortby);
-        }
-    }, [parsedQuery, setData, data]);
-
-    // Handle search form submission
     const handleSearch = (request: App.Data.SearchMediaData) => {
-        setData('q', request.q);
-        performSearch({ preserveScroll: false });
+        const nextQuery = request.q ?? '';
+
+        setDraftQuery(nextQuery);
+        performSearch({ q: nextQuery, page: 1 }, { preserveScroll: false });
     };
 
-    // Handle filter selection
     const handleFilterSelect = (filterType: string, value: string) => {
         if (filterType === 'type') {
-            setData('media_type', value as App.Enums.MediaType);
-        } else if (filterType === 'sort') {
-            setData('sort_by', value as App.Enums.SearchSortby);
+            performSearch({ media_type: value as App.Enums.MediaType, page: 1 }, { preserveScroll: false });
+
+            return;
         }
 
-        // Update query to include magic word
-        const currentQueryParts = data.q?.split(' ') || [];
-        const filterPattern = new RegExp(`${filterType}:[^\\s]+`);
-        const newQueryParts = currentQueryParts.filter((part) => !filterPattern.test(part));
-        newQueryParts.push(`${filterType}:${value}`);
-
-        setData('q', newQueryParts.join(' '));
-
-        // Auto-submit search after filter change
-        setTimeout(() => performSearch({ preserveScroll: false }), 0);
+        performSearch({ sort_by: value as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false });
     };
 
     // Calculate combined search results
@@ -153,7 +131,10 @@ export default function Search() {
                             <SearchInput
                                 placeholder="Search movies, TV series..."
                                 searchRoute="search.full"
+                                value={draftQuery}
+                                onValueChange={setDraftQuery}
                                 onSubmit={handleSearch}
+                                onClear={() => setDraftQuery('')}
                                 defaultPerPage={10}
                                 fullWidth
                                 autoFocus
@@ -163,39 +144,29 @@ export default function Search() {
 
                     {/* Active filters */}
                     <div className="mt-4 flex flex-wrap gap-2">
-                        {data.media_type && (
+                        {props.filters.media_type && (
                             <Badge variant="outline" className="flex items-center gap-1 py-1 pr-1 pl-2">
-                                <span>Type: {data.media_type}</span>
+                                <span>Type: {props.filters.media_type}</span>
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-4 w-4"
-                                    onClick={() => {
-                                        // Remove type:value from query
-                                        const newQuery = data?.q?.replace(/type:[^\s]+/, '').trim();
-                                        setData('q', newQuery);
-                                        setData('media_type', undefined);
-                                        setTimeout(() => performSearch({ preserveScroll: false }), 0);
-                                    }}
+                                    onClick={() => performSearch({ media_type: undefined, page: 1 }, { preserveScroll: false })}
                                 >
                                     <XIcon className="h-3 w-3" />
                                 </Button>
                             </Badge>
                         )}
-                        {data.sort_by && (
+                        {props.filters.sort_by && (
                             <Badge variant="outline" className="flex items-center gap-1 py-1 pr-1 pl-2">
-                                <span>Sort: {data.sort_by}</span>
+                                <span>Sort: {props.filters.sort_by}</span>
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-4 w-4"
-                                    onClick={() => {
-                                        // Remove sort:value from query
-                                        const newQuery = data?.q?.replace(/sort:[^\s]+/, '').trim();
-                                        setData('q', newQuery);
-                                        setData('sort_by', undefined);
-                                        setTimeout(() => performSearch({ preserveScroll: false }), 0);
-                                    }}
+                                    onClick={() =>
+                                        performSearch({ sort_by: 'latest' as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false })
+                                    }
                                 >
                                     <XIcon className="h-3 w-3" />
                                 </Button>
@@ -206,10 +177,10 @@ export default function Search() {
 
                 {/* Quick filters */}
                 <div className="mx-auto mt-2 flex w-full max-w-3xl gap-2">
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" size="sm" className="flex items-center">
-                                <FilterIcon className="mr-2 h-4 w-4" />
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" size="sm" className="flex items-center">
+                                    <FilterIcon className="mr-2 h-4 w-4" />
                                 Media Type
                                 <ChevronDownIcon className="ml-2 h-3 w-3" />
                             </Button>
@@ -217,22 +188,16 @@ export default function Search() {
                         <PopoverContent className="w-48">
                             <div className="space-y-2">
                                 <Button
-                                    variant={data.media_type ? 'default' : 'ghost'}
+                                    variant={props.filters.media_type ? 'default' : 'ghost'}
                                     className="w-full justify-start"
-                                    onClick={() => {
-                                        // Remove type:value from query
-                                        const newQuery = data.q?.replace(/type:[^\s]+/, '').trim();
-                                        setData('q', newQuery);
-                                        setData('media_type', undefined);
-                                        setTimeout(() => performSearch({ preserveScroll: false }), 0);
-                                    }}
+                                    onClick={() => performSearch({ media_type: undefined, page: 1 }, { preserveScroll: false })}
                                 >
                                     All
                                 </Button>
                                 {FILTER_OPTIONS.type.map((option) => (
                                     <Button
                                         key={option.value}
-                                        variant={data.media_type === option.value ? 'default' : 'ghost'}
+                                        variant={props.filters.media_type === option.value ? 'default' : 'ghost'}
                                         className="w-full justify-start"
                                         onClick={() => handleFilterSelect('type', option.value)}
                                     >
@@ -254,22 +219,18 @@ export default function Search() {
                         <PopoverContent className="w-48">
                             <div className="space-y-2">
                                 <Button
-                                    variant={data.sort_by ? 'default' : 'ghost'}
+                                    variant={props.filters.sort_by === 'latest' ? 'default' : 'ghost'}
                                     className="w-full justify-start"
-                                    onClick={() => {
-                                        // Remove sort:value from query
-                                        const newQuery = data.q?.replace(/sort:[^\s]+/, '').trim();
-                                        setData('q', newQuery);
-                                        setData('sort_by', undefined);
-                                        setTimeout(() => performSearch({ preserveScroll: false }), 0);
-                                    }}
+                                    onClick={() =>
+                                        performSearch({ sort_by: 'latest' as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false })
+                                    }
                                 >
                                     Default
                                 </Button>
                                 {FILTER_OPTIONS.sort.map((option) => (
                                     <Button
                                         key={option.value}
-                                        variant={data.sort_by === option.value ? 'default' : 'ghost'}
+                                        variant={props.filters.sort_by === option.value ? 'default' : 'ghost'}
                                         className="w-full justify-start"
                                         onClick={() => handleFilterSelect('sort', option.value)}
                                     >
@@ -298,12 +259,12 @@ export default function Search() {
                     <ScrollArea className="h-[calc(100vh-240px)]">
                         <div className="flex flex-col gap-12 pt-4 pb-20">
                             <div className="mx-auto w-full max-w-7xl">
-                                {!hasResults && !processing && (
+                                {!hasResults && !isCommitting && (
                                     <EmptyState
                                         icon={<SearchIcon className="h-12 w-12" />}
-                                        title={data.q ? 'No results found' : 'Enter a search term'}
+                                        title={props.filters.q ? 'No results found' : 'Enter a search term'}
                                         description={
-                                            data.q
+                                            props.filters.q
                                                 ? 'Try using different keywords or removing filters'
                                                 : 'Type something to start searching'
                                         }
@@ -318,7 +279,7 @@ export default function Search() {
                                             <p className="text-muted-foreground text-sm">
                                                 Found {total} results for "
                                                 <span className="text-foreground font-medium">
-                                                    {props.filters?.q || data.q}
+                                                    {props.filters.q}
                                                 </span>
                                                 "
                                             </p>
@@ -402,7 +363,7 @@ export default function Search() {
                                     </>
                                 )}
 
-                                {processing && (
+                                {isCommitting && (
                                     <div className="flex justify-center py-12">
                                         <LoaderIcon className="text-primary h-10 w-10 animate-spin" />
                                     </div>

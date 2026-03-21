@@ -12,6 +12,8 @@ interface SearchInputProps {
     placeholder?: string;
     className?: string;
     onSubmit?: (query: App.Data.SearchMediaData) => void;
+    value?: string;
+    onValueChange?: (value: string) => void;
     autoFocus?: boolean;
     onClear?: () => void;
     showSearchIcon?: boolean;
@@ -24,6 +26,8 @@ export function SearchInput({
     className = '',
     searchRoute,
     onSubmit,
+    value,
+    onValueChange,
     autoFocus = false,
     onClear,
     showSearchIcon = true,
@@ -33,6 +37,7 @@ export function SearchInput({
     const { props: autocompleteData } = usePage<LightweightSearchResult>();
 
     const isFullSearch = useMemo(() => searchRoute === 'search.full', [searchRoute]);
+    const isControlled = value !== undefined;
     const [isFocused, setIsFocused] = useState(false);
     const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -45,11 +50,30 @@ export function SearchInput({
         per_page: autocompleteData.filters?.per_page ?? defaultPerPage,
         sort_by: 'latest',
     });
-    // Debounce search query
-    const debouncedQuery = useDebounce(data.q || '', 500);
+    const query = isControlled ? value ?? '' : (data.q ?? '');
+    const shouldAutocomplete = !isControlled;
+    const debouncedQuery = useDebounce(query, 500);
 
-    // Handle autocomplete call
+    const setQuery = useCallback(
+        (nextQuery: string) => {
+            if (isControlled) {
+                onValueChange?.(nextQuery);
+
+                return;
+            }
+
+            setData('q', nextQuery);
+        },
+        [isControlled, onValueChange, setData],
+    );
+
     useEffect(() => {
+        if (!shouldAutocomplete) {
+            setIsAutocompleteOpen(false);
+
+            return;
+        }
+
         if (!debouncedQuery || debouncedQuery.length < 2) {
             setIsAutocompleteOpen(false);
             return;
@@ -72,7 +96,7 @@ export function SearchInput({
         } else {
             fetchSuggestions();
         }
-    }, [debouncedQuery, post, get, isFullSearch, searchRoute]);
+    }, [debouncedQuery, get, isFullSearch, post, searchRoute, shouldAutocomplete]);
 
     // Handle click outside to close autocomplete
     useEffect(() => {
@@ -92,14 +116,18 @@ export function SearchInput({
         (e?: FormEvent) => {
             e?.preventDefault();
 
-            if (data.q && data.q.trim().length > 2) {
+            const request = {
+                ...data,
+                q: query,
+            };
+
+            if (query.trim().length > 2) {
                 if (onSubmit) {
-                    onSubmit(data);
+                    onSubmit(request);
                 } else {
-                    // Default behavior: navigate to search page with query using Inertia
                     router.visit(route('search.full'), {
                         method: 'get',
-                        data: { q: data.q },
+                        data: { q: query },
                         preserveState: true,
                         replace: true,
                     });
@@ -108,7 +136,7 @@ export function SearchInput({
 
             setIsAutocompleteOpen(false);
         },
-        [data, onSubmit],
+        [data, onSubmit, query],
     );
 
     // Handle keyboard shortcuts
@@ -133,13 +161,12 @@ export function SearchInput({
     // Handle suggestion selection
     const handleSuggestionSelect = useCallback(
         (suggestionText: string) => {
-            setData('q', suggestionText);
-            // Use a small timeout to ensure the query state is updated
+            setQuery(suggestionText);
             setTimeout(() => {
                 handleSubmit();
             }, 1);
         },
-        [handleSubmit, setData],
+        [handleSubmit, setQuery],
     );
 
     return (
@@ -157,24 +184,24 @@ export function SearchInput({
                         type="search"
                         placeholder={placeholder}
                         className={`${showSearchIcon ? 'pl-10' : 'pl-4'} py-6 pr-12 text-lg ${className}`}
-                        value={data.q || ''}
-                        onChange={(e) => setData('q', e.target.value)}
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => {
                             setIsFocused(true);
-                            // Show autocomplete if query is long enough
-                            if (data.q && data.q.length >= 2) {
+
+                            if (shouldAutocomplete && query.length >= 2) {
                                 setIsAutocompleteOpen(true);
                             }
                         }}
                         autoFocus={autoFocus}
                     />
 
-                    {data.q && (
+                    {query && (
                         <button
                             type="button"
                             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-10 -translate-y-1/2"
                             onClick={() => {
-                                setData('q', '');
+                                setQuery('');
                                 onClear?.();
                                 inputRef.current?.focus();
                                 setIsAutocompleteOpen(false);
@@ -233,9 +260,9 @@ export function SearchInput({
                                     </>
                                 )}
 
-                                {!totalResults && data.q && data.q.length >= 2 && !processing && (
+                                {!totalResults && query.length >= 2 && !processing && (
                                     <div className="text-muted-foreground px-2 py-3 text-center text-sm">
-                                        Press Enter to search for "{data.q}"
+                                        Press Enter to search for "{query}"
                                     </div>
                                 )}
                             </CommandList>

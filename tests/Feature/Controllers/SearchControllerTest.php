@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\MediaType;
+use App\Enums\SearchSortby;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -125,6 +126,80 @@ it('renders lightweight search when per page is omitted', function (): void {
     $response->assertJsonPath('props.series.meta.total', 1);
 });
 
+it('prefers canonical params over conflicting magic words in the raw query', function (): void {
+    config()->set('scout.driver', 'database');
+
+    $user = User::factory()->create();
+
+    seedSearchControllerMovie(3_001, 'Galaxy Movie');
+    seedSearchControllerSeries(4_001, 'Galaxy Series');
+
+    $rawQuery = 'Galaxy type:series sort:popular';
+
+    $response = test()->actingAs($user)
+        ->withHeaders(searchInertiaHeaders())
+        ->get(route('search.full', [
+            'q' => $rawQuery,
+            'media_type' => MediaType::Movie->value,
+            'sort_by' => SearchSortby::Latest->value,
+        ]));
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.q', $rawQuery);
+    $response->assertJsonPath('props.filters.media_type', MediaType::Movie->value);
+    $response->assertJsonPath('props.filters.sort_by', SearchSortby::Latest->value);
+    $response->assertJsonPath('props.movies.total', 1);
+    $response->assertJsonPath('props.movies.data.0.name', 'Galaxy Movie');
+    $response->assertJsonPath('props.series', []);
+});
+
+it('falls back to parsed media type tokens when canonical params are absent', function (): void {
+    config()->set('scout.driver', 'database');
+
+    $user = User::factory()->create();
+
+    seedSearchControllerMovie(3_002, 'Nebula Movie');
+    seedSearchControllerSeries(4_002, 'Nebula Series');
+
+    $rawQuery = 'Nebula type:series';
+
+    $response = test()->actingAs($user)
+        ->withHeaders(searchInertiaHeaders())
+        ->get(route('search.full', [
+            'q' => $rawQuery,
+        ]));
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.q', $rawQuery);
+    $response->assertJsonPath('props.filters.media_type', MediaType::Series->value);
+    $response->assertJsonPath('props.movies', []);
+    $response->assertJsonPath('props.series.total', 1);
+    $response->assertJsonPath('props.series.data.0.name', 'Nebula Series');
+});
+
+it('searches with the stripped base query while keeping visible sort tokens in q', function (): void {
+    config()->set('scout.driver', 'database');
+
+    $user = User::factory()->create();
+
+    seedSearchControllerMovie(3_003, 'Comet Movie');
+    seedSearchControllerSeries(4_003, 'Comet Series');
+
+    $rawQuery = 'Comet sort:rating';
+
+    $response = test()->actingAs($user)
+        ->withHeaders(searchInertiaHeaders())
+        ->get(route('search.full', [
+            'q' => $rawQuery,
+        ]));
+
+    $response->assertOk();
+    $response->assertJsonPath('props.filters.q', $rawQuery);
+    $response->assertJsonPath('props.filters.sort_by', SearchSortby::Rating->value);
+    $response->assertJsonPath('props.movies.total', 1);
+    $response->assertJsonPath('props.series.total', 1);
+});
+
 function searchInertiaHeaders(): array
 {
     $version = app(HandleInertiaRequests::class)->version(Request::create('/'));
@@ -142,4 +217,38 @@ function searchPartialHeaders(string $component): array
         ...searchInertiaHeaders(),
         'X-Inertia-Partial-Component' => $component,
     ];
+}
+
+function seedSearchControllerMovie(int $streamId, string $name): void
+{
+    DB::table('vod_streams')->insert([
+        'stream_id' => $streamId,
+        'num' => $streamId,
+        'name' => $name,
+        'stream_type' => 'movie',
+        'stream_icon' => null,
+        'rating' => '8',
+        'rating_5based' => 4.0,
+        'added' => now()->toDateTimeString(),
+        'is_adult' => false,
+        'category_id' => null,
+        'container_extension' => 'mp4',
+        'custom_sid' => null,
+        'direct_source' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
+function seedSearchControllerSeries(int $seriesId, string $name): void
+{
+    DB::table('series')->insert([
+        'series_id' => $seriesId,
+        'num' => $seriesId,
+        'name' => $name,
+        'plot' => 'Plot',
+        'last_modified' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 }

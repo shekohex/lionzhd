@@ -14,6 +14,28 @@ if (! extension_loaded('sockets')) {
         expect(true)->toBeTrue();
     })->group('browser')->skip('ext-sockets is required by pest-plugin-browser.');
 } else {
+    it('keeps full-page draft query out of url history until submit', function (): void {
+        $user = User::factory()->create();
+
+        searchModeUxSeedFixture();
+
+        $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
+            ->resize(1440, 960)
+            ->waitForText('Search the entire media library')
+            ->assertNoJavaScriptErrors();
+
+        $initialHistoryLength = searchModeUxHistoryLength($page);
+
+        expect(searchModeUxTypeSearchQuery($page, 'Galaxy Draft'))->toBeTrue();
+
+        searchModeUxWait($page, 700);
+
+        expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
+        expect(searchModeUxCurrentLocation($page))->toContain('/search?q=Galaxy');
+        expect(searchModeUxCurrentLocation($page))->not->toContain('Galaxy+Draft');
+        expect(searchModeUxHistoryLength($page))->toBe($initialHistoryLength);
+    })->group('browser');
+
     it('syncs mode tabs with url', function (): void {
         $user = User::factory()->create();
 
@@ -113,6 +135,8 @@ function searchModeUxLoginAndVisitPage(User $user, string $url): object
 
 function searchModeUxSeedFixture(): void
 {
+    config()->set('scout.driver', 'database');
+
     searchModeUxSeedMovieRecord(81_001, 'Galaxy Movie', 'movie-fixture');
     searchModeUxSeedMovieRecord(81_002, 'Nebula Movie', 'movie-fixture');
 
@@ -164,6 +188,53 @@ function searchModeUxCurrentLocation(object $page): string
     return $page->script(<<<'JS'
         () => `${window.location.pathname}${window.location.search}`
     JS);
+}
+
+function searchModeUxHistoryLength(object $page): int
+{
+    return $page->script(<<<'JS'
+        () => window.history.length
+    JS);
+}
+
+function searchModeUxSearchQueryValue(object $page): ?string
+{
+    return $page->script(<<<'JS'
+        () => document.querySelector('input[type="search"]')?.value ?? null
+    JS);
+}
+
+function searchModeUxTypeSearchQuery(object $page, string $value): bool
+{
+    $valueJson = json_encode($value, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__VALUE__', $valueJson, <<<'JS'
+        () => {
+            const input = document.querySelector('input[type="search"]');
+
+            if (! input) {
+                return false;
+            }
+
+            const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+
+            descriptor?.set?.call(input, __VALUE__);
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            return true;
+        }
+    JS));
+}
+
+function searchModeUxWait(object $page, int $milliseconds): void
+{
+    $page->script(str_replace('__MILLISECONDS__', (string) $milliseconds, <<<'JS'
+        async () => {
+            await new Promise((resolve) => window.setTimeout(resolve, __MILLISECONDS__));
+
+            return true;
+        }
+    JS));
 }
 
 function searchModeUxWaitForSearchUrl(object $page, array $needles): bool

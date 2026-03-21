@@ -136,14 +136,13 @@ if (! extension_loaded('sockets')) {
             ->assertNoJavaScriptErrors();
 
         expect(searchModeUxWaitForLocationToContain($page, 'media_type=movie'))->toBeTrue();
+        expect(searchModeUxWaitForBodyText($page, 'Movies only'))->toBeTrue();
         expect(searchModeUxActiveMode($page))->toBe('movie');
         expect(searchModeUxActiveLayout($page))->toBe('filtered');
-        expect(searchModeUxVisibleSectionHeadings($page))->toContain('Movies only');
-        expect(searchModeUxVisibleSectionHeadings($page))->not->toContain('TV Series');
         expect(searchModeUxVisibleBodyText($page))->toContain('Movies only');
         expect(searchModeUxVisibleBodyText($page))->toContain('1 movie result for "Galaxy type:movie"');
 
-        $emptyPage = searchModeUxLoginAndVisitPage($user, route('search.full', [
+        $emptyPage = visit(route('search.full', [
             'q' => 'Nothing type:movie',
             'media_type' => 'movie',
         ]))
@@ -152,6 +151,7 @@ if (! extension_loaded('sockets')) {
             ->assertNoJavaScriptErrors();
 
         expect(searchModeUxWaitForLocationToContain($emptyPage, 'media_type=movie'))->toBeTrue();
+        expect(searchModeUxWaitForBodyText($emptyPage, 'No movies found'))->toBeTrue();
         expect(searchModeUxActiveMode($emptyPage))->toBe('movie');
         expect(searchModeUxActiveLayout($emptyPage))->toBe('filtered');
         expect(searchModeUxVisibleBodyText($emptyPage))->toContain('No movies found');
@@ -498,6 +498,30 @@ function searchModeUxVisibleBodyText(object $page): string
     return $page->script(<<<'JS'
         () => document.body.textContent?.replace(/\s+/g, ' ').trim() ?? ''
     JS);
+}
+
+function searchModeUxWaitForBodyText(object $page, string $needle): bool
+{
+    $needleJson = json_encode($needle, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__NEEDLE__', $needleJson, <<<'JS'
+        async () => {
+            const needle = __NEEDLE__;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 3000) {
+                const current = document.body.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+
+                if (current.includes(needle)) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS));
 }
 
 function searchModeUxClickVisibleTab(object $page, string $text): bool

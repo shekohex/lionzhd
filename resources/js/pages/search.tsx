@@ -62,6 +62,13 @@ interface SearchVisitOverrides {
     sort_by?: App.Enums.SearchSortby;
 }
 
+const MIXED_GRID_CLASS = 'grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+const FILTERED_GRID_CLASS = 'grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
+
+function formatResultCount(count: number, singular: string, plural = `${singular}s`) {
+    return `${count} ${count === 1 ? singular : plural}`;
+}
+
 export default function Search() {
     const { props } = usePage<FullSearchResult>();
     const [draftQuery, setDraftQuery] = useState(props.filters.q ?? '');
@@ -134,6 +141,17 @@ export default function Search() {
     const allResults = useMemo(() => [...(props.movies?.data ?? []), ...(props.series?.data ?? [])], [props]);
     const hasResults = allResults.length > 0;
     const total = useMemo(() => (props.movies?.total || 0) + (props.series?.total || 0), [props]);
+    const isFilteredMode = activeMode !== 'all';
+    const filteredModeLabel = activeMode === 'movie' ? 'Movies only' : 'TV Series only';
+    const filteredResultCount = activeMode === 'movie' ? (props.movies?.total ?? 0) : (props.series?.total ?? 0);
+    const filteredResultSummary =
+        activeMode === 'movie'
+            ? formatResultCount(filteredResultCount, 'movie result')
+            : formatResultCount(filteredResultCount, 'TV series result');
+    const movieSectionCount = formatResultCount(props.movies?.total ?? 0, 'movie result');
+    const seriesSectionCount = formatResultCount(props.series?.total ?? 0, 'TV series result');
+    const filteredEmptyTitle = activeMode === 'movie' ? 'No movies found' : 'No TV series found';
+    const filteredEntryTitle = activeMode === 'movie' ? 'Search movies only' : 'Search TV series only';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -257,15 +275,25 @@ export default function Search() {
                 >
                     <ScrollArea className="h-[calc(100vh-240px)]">
                         <div className="flex flex-col gap-12 pt-4 pb-20">
-                            <div className="mx-auto w-full max-w-7xl">
+                            <div className="mx-auto w-full max-w-7xl" data-search-layout={isFilteredMode ? 'filtered' : 'all'}>
                                 {!hasResults && !isCommitting && (
                                     <EmptyState
                                         icon={<SearchIcon className="h-12 w-12" />}
-                                        title={props.filters.q ? 'No results found' : 'Enter a search term'}
+                                        title={
+                                            isFilteredMode
+                                                ? (props.filters.q ? filteredEmptyTitle : filteredEntryTitle)
+                                                : (props.filters.q ? 'No results found' : 'Enter a search term')
+                                        }
                                         description={
-                                            props.filters.q
-                                                ? 'Try using different keywords or removing filters'
-                                                : 'Type something to start searching'
+                                            isFilteredMode
+                                                ? (
+                                                      props.filters.q
+                                                          ? 'Try editing or clearing your search query.'
+                                                          : 'Enter a search query to search this media type.'
+                                                  )
+                                                : (props.filters.q
+                                                      ? 'Try using different keywords or removing filters'
+                                                      : 'Type something to start searching')
                                         }
                                         className="bg-muted/30 py-16"
                                     />
@@ -273,22 +301,39 @@ export default function Search() {
 
                                 {hasResults && (
                                     <>
-                                        {/* Total count */}
                                         <div className="mb-6">
-                                            <p className="text-muted-foreground text-sm">
-                                                Found {total} results for "
-                                                <span className="text-foreground font-medium">
-                                                    {props.filters.q}
-                                                </span>
-                                                "
-                                            </p>
+                                            {isFilteredMode ? (
+                                                <div className="space-y-2">
+                                                    <h2 className="text-2xl font-bold">{filteredModeLabel}</h2>
+                                                    <p className="text-muted-foreground text-sm">
+                                                        {filteredResultSummary} for "
+                                                        <span className="text-foreground font-medium">
+                                                            {props.filters.q}
+                                                        </span>
+                                                        "
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    <p className="text-muted-foreground text-sm">
+                                                        Found {total} results for "
+                                                        <span className="text-foreground font-medium">
+                                                            {props.filters.q}
+                                                        </span>
+                                                        "
+                                                    </p>
+                                                    <div className="flex flex-wrap gap-2 text-sm">
+                                                        <Badge variant="secondary">Movies: {movieSectionCount}</Badge>
+                                                        <Badge variant="secondary">TV Series: {seriesSectionCount}</Badge>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Movies section */}
-                                        {props.movies?.total > 0 && (
-                                            <MediaSection title="Movies">
+                                        {(activeMode === 'all' || activeMode === 'movie') && props.movies?.total > 0 && (
+                                            <MediaSection title={isFilteredMode ? filteredModeLabel : 'Movies'}>
                                                 <motion.div
-                                                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                                                    className={isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS}
                                                     variants={container}
                                                     initial="hidden"
                                                     animate="show"
@@ -322,11 +367,10 @@ export default function Search() {
                                             </MediaSection>
                                         )}
 
-                                        {/* Series section */}
-                                        {props.series?.total > 0 && (
-                                            <MediaSection title="TV Series">
+                                        {(activeMode === 'all' || activeMode === 'series') && props.series?.total > 0 && (
+                                            <MediaSection title={isFilteredMode ? filteredModeLabel : 'TV Series'}>
                                                 <motion.div
-                                                    className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                                                    className={isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS}
                                                     variants={container}
                                                     initial="hidden"
                                                     animate="show"

@@ -270,7 +270,6 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
     const handleSelectAndClose = (id: string | null) => {
         setView('browse');
-        setQuery('');
         setIsMobileSheetOpen(false);
 
         if (typeof window === 'undefined') {

@@ -8,8 +8,10 @@ use App\Concerns\AsAction;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Models\MediaCategoryAssignment;
 use App\Models\Series;
 use App\Models\VodStream;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Laravel\Telescope\Telescope;
@@ -98,11 +100,13 @@ final readonly class SyncMedia
      */
     private function syncSeries(array $series): void
     {
-        $this->pruneMissingRows(Series::class, 'series_id', $series);
+        $this->pruneMissingRows(Series::class, 'series_id', 'series', $series);
 
         foreach (array_chunk($series, 1000) as $chunk) {
+            $assignments = $this->buildAssignmentsForChunk($chunk, 'series', 'series_id');
+
             $saved = Series::query()->upsert(
-                $chunk,
+                $this->sanitizeSeriesChunk($chunk),
                 ['series_id'],
                 [
                     'num', 'name', 'cover', 'plot', 'cast',
@@ -111,6 +115,8 @@ final readonly class SyncMedia
                     'youtube_trailer', 'episode_run_time', 'category_id',
                 ]
             );
+
+            $this->syncAssignments($assignments, 'series');
 
             if ($saved) {
                 Log::debug('Saved series chunk');
@@ -126,8 +132,10 @@ final readonly class SyncMedia
     private function syncVodStreams(array $vodStreams): void
     {
         foreach (array_chunk($vodStreams, 1000) as $chunk) {
+            $assignments = $this->buildAssignmentsForChunk($chunk, 'vod', 'stream_id');
+
             $saved = VodStream::query()->upsert(
-                $chunk,
+                $this->sanitizeVodChunk($chunk),
                 ['stream_id'],
                 [
                     'num',
@@ -145,6 +153,8 @@ final readonly class SyncMedia
                 ]
             );
 
+            $this->syncAssignments($assignments, 'vod');
+
             if ($saved) {
                 Log::debug('Saved VOD stream chunk');
             } else {
@@ -152,13 +162,13 @@ final readonly class SyncMedia
             }
         }
 
-        $this->pruneMissingRows(VodStream::class, 'stream_id', $vodStreams);
+        $this->pruneMissingRows(VodStream::class, 'stream_id', 'vod', $vodStreams);
     }
 
     /**
      * @param array<int, array<string, mixed>> $records
      */
-    private function pruneMissingRows(string $modelClass, string $key, array $records): void
+    private function pruneMissingRows(string $modelClass, string $key, string $mediaType, array $records): void
     {
         $activeIds = [];
 
@@ -177,7 +187,7 @@ final readonly class SyncMedia
         $modelClass::query()
             ->select($key)
             ->orderBy($key)
-            ->chunkById(1000, function ($rows) use ($activeIds, &$deleted, $key, $modelClass): void {
+            ->chunkById(1000, function ($rows) use ($activeIds, &$deleted, $key, $mediaType, $modelClass): void {
                 $staleIds = $rows
                     ->pluck($key)
                     ->filter(fn (mixed $id): bool => ! isset($activeIds[(string) $id]))
@@ -188,6 +198,11 @@ final readonly class SyncMedia
                     return;
                 }
 
+                MediaCategoryAssignment::query()
+                    ->where('media_type', $mediaType)
+                    ->whereIn('media_provider_id', array_map('strval', $staleIds))
+                    ->delete();
+
                 $deleted += $modelClass::query()->whereIn($key, $staleIds)->delete();
             }, $key, $key);
 
@@ -195,5 +210,196 @@ final readonly class SyncMedia
             'model' => $modelClass,
             'deleted' => $deleted,
         ]);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $chunk
+     * @return array<int, array<string, mixed>>
+     */
+    private function sanitizeSeriesChunk(array $chunk): array
+    {
+        return array_map(fn (array $row): array => Arr::only($row, [
+            'series_id',
+            'num',
+            'name',
+            'cover',
+            'plot',
+            'cast',
+            'director',
+            'genre',
+            'releaseDate',
+            'last_modified',
+            'rating',
+            'rating_5based',
+            'backdrop_path',
+            'youtube_trailer',
+            'episode_run_time',
+            'category_id',
+        ]), $chunk);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $chunk
+     * @return array<int, array<string, mixed>>
+     */
+    private function sanitizeVodChunk(array $chunk): array
+    {
+        return array_map(fn (array $row): array => Arr::only($row, [
+            'stream_id',
+            'num',
+            'name',
+            'stream_type',
+            'stream_icon',
+            'rating',
+            'rating_5based',
+            'added',
+            'is_adult',
+            'category_id',
+            'container_extension',
+            'custom_sid',
+            'direct_source',
+        ]), $chunk);
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $chunk
+     * @return array<string, list<array<string, mixed>>>
+     */
+    private function buildAssignmentsForChunk(array $chunk, string $mediaType, string $providerKey): array
+    {
+        $assignments = [];
+
+        foreach ($chunk as $row) {
+            $mediaProviderId = $this->stringify($row[$providerKey] ?? null);
+
+            if ($mediaProviderId === '') {
+                continue;
+            }
+
+            $resolvedCategoryIds = $this->resolveAssignedCategoryIds($row);
+
+            $assignments[$mediaProviderId] = array_map(
+                fn (array $assignment): array => [
+                    'media_type' => $mediaType,
+                    'media_provider_id' => $mediaProviderId,
+                    'category_provider_id' => $assignment['category_provider_id'],
+                    'source_order' => $assignment['source_order'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+                $resolvedCategoryIds,
+            );
+        }
+
+        return $assignments;
+    }
+
+    /**
+     * @param array<string, list<array<string, mixed>>> $assignmentsByMedia
+     */
+    private function syncAssignments(array $assignmentsByMedia, string $mediaType): void
+    {
+        if ($assignmentsByMedia === []) {
+            return;
+        }
+
+        $mediaProviderIds = array_keys($assignmentsByMedia);
+
+        MediaCategoryAssignment::query()
+            ->where('media_type', $mediaType)
+            ->whereIn('media_provider_id', $mediaProviderIds)
+            ->delete();
+
+        $rows = [];
+
+        foreach ($assignmentsByMedia as $assignmentRows) {
+            foreach ($assignmentRows as $assignmentRow) {
+                $rows[] = $assignmentRow;
+            }
+        }
+
+        if ($rows !== []) {
+            MediaCategoryAssignment::query()->insert($rows);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     * @return list<array{category_provider_id:string,source_order:int}>
+     */
+    private function resolveAssignedCategoryIds(array $row): array
+    {
+        $richCategoryIds = $this->normalizeCategoryIdList($row['category_ids'] ?? null);
+
+        if ($richCategoryIds !== []) {
+            return $richCategoryIds;
+        }
+
+        $fallbackCategoryId = trim($this->stringify($row['category_id'] ?? null));
+
+        if ($fallbackCategoryId === '') {
+            return [];
+        }
+
+        return [[
+            'category_provider_id' => $fallbackCategoryId,
+            'source_order' => 0,
+        ]];
+    }
+
+    /**
+     * @return list<array{category_provider_id:string,source_order:int}>
+     */
+    private function normalizeCategoryIdList(mixed $value): array
+    {
+        $rawCategoryIds = [];
+
+        if (is_array($value)) {
+            $rawCategoryIds = $value;
+        } elseif (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            if (is_array($decoded)) {
+                $rawCategoryIds = $decoded;
+            } elseif (trim($value) !== '') {
+                $rawCategoryIds = explode(',', $value);
+            }
+        }
+
+        if ($rawCategoryIds === []) {
+            return [];
+        }
+
+        $assignments = [];
+        $seen = [];
+
+        foreach ($rawCategoryIds as $rawCategoryId) {
+            $categoryProviderId = trim($this->stringify($rawCategoryId));
+
+            if ($categoryProviderId === '' || isset($seen[$categoryProviderId])) {
+                continue;
+            }
+
+            $seen[$categoryProviderId] = true;
+            $assignments[] = [
+                'category_provider_id' => $categoryProviderId,
+                'source_order' => count($assignments),
+            ];
+        }
+
+        return $assignments;
+    }
+
+    private function stringify(mixed $value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        return '';
     }
 }

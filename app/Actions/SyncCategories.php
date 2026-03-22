@@ -148,7 +148,7 @@ final readonly class SyncCategories
 
     /**
      * @param list<string> $issues
-     * @return array{succeeded:bool,can_apply:bool,categories:array<string,string>}
+     * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
      */
     private function fetchAndNormalizeVodCategories(bool $forceEmptyVod, array &$issues): array
     {
@@ -170,7 +170,7 @@ final readonly class SyncCategories
 
     /**
      * @param list<string> $issues
-     * @return array{succeeded:bool,can_apply:bool,categories:array<string,string>}
+     * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
      */
     private function fetchAndNormalizeSeriesCategories(bool $forceEmptySeries, array &$issues): array
     {
@@ -193,8 +193,8 @@ final readonly class SyncCategories
     /**
      * @param array<int, array<string, mixed>> $payload
      * @param list<string> $issues
-     * @return array{succeeded:bool,can_apply:bool,categories:array<string,string>}
-     */
+     * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
+    */
     private function normalizeSourceCategories(array $payload, string $sourceName, bool $forceEmpty, array &$issues): array
     {
         $categories = [];
@@ -214,7 +214,10 @@ final readonly class SyncCategories
                 $this->addIssue($issues, sprintf('%s category %s has empty name', $sourceName, $providerId));
             }
 
-            $categories[$providerId] = $name;
+            $categories[$providerId] = [
+                'name' => $name,
+                'sync_order' => $index,
+            ];
         }
 
         if ($categories === [] && ! $forceEmpty) {
@@ -229,12 +232,14 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param array<string,string> $categories
+     * @param array<string,array{name:string,sync_order:int}> $categories
      * @param array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int} $summary
      */
     private function applySourceCategories(array $categories, string $source, array &$summary): void
     {
-        foreach ($categories as $providerId => $name) {
+        $syncOrderColumn = $source === 'vod' ? 'vod_sync_order' : 'series_sync_order';
+
+        foreach ($categories as $providerId => $details) {
             $category = Category::query()->firstOrNew([
                 'provider_id' => $providerId,
             ]);
@@ -247,7 +252,8 @@ final readonly class SyncCategories
                 $category->is_system = false;
             }
 
-            $category->name = $name;
+            $category->name = $details['name'];
+            $category->{$syncOrderColumn} = $details['sync_order'];
 
             if ($source === 'vod') {
                 $category->in_vod = true;
@@ -280,6 +286,7 @@ final readonly class SyncCategories
     private function clearMissingSourceFlag(array $providerIds, string $source, array &$summary): void
     {
         $column = $source === 'vod' ? 'in_vod' : 'in_series';
+        $syncOrderColumn = $source === 'vod' ? 'vod_sync_order' : 'series_sync_order';
         $query = Category::query()
             ->where('is_system', false)
             ->where($column, true);
@@ -290,6 +297,7 @@ final readonly class SyncCategories
 
         $summary['updated'] += $query->update([
             $column => false,
+            $syncOrderColumn => null,
             'updated_at' => now(),
         ]);
     }

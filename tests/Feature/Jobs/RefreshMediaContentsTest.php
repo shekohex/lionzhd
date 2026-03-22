@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Schema;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -292,7 +293,7 @@ test('it normalizes movie category assignments, preserves source order, and dedu
         ],
     ]);
 
-    insertVodStream(streamId: 50_001, categoryId: 'legacy-movie-category');
+    insertRefreshMediaVodStream(streamId: 50_001, categoryId: 'legacy-movie-category');
 
     app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
         $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
@@ -325,7 +326,7 @@ test('it normalizes movie category assignments, preserves source order, and dedu
         ->assertNotFailed()
         ->handle();
 
-    expect(assignmentRowsFor('vod', '50_001'))
+    expect(assignmentRowsFor('vod', '50001'))
         ->toBe([
             ['category_provider_id' => 'movie-drama', 'source_order' => 0],
             ['category_provider_id' => 'movie-action', 'source_order' => 1],
@@ -341,15 +342,6 @@ test('it normalizes series category assignments and keeps legacy single-category
             'in_vod' => false,
             'in_series' => true,
             'is_system' => false,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ],
-        [
-            'provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID,
-            'name' => 'Uncategorized',
-            'in_vod' => false,
-            'in_series' => true,
-            'is_system' => true,
             'created_at' => now(),
             'updated_at' => now(),
         ],
@@ -373,15 +365,18 @@ test('it normalizes series category assignments and keeps legacy single-category
         ],
     ]);
 
-    insertSeries(seriesId: 60_001, categoryId: 'legacy-series-category');
-    insertSeries(seriesId: 60_002, categoryId: Category::UNCATEGORIZED_SERIES_PROVIDER_ID);
-    backfillLegacyAssignments();
+    insertRefreshMediaSeries(seriesId: 60_001, categoryId: 'legacy-series-category');
+    insertRefreshMediaSeries(seriesId: 60_002, categoryId: Category::UNCATEGORIZED_SERIES_PROVIDER_ID);
+    Schema::drop('media_category_assignments');
 
-    expect(assignmentRowsFor('series', '60_001'))
+    $migration = require base_path('database/migrations/2026_03_22_000002_create_media_category_assignments_table.php');
+    $migration->up();
+
+    expect(assignmentRowsFor('series', '60001'))
         ->toBe([
             ['category_provider_id' => 'legacy-series-category', 'source_order' => 0],
         ])
-        ->and(assignmentRowsFor('series', '60_002'))
+        ->and(assignmentRowsFor('series', '60002'))
         ->toBe([
             ['category_provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID, 'source_order' => 0],
         ]);
@@ -416,12 +411,12 @@ test('it normalizes series category assignments and keeps legacy single-category
         ->assertNotFailed()
         ->handle();
 
-    expect(assignmentRowsFor('series', '60_001'))
+    expect(assignmentRowsFor('series', '60001'))
         ->toBe([
             ['category_provider_id' => 'series-documentary', 'source_order' => 0],
             ['category_provider_id' => 'series-comedy', 'source_order' => 1],
         ])
-        ->and(assignmentRowsFor('series', '60_002'))
+        ->and(assignmentRowsFor('series', '60002'))
         ->toBe([
             ['category_provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID, 'source_order' => 0],
         ]);
@@ -441,42 +436,7 @@ function assignmentRowsFor(string $mediaType, string $mediaProviderId): array
         ->all();
 }
 
-function backfillLegacyAssignments(): void
-{
-    $vodRows = DB::table('vod_streams')
-        ->whereNotNull('category_id')
-        ->where('category_id', '!=', '')
-        ->get(['stream_id', 'category_id']);
-
-    foreach ($vodRows as $row) {
-        DB::table('media_category_assignments')->insert([
-            'media_type' => 'vod',
-            'media_provider_id' => (string) $row->stream_id,
-            'category_provider_id' => $row->category_id,
-            'source_order' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-
-    $seriesRows = DB::table('series')
-        ->whereNotNull('category_id')
-        ->where('category_id', '!=', '')
-        ->get(['series_id', 'category_id']);
-
-    foreach ($seriesRows as $row) {
-        DB::table('media_category_assignments')->insert([
-            'media_type' => 'series',
-            'media_provider_id' => (string) $row->series_id,
-            'category_provider_id' => $row->category_id,
-            'source_order' => 0,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-    }
-}
-
-function insertVodStream(int $streamId, ?string $categoryId, ?string $previousCategoryId = null): void
+function insertRefreshMediaVodStream(int $streamId, ?string $categoryId, ?string $previousCategoryId = null): void
 {
     DB::table('vod_streams')->insert([
         'stream_id' => $streamId,
@@ -498,7 +458,7 @@ function insertVodStream(int $streamId, ?string $categoryId, ?string $previousCa
     ]);
 }
 
-function insertSeries(int $seriesId, ?string $categoryId, ?string $previousCategoryId = null): void
+function insertRefreshMediaSeries(int $seriesId, ?string $categoryId, ?string $previousCategoryId = null): void
 {
     DB::table('series')->insert([
         'series_id' => $seriesId,

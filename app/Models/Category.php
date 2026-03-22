@@ -18,6 +18,8 @@ final class Category extends Model
         'in_vod',
         'in_series',
         'is_system',
+        'vod_sync_order',
+        'series_sync_order',
     ];
 
     protected function casts(): array
@@ -26,6 +28,8 @@ final class Category extends Model
             'in_vod' => 'boolean',
             'in_series' => 'boolean',
             'is_system' => 'boolean',
+            'vod_sync_order' => 'integer',
+            'series_sync_order' => 'integer',
         ];
     }
 }

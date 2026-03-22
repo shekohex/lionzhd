@@ -54,6 +54,44 @@ test('it updates category name by provider id identity', function (): void {
         ->and($run->status)->toBe(CategorySyncRunStatus::Success);
 });
 
+test('it persists canonical payload order independently for vod and series categories', function (): void {
+    fakeCategories(
+        vodPayload: [
+            ['category_id' => 'shared-category', 'category_name' => 'Shared Category'],
+            ['category_id' => 'vod-second', 'category_name' => 'Vod Second'],
+            ['category_id' => 'vod-third', 'category_name' => 'Vod Third'],
+        ],
+        seriesPayload: [
+            ['category_id' => 'series-first', 'category_name' => 'Series First'],
+            ['category_id' => 'shared-category', 'category_name' => 'Shared Category'],
+            ['category_id' => 'series-third', 'category_name' => 'Series Third'],
+        ],
+    );
+
+    SyncCategories::run();
+
+    expect(Category::query()->pluck('vod_sync_order', 'provider_id')->all())
+        ->toMatchArray([
+            Category::UNCATEGORIZED_VOD_PROVIDER_ID => null,
+            Category::UNCATEGORIZED_SERIES_PROVIDER_ID => null,
+            'shared-category' => 0,
+            'vod-second' => 1,
+            'vod-third' => 2,
+            'series-first' => null,
+            'series-third' => null,
+        ])
+        ->and(Category::query()->pluck('series_sync_order', 'provider_id')->all())
+        ->toMatchArray([
+            Category::UNCATEGORIZED_VOD_PROVIDER_ID => null,
+            Category::UNCATEGORIZED_SERIES_PROVIDER_ID => null,
+            'shared-category' => 1,
+            'vod-second' => null,
+            'vod-third' => null,
+            'series-first' => 0,
+            'series-third' => 2,
+        ]);
+});
+
 test('it removes missing vod categories and moves vod content to vod uncategorized', function (): void {
     Category::query()->create([
         'provider_id' => 'missing-vod',

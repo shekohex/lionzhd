@@ -10,6 +10,7 @@ use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Jobs\RefreshMediaContents;
 use App\Models\AutoEpisodes\SeriesMonitor;
+use App\Models\Category;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Support\Facades\DB;
@@ -259,3 +260,265 @@ test('it tolerates duplicate vod nums within the same upstream payload', functio
             40_002 => 'Second Duplicate',
         ]);
 });
+
+test('it normalizes movie category assignments, preserves source order, and dedupes repeated ids', function (): void {
+    Category::query()->insert([
+        [
+            'provider_id' => 'movie-action',
+            'name' => 'Movie Action',
+            'in_vod' => true,
+            'in_series' => false,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'provider_id' => 'movie-drama',
+            'name' => 'Movie Drama',
+            'in_vod' => true,
+            'in_series' => false,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'provider_id' => 'movie-thriller',
+            'name' => 'Movie Thriller',
+            'in_vod' => true,
+            'in_series' => false,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
+    insertVodStream(streamId: 50_001, categoryId: 'legacy-movie-category');
+
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([], 200),
+            GetVodStreamsRequest::class => MockResponse::make([
+                [
+                    'stream_id' => 50_001,
+                    'num' => 50_001,
+                    'name' => 'Assigned Movie',
+                    'stream_type' => 'movie',
+                    'stream_icon' => null,
+                    'rating' => null,
+                    'rating_5based' => 0,
+                    'added' => '2025-02-01 00:00:00',
+                    'is_adult' => false,
+                    'category_id' => 'legacy-movie-category',
+                    'category_ids' => ['movie-drama', 'movie-action', 'movie-drama', 'movie-thriller'],
+                    'container_extension' => 'mp4',
+                    'custom_sid' => null,
+                    'direct_source' => null,
+                ],
+            ], 200),
+        ]));
+    });
+
+    app()->make(RefreshMediaContents::class)
+        ->withFakeQueueInteractions()
+        ->assertNotFailed()
+        ->handle();
+
+    expect(assignmentRowsFor('vod', '50_001'))
+        ->toBe([
+            ['category_provider_id' => 'movie-drama', 'source_order' => 0],
+            ['category_provider_id' => 'movie-action', 'source_order' => 1],
+            ['category_provider_id' => 'movie-thriller', 'source_order' => 2],
+        ]);
+});
+
+test('it normalizes series category assignments and keeps legacy single-category backfill authoritative before refresh', function (): void {
+    Category::query()->insert([
+        [
+            'provider_id' => 'legacy-series-category',
+            'name' => 'Legacy Series Category',
+            'in_vod' => false,
+            'in_series' => true,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID,
+            'name' => 'Uncategorized',
+            'in_vod' => false,
+            'in_series' => true,
+            'is_system' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'provider_id' => 'series-documentary',
+            'name' => 'Series Documentary',
+            'in_vod' => false,
+            'in_series' => true,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'provider_id' => 'series-comedy',
+            'name' => 'Series Comedy',
+            'in_vod' => false,
+            'in_series' => true,
+            'is_system' => false,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
+    insertSeries(seriesId: 60_001, categoryId: 'legacy-series-category');
+    insertSeries(seriesId: 60_002, categoryId: Category::UNCATEGORIZED_SERIES_PROVIDER_ID);
+    backfillLegacyAssignments();
+
+    expect(assignmentRowsFor('series', '60_001'))
+        ->toBe([
+            ['category_provider_id' => 'legacy-series-category', 'source_order' => 0],
+        ])
+        ->and(assignmentRowsFor('series', '60_002'))
+        ->toBe([
+            ['category_provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID, 'source_order' => 0],
+        ]);
+
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([
+                [
+                    'series_id' => 60_001,
+                    'num' => 60_001,
+                    'name' => 'Series With Rich Categories',
+                    'category_id' => 'legacy-series-category',
+                    'category_ids' => ['series-documentary', 'series-comedy', 'series-documentary'],
+                    'backdrop_path' => [],
+                ],
+                [
+                    'series_id' => 60_002,
+                    'num' => 60_002,
+                    'name' => 'Series Without Rich Categories',
+                    'category_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID,
+                    'backdrop_path' => [],
+                ],
+            ], 200),
+            GetVodStreamsRequest::class => MockResponse::make([], 200),
+        ]));
+    });
+
+    app()->make(RefreshMediaContents::class)
+        ->withFakeQueueInteractions()
+        ->assertNotFailed()
+        ->handle();
+
+    expect(assignmentRowsFor('series', '60_001'))
+        ->toBe([
+            ['category_provider_id' => 'series-documentary', 'source_order' => 0],
+            ['category_provider_id' => 'series-comedy', 'source_order' => 1],
+        ])
+        ->and(assignmentRowsFor('series', '60_002'))
+        ->toBe([
+            ['category_provider_id' => Category::UNCATEGORIZED_SERIES_PROVIDER_ID, 'source_order' => 0],
+        ]);
+});
+
+function assignmentRowsFor(string $mediaType, string $mediaProviderId): array
+{
+    return DB::table('media_category_assignments')
+        ->where('media_type', $mediaType)
+        ->where('media_provider_id', $mediaProviderId)
+        ->orderBy('source_order')
+        ->get(['category_provider_id', 'source_order'])
+        ->map(fn (object $row): array => [
+            'category_provider_id' => $row->category_provider_id,
+            'source_order' => $row->source_order,
+        ])
+        ->all();
+}
+
+function backfillLegacyAssignments(): void
+{
+    $vodRows = DB::table('vod_streams')
+        ->whereNotNull('category_id')
+        ->where('category_id', '!=', '')
+        ->get(['stream_id', 'category_id']);
+
+    foreach ($vodRows as $row) {
+        DB::table('media_category_assignments')->insert([
+            'media_type' => 'vod',
+            'media_provider_id' => (string) $row->stream_id,
+            'category_provider_id' => $row->category_id,
+            'source_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $seriesRows = DB::table('series')
+        ->whereNotNull('category_id')
+        ->where('category_id', '!=', '')
+        ->get(['series_id', 'category_id']);
+
+    foreach ($seriesRows as $row) {
+        DB::table('media_category_assignments')->insert([
+            'media_type' => 'series',
+            'media_provider_id' => (string) $row->series_id,
+            'category_provider_id' => $row->category_id,
+            'source_order' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+}
+
+function insertVodStream(int $streamId, ?string $categoryId, ?string $previousCategoryId = null): void
+{
+    DB::table('vod_streams')->insert([
+        'stream_id' => $streamId,
+        'num' => $streamId,
+        'name' => sprintf('Vod %d', $streamId),
+        'stream_type' => 'movie',
+        'stream_icon' => null,
+        'rating' => null,
+        'rating_5based' => 0,
+        'added' => '2024-01-01 00:00:00',
+        'is_adult' => false,
+        'category_id' => $categoryId,
+        'previous_category_id' => $previousCategoryId,
+        'container_extension' => 'mp4',
+        'custom_sid' => null,
+        'direct_source' => null,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}
+
+function insertSeries(int $seriesId, ?string $categoryId, ?string $previousCategoryId = null): void
+{
+    DB::table('series')->insert([
+        'series_id' => $seriesId,
+        'num' => $seriesId,
+        'name' => sprintf('Series %d', $seriesId),
+        'cover' => null,
+        'plot' => null,
+        'cast' => null,
+        'director' => null,
+        'genre' => null,
+        'releaseDate' => null,
+        'last_modified' => null,
+        'rating' => null,
+        'rating_5based' => null,
+        'backdrop_path' => null,
+        'youtube_trailer' => null,
+        'episode_run_time' => null,
+        'category_id' => $categoryId,
+        'previous_category_id' => $previousCategoryId,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+}

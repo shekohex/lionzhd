@@ -30,8 +30,8 @@ Requirements for milestone `v1.1 Category Personalization & Search UX`. Each map
 
 ### Detail Context
 
-- [ ] **CTXT-01**: User can see all assigned categories on movie detail pages
-- [ ] **CTXT-02**: User can see all assigned categories on series detail pages
+- [x] **CTXT-01**: User can see all assigned categories on movie detail pages
+- [x] **CTXT-02**: User can see all assigned categories on series detail pages
 
 ## Future Requirements
 
@@ -83,8 +83,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRCH-02 | Phase 11 | Complete |
 | SRCH-03 | Phase 11 | Complete |
 | SRCH-04 | Phase 11 | Complete |
-| CTXT-01 | Phase 12 | Pending |
-| CTXT-02 | Phase 12 | Pending |
+| CTXT-01 | Phase 12 | Complete |
+| CTXT-02 | Phase 12 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 14 total

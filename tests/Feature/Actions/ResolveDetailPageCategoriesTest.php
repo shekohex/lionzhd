@@ -104,8 +104,8 @@ it('returns series detail chips in canonical order and ignores hidden or ignored
     $resolver = app(ResolveDetailPageCategories::class);
 
     expect(detailCategoryChipPayload($resolver->forSeries($series)))->toBe([
-        ['id' => 'series-action', 'name' => 'Action', 'href' => route('series', ['category' => 'series-action'])],
         ['id' => 'series-drama', 'name' => 'Drama', 'href' => route('series', ['category' => 'series-drama'])],
+        ['id' => 'series-action', 'name' => 'Action', 'href' => route('series', ['category' => 'series-action'])],
         ['id' => 'series-comedy', 'name' => 'Comedy', 'href' => route('series', ['category' => 'series-comedy'])],
         ['id' => 'series-alpha', 'name' => 'Alpha', 'href' => route('series', ['category' => 'series-alpha'])],
         ['id' => 'series-zebra', 'name' => 'Zebra', 'href' => route('series', ['category' => 'series-zebra'])],

@@ -38,6 +38,11 @@ declare namespace App.Data {
         isUncategorized: boolean;
         isIgnored: boolean;
     };
+    export type DetailPageCategoryChipData = {
+        id: string;
+        name: string;
+        href: string;
+    };
     export type DiscoverMediaData = {
         movies: Array<App.Data.VodStreamData | App.Data.InWatchlistData>;
         series: Array<App.Data.SeriesData | App.Data.InWatchlistData>;

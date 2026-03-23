@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 12
 current_phase_name: detail page category context
-current_plan: "02"
+current_plan: "03"
 status: in_progress
-stopped_at: Completed 12-detail-page-category-context-01-PLAN.md
-last_updated: "2026-03-22T23:51:43.998Z"
-last_activity: 2026-03-22
+stopped_at: Completed 12-detail-page-category-context-05-PLAN.md
+last_updated: "2026-03-23T00:00:58.819Z"
+last_activity: 2026-03-23
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 61
-  completed_plans: 57
-  percent: 93
+  completed_plans: 58
+  percent: 95
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 12 detail-page category context is in progress with plan 01 complete and plan 02 next.
+**Current focus:** Phase 12 detail-page category context is in progress with plans 01 and 05 complete; plans 02-04 remain pending.
 
 ## Current Position
 
 **Current Phase:** 12
 **Current Phase Name:** detail page category context
-**Current Plan:** 02
+**Current Plan:** 03
 **Total Plans in Phase:** 5
 **Status:** In Progress
-**Last Activity:** 2026-03-22
-**Last Activity Description:** Completed plan 12-01 and advanced Phase 12 execution to plan 02
+**Last Activity:** 2026-03-23
+**Last Activity Description:** Completed plan 12-05 out of order and refreshed detail-category resolver planning artifacts
 
 Phase: 12 of 12 (Detail Page Category Context)
-Plan: 2 of 5
+Plan: 3 of 5
 Status: In Progress
-Last activity: 2026-03-22 - Completed plan 12-01 and advanced Phase 12 execution to plan 02
+Last activity: 2026-03-23 - Completed plan 12-05 out of order and refreshed detail-category resolver planning artifacts
 
-Progress: [█████████░] 93%
+Progress: [██████████] 95%
 
 ## Performance Metrics
 
@@ -70,6 +70,7 @@ Progress: [█████████░] 93%
 | Phase 11 P02 | 24 min | 3 tasks | 3 files |
 | Phase 11 P03 | 21 min | 2 tasks | 2 files |
 | Phase 12-detail-page-category-context P01 | 12 min | 2 tasks | 8 files |
+| Phase 12-detail-page-category-context P05 | 8 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,8 @@ Progress: [█████████░] 93%
 - [Phase 11]: All-mode search pagination now uses one shared committed URL so refresh and browser history replay both sections together.
 - [Phase 12-detail-page-category-context]: Canonical detail category order now persists separately on categories for vod and series.
 - [Phase 12-detail-page-category-context]: Detail category membership now reads from media_category_assignments backfilled from legacy category_id and refreshed from upstream category_ids payloads.
+- [Phase 12-detail-page-category-context]: Detail-page category chips read only from media_category_assignments joined to local categories, never user preference state or legacy detail DTO fields.
+- [Phase 12-detail-page-category-context]: Categories with sync-order values sort canonically first; unsorted categories fall back deterministically by provider id.
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ Progress: [█████████░] 93%
 
 ## Session Continuity
 
-Last session: 2026-03-22T23:51:43.996Z
-Stopped at: Completed 12-detail-page-category-context-01-PLAN.md
+Last session: 2026-03-23T00:00:58.817Z
+Stopped at: Completed 12-detail-page-category-context-05-PLAN.md
 Resume file: None

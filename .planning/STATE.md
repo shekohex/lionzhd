@@ -4,10 +4,10 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 12
 current_phase_name: detail page category context
-current_plan: 5
+current_plan: Not started
 status: completed
 stopped_at: Completed 12-detail-page-category-context-04-PLAN.md
-last_updated: "2026-03-23T00:20:24.670Z"
+last_updated: "2026-03-23T00:26:57.260Z"
 last_activity: 2026-03-23
 progress:
   total_phases: 5
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Current Phase:** 12
 **Current Phase Name:** detail page category context
-**Current Plan:** Complete
+**Current Plan:** Not started
 **Total Plans in Phase:** 5
-**Status:** Complete
+**Status:** Milestone complete
 **Last Activity:** 2026-03-23
-**Last Activity Description:** Completed plan 12-04 and shipped detail-page hero category chips with browse click-through coverage
+**Last Activity Description:** Phase 12 complete
 
 Phase: 12 of 12 (Detail Page Category Context)
 Plan: 5 of 5

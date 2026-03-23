@@ -35,7 +35,7 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
-    const { info, in_watchlist, auth, monitor, preset_times, backfill_preset_counts, run_now_cooldown_seconds } = props;
+    const { info, in_watchlist, auth, monitor, category_context, preset_times, backfill_preset_counts, run_now_cooldown_seconds } = props;
     const isAdmin = auth.user.role === 'admin';
     const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
     const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
@@ -357,6 +357,7 @@ export default function SeriesInformation() {
                         rating={info.rating_5based}
                         duration={info.episodeRunTime}
                         genres={info.genre}
+                        categoryContext={category_context}
                         backdropUrl={info.backdropPath?.length > 0 ? info.backdropPath[0] : null}
                         posterUrl={info.cover}
                         additionalBackdrops={info.backdropPath?.slice(1) || []}

@@ -33,7 +33,7 @@ export default function MovieInformation() {
     const { props } = usePage<MovieInformationPageProps>();
     const { post: addToWatchlistCall, delete: removeFromWatchlistCall } = useForm();
     const { delete: forgetCache } = useForm();
-    const { info, in_watchlist, auth } = props;
+    const { info, in_watchlist, auth, category_context } = props;
     const isAdmin = auth.user.role === 'admin';
     const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
     const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
@@ -189,6 +189,7 @@ export default function MovieInformation() {
                         rating={info.rating}
                         duration={info.duration}
                         genres={info.genre}
+                        categoryContext={category_context}
                         backdropUrl={info.backdropPath?.length > 0 ? info.backdropPath[0] : null}
                         posterUrl={info.movieImage || info.backdrop}
                         onDownload={handleDownload}

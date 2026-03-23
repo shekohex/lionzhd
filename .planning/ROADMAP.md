@@ -98,7 +98,7 @@ Plans:
 
 Plans:
 - [x] 12-01-PLAN.md — Add canonical detail-category assignment storage and sync-order foundation
-- [ ] 12-02-PLAN.md — Expose movie detail category_context through the show controller
+- [x] 12-02-PLAN.md — Expose movie detail category_context through the show controller
 - [ ] 12-03-PLAN.md — Expose series detail category_context through the show controller
 - [ ] 12-04-PLAN.md — Render hero category chips and lock click-through coverage
 - [x] 12-05-PLAN.md — Add shared detail-category resolver and exported chip DTO contract
@@ -111,4 +111,4 @@ Plans:
 | 9. Ignored Discovery Filters | 7/7 | Complete | 2026-03-19 |
 | 10. Searchable Category Navigation | 3/3 | Complete    | 2026-03-20 |
 | 11. Correct Search Mode UX | 3/3 | Complete    | 2026-03-22 |
-| 12. Detail Page Category Context | 2/5 | In Progress|  |
+| 12. Detail Page Category Context | 3/5 | In Progress|  |

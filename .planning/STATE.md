@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 12
 current_phase_name: detail page category context
-current_plan: "03"
+current_plan: "04"
 status: in_progress
-stopped_at: Completed 12-detail-page-category-context-05-PLAN.md
-last_updated: "2026-03-23T00:00:58.819Z"
+stopped_at: Completed 12-detail-page-category-context-02-PLAN.md
+last_updated: "2026-03-23T00:07:50.358Z"
 last_activity: 2026-03-23
 progress:
   total_phases: 5
   completed_phases: 4
   total_plans: 61
-  completed_plans: 58
-  percent: 95
+  completed_plans: 59
+  percent: 97
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 12 detail-page category context is in progress with plans 01 and 05 complete; plans 02-04 remain pending.
+**Current focus:** Phase 12 detail-page category context is in progress with plans 01, 02, and 05 complete; plans 03-04 remain pending.
 
 ## Current Position
 
 **Current Phase:** 12
 **Current Phase Name:** detail page category context
-**Current Plan:** 03
+**Current Plan:** 04
 **Total Plans in Phase:** 5
 **Status:** In Progress
 **Last Activity:** 2026-03-23
-**Last Activity Description:** Completed plan 12-05 out of order and refreshed detail-category resolver planning artifacts
+**Last Activity Description:** Completed plan 12-02 and exposed movie detail category_context through the show controller
 
 Phase: 12 of 12 (Detail Page Category Context)
-Plan: 3 of 5
+Plan: 4 of 5
 Status: In Progress
-Last activity: 2026-03-23 - Completed plan 12-05 out of order and refreshed detail-category resolver planning artifacts
+Last activity: 2026-03-23 - Completed plan 12-02 and exposed movie detail category_context through the show controller
 
-Progress: [██████████] 95%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -71,6 +71,7 @@ Progress: [██████████] 95%
 | Phase 11 P03 | 21 min | 2 tasks | 2 files |
 | Phase 12-detail-page-category-context P01 | 12 min | 2 tasks | 8 files |
 | Phase 12-detail-page-category-context P05 | 8 min | 2 tasks | 4 files |
+| Phase 12 P02 | 1 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,8 @@ Progress: [██████████] 95%
 - [Phase 12-detail-page-category-context]: Detail category membership now reads from media_category_assignments backfilled from legacy category_id and refreshed from upstream category_ids payloads.
 - [Phase 12-detail-page-category-context]: Detail-page category chips read only from media_category_assignments joined to local categories, never user preference state or legacy detail DTO fields.
 - [Phase 12-detail-page-category-context]: Categories with sync-order values sort canonically first; unsorted categories fall back deterministically by provider id.
+- [Phase 12]: Movie show responses now append category_context from ResolveDetailPageCategories instead of inferring from Xtream detail fields or user preferences.
+- [Phase 12]: MovieInformationPageProps now references App.Data.DetailPageCategoryChipData[] so movie detail typing stays aligned with the generated DTO contract.
 
 ### Pending Todos
 
@@ -134,6 +137,6 @@ Progress: [██████████] 95%
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:00:58.817Z
-Stopped at: Completed 12-detail-page-category-context-05-PLAN.md
+Last session: 2026-03-23T00:07:22.824Z
+Stopped at: Completed 12-detail-page-category-context-02-PLAN.md
 Resume file: None

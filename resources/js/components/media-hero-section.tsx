@@ -11,6 +11,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import WatchlistButton from '@/components/watchlist-button';
 import { cn } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { Clapperboard, DownloadIcon, ExternalLinkIcon, InfoIcon, PlayIcon } from 'lucide-react';
 import React, { useState } from 'react';
@@ -26,6 +27,7 @@ export interface MediaHeroSectionProps {
     rating?: string | number;
     duration?: string;
     genres?: string[] | string;
+    categoryContext?: App.Data.DetailPageCategoryChipData[];
     // Image sources with fallback priority
     backdropUrl?: string | null;
     posterUrl?: string | null;
@@ -59,6 +61,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     rating,
     duration,
     genres,
+    categoryContext,
     backdropUrl,
     posterUrl,
     additionalBackdrops,
@@ -213,6 +216,34 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                             className="bg-background/50 backdrop-blur-sm"
                                         >
                                             {genre}
+                                        </Badge>
+                                    ))}
+                                </motion.div>
+                            )}
+
+                            {showMetadata && categoryContext && categoryContext.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.6, delay: 0.35 }}
+                                    className="mb-4 flex flex-wrap gap-2 sm:gap-2.5"
+                                    data-slot="hero-category-context"
+                                >
+                                    {categoryContext.map((category) => (
+                                        <Badge
+                                            key={category.id}
+                                            asChild
+                                            variant="outline"
+                                            className="bg-background/50 hover:bg-background/70 focus-visible:bg-background/70 max-w-full justify-start overflow-visible whitespace-normal break-words px-2 py-1 text-left leading-tight backdrop-blur-sm"
+                                        >
+                                            <Link
+                                                href={category.href}
+                                                preserveScroll={false}
+                                                preserveState={false}
+                                                data-slot="hero-category-chip"
+                                            >
+                                                {category.name}
+                                            </Link>
                                         </Badge>
                                     ))}
                                 </motion.div>

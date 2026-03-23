@@ -52,8 +52,8 @@ it('returns assigned series detail categories in canonical order with browse hre
     $response->assertJsonPath('props.in_watchlist', false);
     $response->assertJsonPath('props.monitor', null);
     $response->assertJsonPath('props.category_context', [
-        ['id' => 'series-action', 'name' => 'Action', 'href' => route('series', ['category' => 'series-action'])],
         ['id' => 'series-drama', 'name' => 'Drama', 'href' => route('series', ['category' => 'series-drama'])],
+        ['id' => 'series-action', 'name' => 'Action', 'href' => route('series', ['category' => 'series-action'])],
         ['id' => 'series-comedy', 'name' => 'Comedy', 'href' => route('series', ['category' => 'series-comedy'])],
         ['id' => 'series-alpha', 'name' => 'Alpha', 'href' => route('series', ['category' => 'series-alpha'])],
         ['id' => 'series-zebra', 'name' => 'Zebra', 'href' => route('series', ['category' => 'series-zebra'])],

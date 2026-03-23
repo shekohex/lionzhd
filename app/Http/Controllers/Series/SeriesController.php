@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Series;
 
+use App\Actions\ResolveDetailPageCategories;
 use App\Actions\BuildPersonalizedCategorySidebar;
 use App\Data\CategoryBrowseRecoveryStateData;
 use App\Data\AutoEpisodes\SeriesMonitorData;
@@ -227,7 +228,12 @@ final class SeriesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, Series $model): Response
+    public function show(
+        #[CurrentUser] User $user,
+        XtreamCodesConnector $client,
+        ResolveDetailPageCategories $resolveDetailPageCategories,
+        Series $model,
+    ): Response
     {
         $series = $client->send(new GetSeriesInfoRequest($model->series_id))->dtoOrFail();
         $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
@@ -241,6 +247,7 @@ final class SeriesController extends Controller
             'info' => $series,
             'in_watchlist' => $inWatchlist,
             'monitor' => $monitor === null ? null : SeriesMonitorData::from($monitor),
+            'category_context' => $resolveDetailPageCategories->forSeries($model),
             'preset_times' => $this->presetTimes(),
             'backfill_preset_counts' => $this->backfillPresetCounts(),
             'run_now_cooldown_seconds' => max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300)),

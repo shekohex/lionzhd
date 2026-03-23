@@ -21,6 +21,7 @@ export interface SeriesInformationPageProps extends SharedData {
     info: App.Http.Integrations.LionzTv.Responses.SeriesInformation;
     in_watchlist: boolean;
     monitor: App.Data.AutoEpisodes.SeriesMonitorData | null;
+    category_context: App.Data.DetailPageCategoryChipData[];
     preset_times: string[];
     backfill_preset_counts: number[];
     run_now_cooldown_seconds: number;

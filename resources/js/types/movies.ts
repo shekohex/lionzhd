@@ -21,4 +21,5 @@ export interface MoviesPageProps extends SharedData {
 export interface MovieInformationPageProps extends SharedData {
     info: App.Http.Integrations.LionzTv.Responses.VodInformation;
     in_watchlist: boolean;
+    category_context: App.Data.DetailPageCategoryChipData[];
 }

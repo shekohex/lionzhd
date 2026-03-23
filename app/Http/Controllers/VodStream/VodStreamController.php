@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\VodStream;
 
 use App\Actions\BuildPersonalizedCategorySidebar;
+use App\Actions\ResolveDetailPageCategories;
 use App\Data\CategoryBrowseFiltersData;
 use App\Data\CategoryBrowseRecoveryStateData;
 use App\Enums\MediaType;
@@ -222,6 +223,7 @@ final class VodStreamController extends Controller
         return Inertia::render('movies/show', [
             'info' => $vod->dtoOrFail(),
             'in_watchlist' => $inWatchlist,
+            'category_context' => app(ResolveDetailPageCategories::class)->forMovie($model),
         ]);
     }
 }

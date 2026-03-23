@@ -4,17 +4,17 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 12
 current_phase_name: detail page category context
-current_plan: "04"
-status: in_progress
-stopped_at: Completed 12-detail-page-category-context-03-PLAN.md
-last_updated: "2026-03-23T00:09:03.380Z"
+current_plan: 5
+status: completed
+stopped_at: Completed 12-detail-page-category-context-04-PLAN.md
+last_updated: "2026-03-23T00:20:24.670Z"
 last_activity: 2026-03-23
 progress:
   total_phases: 5
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 22
-  completed_plans: 21
-  percent: 97
+  completed_plans: 22
+  percent: 100
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 12 detail-page category context is in progress with plans 01, 02, 03, and 05 complete; plan 04 remains pending.
+**Current focus:** Phase 12 detail-page category context is complete; plans 01-05 shipped and milestone v1.1 requirements are fully covered.
 
 ## Current Position
 
 **Current Phase:** 12
 **Current Phase Name:** detail page category context
-**Current Plan:** 04
+**Current Plan:** Complete
 **Total Plans in Phase:** 5
-**Status:** In Progress
+**Status:** Complete
 **Last Activity:** 2026-03-23
-**Last Activity Description:** Completed plan 12-03 and exposed series detail category_context through the show controller
+**Last Activity Description:** Completed plan 12-04 and shipped detail-page hero category chips with browse click-through coverage
 
 Phase: 12 of 12 (Detail Page Category Context)
-Plan: 4 of 5
-Status: In Progress
-Last activity: 2026-03-23 - Completed plan 12-03 and exposed series detail category_context through the show controller
+Plan: 5 of 5
+Status: Complete
+Last activity: 2026-03-23 - Completed plan 12-04 and shipped detail-page hero category chips with browse click-through coverage
 
-Progress: [██████████] 97%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -73,6 +73,7 @@ Progress: [██████████] 97%
 | Phase 12-detail-page-category-context P05 | 8 min | 2 tasks | 4 files |
 | Phase 12 P02 | 1 min | 2 tasks | 3 files |
 | Phase 12-detail-page-category-context P03 | 3 min | 2 tasks | 3 files |
+| Phase 12-detail-page-category-context P04 | 5 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -129,6 +130,8 @@ Progress: [██████████] 97%
 - [Phase 12]: MovieInformationPageProps now references App.Data.DetailPageCategoryChipData[] so movie detail typing stays aligned with the generated DTO contract.
 - [Phase 12-detail-page-category-context]: SeriesController@show now consumes ResolveDetailPageCategories::forSeries and preserves existing monitor/watchlist payloads.
 - [Phase 12-detail-page-category-context]: SeriesInformationPageProps reuses App.Data.DetailPageCategoryChipData[] instead of a duplicate chip interface.
+- [Phase 12-detail-page-category-context]: Hero category chips stay in their own unlabeled wrapped row directly below genres on both detail pages.
+- [Phase 12-detail-page-category-context]: Detail chip coverage locks hidden and ignored browse recovery through real browser navigation instead of unit-only assertions.
 
 ### Pending Todos
 
@@ -140,6 +143,6 @@ Progress: [██████████] 97%
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:09:03.378Z
-Stopped at: Completed 12-detail-page-category-context-03-PLAN.md
+Last session: 2026-03-23T00:20:24.668Z
+Stopped at: Completed 12-detail-page-category-context-04-PLAN.md
 Resume file: None

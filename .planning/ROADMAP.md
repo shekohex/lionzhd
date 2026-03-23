@@ -15,7 +15,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 9: Ignored Discovery Filters** - Ignored categories consistently remove titles from discovery with recovery states.
 - [x] **Phase 10: Searchable Category Navigation** - Search categories inside web and mobile navigation. (completed 2026-03-20)
 - [x] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness. (completed 2026-03-22)
-- [ ] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages.
+- [x] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages. (completed 2026-03-23)
 
 ## Phase Details
 
@@ -100,7 +100,7 @@ Plans:
 - [x] 12-01-PLAN.md — Add canonical detail-category assignment storage and sync-order foundation
 - [x] 12-02-PLAN.md — Expose movie detail category_context through the show controller
 - [x] 12-03-PLAN.md — Expose series detail category_context through the show controller
-- [ ] 12-04-PLAN.md — Render hero category chips and lock click-through coverage
+- [x] 12-04-PLAN.md — Render hero category chips and lock click-through coverage
 - [x] 12-05-PLAN.md — Add shared detail-category resolver and exported chip DTO contract
 
 ## Progress
@@ -111,4 +111,4 @@ Plans:
 | 9. Ignored Discovery Filters | 7/7 | Complete | 2026-03-19 |
 | 10. Searchable Category Navigation | 3/3 | Complete    | 2026-03-20 |
 | 11. Correct Search Mode UX | 3/3 | Complete    | 2026-03-22 |
-| 12. Detail Page Category Context | 4/5 | In Progress|  |
+| 12. Detail Page Category Context | 5/5 | Complete   | 2026-03-23 |

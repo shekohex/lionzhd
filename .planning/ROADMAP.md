@@ -131,7 +131,10 @@ Plans:
   1. `tests/Browser/IgnoredDiscoveryFiltersTest.php` asserts current recovery, empty-state, and ignored-row copy for movies and series.
   2. Browser coverage proves selected ignored categories recover in place without leaving the intended browse URL.
   3. Desktop and mobile ignored-state recovery assertions complete without stale UI text blockers.
-**Plans**: 0 plans
+**Plans**: 1 plan
+
+Plans:
+- [ ] 14-01-PLAN.md — Refresh ignored discovery browser proof around shared auth, current recovery copy, and deterministic movies/series flows
 
 ### Phase 15: Refresh Detail Page Category Browser Proof
 **Goal**: Current browser proof for detail-page category context matches the live detail UI and proves chip visibility plus browse handoff end to end.
@@ -154,5 +157,5 @@ Plans:
 | 11. Correct Search Mode UX | 3/3 | Complete    | 2026-03-22 |
 | 12. Detail Page Category Context | 5/5 | Complete    | 2026-03-23 |
 | 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | Complete    | 2026-03-25 |
-| 14. Refresh Ignored Discovery Browser Recovery Proof | 0/0 | Pending | - |
+| 14. Refresh Ignored Discovery Browser Recovery Proof | 0/1 | Pending | - |
 | 15. Refresh Detail Page Category Browser Proof | 0/0 | Pending | - |

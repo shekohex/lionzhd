@@ -78,11 +78,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-05 | Phase 8 | Complete |
 | IGNR-01 | Phase 14 | Pending |
 | IGNR-02 | Phase 14 | Pending |
-| NAVG-01 | Phase 13 | Pending |
-| SRCH-01 | Phase 13 | Pending |
-| SRCH-02 | Phase 13 | Pending |
-| SRCH-03 | Phase 13 | Pending |
-| SRCH-04 | Phase 13 | Pending |
+| NAVG-01 | Phase 13 | Complete |
+| SRCH-01 | Phase 13 | Complete |
+| SRCH-02 | Phase 13 | Complete |
+| SRCH-03 | Phase 13 | Complete |
+| SRCH-04 | Phase 13 | Complete |
 | CTXT-01 | Phase 15 | Pending |
 | CTXT-02 | Phase 15 | Pending |
 

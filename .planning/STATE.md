@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 12
-current_phase_name: detail page category context
-current_plan: Not started
-status: completed
-stopped_at: Completed 12-detail-page-category-context-04-PLAN.md
-last_updated: "2026-03-23T00:26:57.260Z"
-last_activity: 2026-03-23
+current_phase: 13
+current_phase_name: refresh search and navigation browser auth proof
+current_plan: 02
+status: executing
+stopped_at: Completed 13-01-PLAN.md
+last_updated: "2026-03-25T10:36:33.121Z"
+last_activity: 2026-03-25
 progress:
-  total_phases: 5
+  total_phases: 8
   completed_phases: 5
-  total_plans: 22
-  completed_plans: 22
-  percent: 100
+  total_plans: 25
+  completed_plans: 23
+  percent: 97
 ---
 
 # Project State
@@ -24,24 +24,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 12 detail-page category context is complete; plans 01-05 shipped and milestone v1.1 requirements are fully covered.
+**Current focus:** Phase 13 refresh-search-and-navigation-browser-auth-proof is in progress; plan 01 shipped the shared browser auth bootstrap and plan 02 is next.
 
 ## Current Position
 
-**Current Phase:** 12
-**Current Phase Name:** detail page category context
-**Current Plan:** Not started
-**Total Plans in Phase:** 5
-**Status:** Milestone complete
-**Last Activity:** 2026-03-23
-**Last Activity Description:** Phase 12 complete
+**Current Phase:** 13
+**Current Phase Name:** refresh search and navigation browser auth proof
+**Current Plan:** 02
+**Total Plans in Phase:** 3
+**Status:** In Progress
+**Last Activity:** 2026-03-25
+**Last Activity Description:** Completed plan 13-01
 
-Phase: 12 of 12 (Detail Page Category Context)
-Plan: 5 of 5
-Status: Complete
-Last activity: 2026-03-23 - Completed plan 12-04 and shipped detail-page hero category chips with browse click-through coverage
+Phase: 13 of 15 (Refresh Search and Navigation Browser Auth Proof)
+Plan: 1 of 3
+Status: In Progress
+Last activity: 2026-03-25 - Completed plan 13-01 and centralized live browser auth proof for follow-on search and navigation suites
 
-Progress: [██████████] 100%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
@@ -74,6 +74,7 @@ Progress: [██████████] 100%
 | Phase 12 P02 | 1 min | 2 tasks | 3 files |
 | Phase 12-detail-page-category-context P03 | 3 min | 2 tasks | 3 files |
 | Phase 12-detail-page-category-context P04 | 5 min | 2 tasks | 4 files |
+| Phase 13 P01 | 3 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,8 @@ Progress: [██████████] 100%
 - [Phase 12-detail-page-category-context]: SeriesInformationPageProps reuses App.Data.DetailPageCategoryChipData[] instead of a duplicate chip interface.
 - [Phase 12-detail-page-category-context]: Hero category chips stay in their own unlabeled wrapped row directly below genres on both detail pages.
 - [Phase 12-detail-page-category-context]: Detail chip coverage locks hidden and ignored browse recovery through real browser navigation instead of unit-only assertions.
+- [Phase 13]: Browser auth proof now lives in a single Pest-loaded support helper instead of suite-local login helpers.
+- [Phase 13]: The shared helper asserts the live login form copy and the authenticated /discover landing before suite navigation begins.
 
 ### Pending Todos
 
@@ -143,6 +146,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-23T00:20:24.668Z
-Stopped at: Completed 12-detail-page-category-context-04-PLAN.md
+Last session: 2026-03-25T10:36:33.120Z
+Stopped at: Completed 13-01-PLAN.md
 Resume file: None

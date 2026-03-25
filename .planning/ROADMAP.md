@@ -16,7 +16,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 10: Searchable Category Navigation** - Search categories inside web and mobile navigation. (completed 2026-03-20)
 - [x] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness. (completed 2026-03-22)
 - [x] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages. (completed 2026-03-23)
-- [ ] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end.
+- [x] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end. (completed 2026-03-25)
 - [ ] **Phase 14: Refresh Ignored Discovery Browser Recovery Proof** - Update ignored discovery browser expectations so current recovery flows prove correctly.
 - [ ] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end.
 
@@ -153,6 +153,6 @@ Plans:
 | 10. Searchable Category Navigation | 3/3 | Complete    | 2026-03-20 |
 | 11. Correct Search Mode UX | 3/3 | Complete    | 2026-03-22 |
 | 12. Detail Page Category Context | 5/5 | Complete    | 2026-03-23 |
-| 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | In Progress|  |
+| 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | Complete    | 2026-03-25 |
 | 14. Refresh Ignored Discovery Browser Recovery Proof | 0/0 | Pending | - |
 | 15. Refresh Detail Page Category Browser Proof | 0/0 | Pending | - |

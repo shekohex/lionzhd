@@ -18,7 +18,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages. (completed 2026-03-23)
 - [x] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end. (completed 2026-03-25)
 - [x] **Phase 14: Refresh Ignored Discovery Browser Recovery Proof** - Update ignored discovery browser expectations so current recovery flows prove correctly. (completed 2026-03-25)
-- [ ] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end.
+- [x] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end. (completed 2026-03-25)
 
 ## Phase Details
 
@@ -145,7 +145,10 @@ Plans:
   1. `tests/Browser/DetailPageCategoryContextTest.php` asserts current movie and series detail titles before category-chip checks run.
   2. Browser coverage proves hero chips stay visible/readable and navigate back into browse flows for both media types.
   3. Detail-page browser assertions complete without stale title or copy blockers.
-**Plans**: 0 plans
+**Plans**: 1 plan
+
+Plans:
+- [ ] 15-01-PLAN.md — Refresh detail-page browser proof around shared auth, current detail titles, and deterministic movie/series/mobile chip assertions
 
 ## Progress
 
@@ -158,4 +161,4 @@ Plans:
 | 12. Detail Page Category Context | 5/5 | Complete    | 2026-03-23 |
 | 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | Complete    | 2026-03-25 |
 | 14. Refresh Ignored Discovery Browser Recovery Proof | 1/1 | Complete    | 2026-03-25 |
-| 15. Refresh Detail Page Category Browser Proof | 0/0 | Pending | - |
+| 15. Refresh Detail Page Category Browser Proof | 1/1 | Complete   | 2026-03-25 |

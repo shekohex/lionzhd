@@ -4,16 +4,16 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 15
 current_phase_name: refresh detail page category browser proof
-current_plan: Not started
-status: planning
-stopped_at: Completed 14-01-PLAN.md
-last_updated: "2026-03-25T14:43:16.819Z"
+current_plan: "1 of 1"
+status: complete
+stopped_at: Completed 15-01-PLAN.md
+last_updated: "2026-03-25T20:03:04.545Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 8
-  completed_phases: 7
-  total_plans: 26
-  completed_plans: 26
+  completed_phases: 8
+  total_plans: 27
+  completed_plans: 27
   percent: 100
 ---
 
@@ -23,15 +23,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 14 ignored discovery browser recovery proof is complete; Phase 15 detail-page browser proof is next when planned.
+**Current focus:** Phase 15 detail-page browser proof is complete; milestone v1.1 is ready for transition.
 
 ## Current Position
 **Current Phase:** 15
 **Current Phase Name:** refresh detail page category browser proof
-**Current Plan:** Not started
-**Status:** Ready to plan
+**Current Plan:** 1 of 1
+**Status:** Complete
 **Last Activity:** 2026-03-25
-**Last Activity Description:** Phase 14 complete, transitioned to Phase 15
+**Last Activity Description:** Phase 15 complete, detail-page browser proof refreshed
 
 Plans completed: 1 of 1
 Progress: [██████████] 100%
@@ -51,10 +51,7 @@ Progress: [██████████] 100%
 | 08 | 4 | 24 min | 6 min |
 | 09 | 7 | 55 min | 7.9 min |
 
-**Recent Trend:** Phase 14 P01 completed in 2h 49m; earlier phase averages unchanged.
-- Phase 10-searchable-category-navigation P03 | 31 min | 2 tasks | 4 files |
-- Phase 10-searchable-category-navigation P02 | 24 min | 2 tasks | 3 files |
-- Phase 10-searchable-category-navigation P01 | 6 min | 3 tasks | 5 files |
+**Recent Trend:** Phase 15 P01 completed in 8 min; earlier phase averages unchanged.
 - Phase 09-ignored-discovery-filters P07 | 15 min | 1 task | 2 files |
 - Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
 | Phase 11 P01 | 2 min | 3 tasks | 4 files |
@@ -68,6 +65,7 @@ Progress: [██████████] 100%
 | Phase 13 P01 | 3 min | 2 tasks | 3 files |
 | Phase 13 P02 | 9 min | 2 tasks | 2 files |
 | Phase 14 P01 | 2h 49m | 2 tasks | 1 files |
+| Phase 15 P01 | 8 min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -133,6 +131,8 @@ Progress: [██████████] 100%
 - [Phase 13]: Search control helpers should target only tab/button controls and dispatch pointer events so Radix tabs commit URL state deterministically.
 - [Phase 14]: IgnoredDiscoveryFiltersTest now enters every movie and series proof through browserLoginAndVisit instead of actingAs-only browser visits.
 - [Phase 14]: Seeded category preference PATCH setup clears auth guards, while mixed desktop/mobile checks reuse the authenticated browser session for follow-up visits.
+- [Phase 15]: Detail browser proof should enter through browserLoginAndVisit instead of actingAs-only browser visits.
+- [Phase 15]: Movie-to-series follow-up coverage should reuse the authenticated page instance instead of logging in twice.
 
 ### Pending Todos
 
@@ -144,6 +144,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-25T14:36:50.312Z
-Stopped at: Completed 14-01-PLAN.md
+Last session: 2026-03-25T20:03:04.543Z
+Stopped at: Completed 15-01-PLAN.md
 Resume file: None

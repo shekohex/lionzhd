@@ -83,8 +83,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRCH-02 | Phase 13 | Complete |
 | SRCH-03 | Phase 13 | Complete |
 | SRCH-04 | Phase 13 | Complete |
-| CTXT-01 | Phase 15 | Pending |
-| CTXT-02 | Phase 15 | Pending |
+| CTXT-01 | Phase 15 | Complete |
+| CTXT-02 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 14 total

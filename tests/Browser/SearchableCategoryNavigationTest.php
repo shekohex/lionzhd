@@ -21,7 +21,7 @@ if (! extension_loaded('sockets')) {
 
         searchableNavigationSeedMovieFixture();
 
-        $page = searchableNavigationLoginAndVisitPage($user, route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->resize(1280, 900)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
@@ -60,7 +60,7 @@ if (! extension_loaded('sockets')) {
 
         searchableNavigationSeedSeriesFixture();
 
-        $page = searchableNavigationLoginAndVisitPage($user, route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
@@ -99,7 +99,7 @@ if (! extension_loaded('sockets')) {
 
         searchableNavigationSeedMovieFixture();
 
-        $page = searchableNavigationLoginAndVisitPage($user, route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->resize(1280, 900)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
@@ -125,7 +125,7 @@ if (! extension_loaded('sockets')) {
 
         searchableNavigationSeedSeriesFixture();
 
-        $page = searchableNavigationLoginAndVisitPage($user, route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->resize(1280, 900)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
@@ -286,19 +286,6 @@ if (! extension_loaded('sockets')) {
         expect(searchableNavigationNoMatchStateText($page))->toContain('No categories match your search.');
         expect(implode(' ', searchableNavigationVisibleSearchResults($page)))->not->toContain('Comedy');
     })->group('browser');
-}
-
-function searchableNavigationLoginAndVisitPage(User $user, string $url): object
-{
-    visit(route('login'))
-        ->waitForText('Log in to your account')
-        ->fill('Email address', $user->email)
-        ->fill('Password', 'password')
-        ->press('Log in')
-        ->waitForText('Discover')
-        ->assertNoJavaScriptErrors();
-
-    return visit($url);
 }
 
 function searchableNavigationCreateMovieCategory(string $providerId, string $name): void

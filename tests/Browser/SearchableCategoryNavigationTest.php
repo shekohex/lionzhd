@@ -157,9 +157,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-dramedy'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->resize(390, 844)
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
@@ -228,9 +226,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-dramedy'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->resize(390, 844)
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
@@ -386,6 +382,8 @@ function searchableNavigationUpdateCategoryPreferences(User $user, MediaType $me
         ->patch(route('category-preferences.update', ['mediaType' => $mediaType->value]), $payload)
         ->assertRedirect($from)
         ->assertSessionHasNoErrors();
+
+    app('auth')->forgetGuards();
 }
 
 function searchableNavigationOpenMobileSheet(object $page, string $triggerText): bool

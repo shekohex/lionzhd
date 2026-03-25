@@ -103,9 +103,7 @@ if (! extension_loaded('sockets')) {
         detailPageCategoryAssign(MediaType::Series, (string) $series->getKey(), ['series-long']);
         detailPageCategoryFakeResponses($movie->stream_id, $movie->name, $series->series_id, $series->name);
 
-        test()->actingAs($user);
-
-        $moviePage = visit(route('movies.show', ['model' => $movie->getKey()]))
+        $moviePage = browserLoginAndVisit($user, route('movies.show', ['model' => $movie->getKey()]))
             ->resize(390, 844)
             ->waitForText('Mobile Movie Detail')
             ->assertNoJavaScriptErrors();
@@ -119,7 +117,7 @@ if (! extension_loaded('sockets')) {
             'overflowWrap' => 'break-word',
         ]);
 
-        $seriesPage = visit(route('series.show', ['model' => $series->getKey()]))
+        $seriesPage = detailPageCategoryVisit($moviePage, route('series.show', ['model' => $series->getKey()]))
             ->resize(390, 844)
             ->waitForText('Mobile Series Detail')
             ->assertNoJavaScriptErrors();

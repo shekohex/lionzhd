@@ -76,15 +76,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-03 | Phase 8 | Complete |
 | PERS-04 | Phase 8 | Complete |
 | PERS-05 | Phase 8 | Complete |
-| IGNR-01 | Phase 9 | Complete |
-| IGNR-02 | Phase 9 | Complete |
-| NAVG-01 | Phase 10 | Complete |
-| SRCH-01 | Phase 11 | Complete |
-| SRCH-02 | Phase 11 | Complete |
-| SRCH-03 | Phase 11 | Complete |
-| SRCH-04 | Phase 11 | Complete |
-| CTXT-01 | Phase 12 | Complete |
-| CTXT-02 | Phase 12 | Complete |
+| IGNR-01 | Phase 14 | Pending |
+| IGNR-02 | Phase 14 | Pending |
+| NAVG-01 | Phase 13 | Pending |
+| SRCH-01 | Phase 13 | Pending |
+| SRCH-02 | Phase 13 | Pending |
+| SRCH-03 | Phase 13 | Pending |
+| SRCH-04 | Phase 13 | Pending |
+| CTXT-01 | Phase 15 | Pending |
+| CTXT-02 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 14 total
@@ -93,4 +93,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-20 after Phase 10 searchable navigation completion*
+*Last updated: 2026-03-25 after adding gap-closure phases 13-15*

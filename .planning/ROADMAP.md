@@ -3,11 +3,11 @@
 ## Milestones
 
 - SHIPPED: **v1 Streaming Platform Enhancements** - Phases 01-07 (39 plans), completed 2026-02-28. See `.planning/milestones/v1-ROADMAP.md`.
-- ACTIVE: **v1.1 Category Personalization & Search UX** - Phases 8-12.
+- ACTIVE: **v1.1 Category Personalization & Search UX** - Phases 8-15.
 
 ## Overview
 
-Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy. The delivery path starts with per-user category controls, then applies shared filtering semantics to discovery, adds searchable navigation, fixes the search contract, and finishes with category context on detail surfaces.
+Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy. The delivery path starts with per-user category controls, then applies shared filtering semantics to discovery, adds searchable navigation, fixes the search contract, finishes with category context on detail surfaces, and closes with refreshed browser proof for the shipped flows.
 
 ## Phases
 
@@ -16,6 +16,9 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 10: Searchable Category Navigation** - Search categories inside web and mobile navigation. (completed 2026-03-20)
 - [x] **Phase 11: Correct Search Mode UX** - Fix media-type search filtering, layout adaptation, and URL correctness. (completed 2026-03-22)
 - [x] **Phase 12: Detail Page Category Context** - Show assigned categories on movie and series detail pages. (completed 2026-03-23)
+- [ ] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end.
+- [ ] **Phase 14: Refresh Ignored Discovery Browser Recovery Proof** - Update ignored discovery browser expectations so current recovery flows prove correctly.
+- [ ] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end.
 
 ## Phase Details
 
@@ -103,6 +106,39 @@ Plans:
 - [x] 12-04-PLAN.md — Render hero category chips and lock click-through coverage
 - [x] 12-05-PLAN.md — Add shared detail-category resolver and exported chip DTO contract
 
+### Phase 13: Refresh Search and Navigation Browser Auth Proof
+**Goal**: Current browser proof for searchable navigation and `/search` mode UX passes through the live auth flow and reaches the milestone assertions end to end.
+**Depends on**: Phases 10-11
+**Requirements**: NAVG-01, SRCH-01, SRCH-02, SRCH-03, SRCH-04
+**Gap Closure**: Closes audit gaps from `browser-auth-harness -> search-and-navigation-browser-suites` and the broken `Search mode UX` plus `Searchable category navigation` flow proof.
+**Success Criteria** (what must be TRUE):
+  1. Browser login bootstrap used by search/navigation suites matches current auth copy and lands reliably on an authenticated page.
+  2. `tests/Browser/SearchModeUxTest.php` reaches current mode, URL, history, and filtered-layout assertions without stale login blockers.
+  3. `tests/Browser/SearchableCategoryNavigationTest.php` reaches current desktop and mobile category-search assertions without stale login blockers.
+**Plans**: 0 plans
+
+### Phase 14: Refresh Ignored Discovery Browser Recovery Proof
+**Goal**: Current browser proof for ignored discovery recovery matches the live browse/manage UI and proves recovery behavior end to end.
+**Depends on**: Phase 9
+**Requirements**: IGNR-01, IGNR-02
+**Gap Closure**: Closes audit gaps from `ignored-discovery-browser-fixtures -> ignored-recovery-flow-proof` and the broken `Ignored discovery recovery` flow proof.
+**Success Criteria** (what must be TRUE):
+  1. `tests/Browser/IgnoredDiscoveryFiltersTest.php` asserts current recovery, empty-state, and ignored-row copy for movies and series.
+  2. Browser coverage proves selected ignored categories recover in place without leaving the intended browse URL.
+  3. Desktop and mobile ignored-state recovery assertions complete without stale UI text blockers.
+**Plans**: 0 plans
+
+### Phase 15: Refresh Detail Page Category Browser Proof
+**Goal**: Current browser proof for detail-page category context matches the live detail UI and proves chip visibility plus browse handoff end to end.
+**Depends on**: Phase 12
+**Requirements**: CTXT-01, CTXT-02
+**Gap Closure**: Closes audit gaps from `detail-page-browser-fixtures -> detail-category-chip-flow-proof` and the broken `Detail page category context` flow proof.
+**Success Criteria** (what must be TRUE):
+  1. `tests/Browser/DetailPageCategoryContextTest.php` asserts current movie and series detail titles before category-chip checks run.
+  2. Browser coverage proves hero chips stay visible/readable and navigate back into browse flows for both media types.
+  3. Detail-page browser assertions complete without stale title or copy blockers.
+**Plans**: 0 plans
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -112,3 +148,6 @@ Plans:
 | 10. Searchable Category Navigation | 3/3 | Complete    | 2026-03-20 |
 | 11. Correct Search Mode UX | 3/3 | Complete    | 2026-03-22 |
 | 12. Detail Page Category Context | 5/5 | Complete    | 2026-03-23 |
+| 13. Refresh Search and Navigation Browser Auth Proof | 0/0 | Pending | - |
+| 14. Refresh Ignored Discovery Browser Recovery Proof | 0/0 | Pending | - |
+| 15. Refresh Detail Page Category Browser Proof | 0/0 | Pending | - |

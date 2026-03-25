@@ -52,9 +52,7 @@ if (! extension_loaded('sockets')) {
         detailPageCategoryCreatePreference($user, MediaType::Series, 'series-ignored', isIgnored: true);
         detailPageCategoryFakeResponses($movie->stream_id, $movie->name, $series->series_id, $series->name);
 
-        test()->actingAs($user);
-
-        $moviePage = visit(route('movies.show', ['model' => $movie->getKey()]))
+        $moviePage = browserLoginAndVisit($user, route('movies.show', ['model' => $movie->getKey()]))
             ->resize(1440, 960)
             ->waitForText('Movie Detail Title')
             ->assertNoJavaScriptErrors();
@@ -71,7 +69,7 @@ if (! extension_loaded('sockets')) {
         expect(parse_url($moviePage->url(), PHP_URL_PATH))->toBe(route('movies', [], false));
         expect(detailPageCategoryCurrentQueryValue($moviePage->url(), 'category'))->toBe('movie-hidden');
 
-        $seriesPage = visit(route('series.show', ['model' => $series->getKey()]))
+        $seriesPage = detailPageCategoryVisit($moviePage, route('series.show', ['model' => $series->getKey()]))
             ->resize(1440, 960)
             ->waitForText('Series Detail Title')
             ->assertNoJavaScriptErrors();
@@ -387,6 +385,21 @@ function detailPageCategoryChipMetrics(object $page, string $label): array
             };
         }
     JS));
+}
+
+function detailPageCategoryVisit(object $page, string $url): object
+{
+    $urlJson = json_encode($url, JSON_THROW_ON_ERROR);
+
+    $page->script(str_replace('__URL__', $urlJson, <<<'JS'
+        () => {
+            window.location.assign(__URL__);
+
+            return true;
+        }
+    JS));
+
+    return $page;
 }
 
 function detailPageCategoryCurrentQueryValue(string $url, string $key): ?string

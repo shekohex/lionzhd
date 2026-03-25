@@ -142,7 +142,7 @@ if (! extension_loaded('sockets')) {
         expect(searchModeUxVisibleBodyText($page))->toContain('Movies only');
         expect(searchModeUxVisibleBodyText($page))->toContain('1 movie result for "Galaxy type:movie"');
 
-        $emptyPage = visit(route('search.full', [
+        $emptyPage = searchModeUxVisit($page, route('search.full', [
             'q' => 'Nothing type:movie',
             'media_type' => 'movie',
         ]))
@@ -405,7 +405,30 @@ function searchModeUxHistoryForward(object $page): void
 
 function searchModeUxRefreshPage(object $page): object
 {
-    return visit(searchModeUxCurrentLocation($page));
+    $page->script(<<<'JS'
+        () => {
+            window.location.reload();
+
+            return true;
+        }
+    JS);
+
+    return $page;
+}
+
+function searchModeUxVisit(object $page, string $url): object
+{
+    $urlJson = json_encode($url, JSON_THROW_ON_ERROR);
+
+    $page->script(str_replace('__URL__', $urlJson, <<<'JS'
+        () => {
+            window.location.assign(__URL__);
+
+            return true;
+        }
+    JS));
+
+    return $page;
 }
 
 function searchModeUxSubmitSearch(object $page): bool

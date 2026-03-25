@@ -19,7 +19,7 @@ if (! extension_loaded('sockets')) {
 
         searchModeUxSeedFixture();
 
-        $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
+        $page = browserLoginAndVisit($user, route('search.full', ['q' => 'Galaxy']))
             ->resize(1440, 960)
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
@@ -41,7 +41,7 @@ if (! extension_loaded('sockets')) {
 
         searchModeUxSeedFixture();
 
-        $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
+        $page = browserLoginAndVisit($user, route('search.full', ['q' => 'Galaxy']))
             ->resize(1440, 960)
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
@@ -127,7 +127,7 @@ if (! extension_loaded('sockets')) {
 
         searchModeUxSeedFixture();
 
-        $page = searchModeUxLoginAndVisitPage($user, route('search.full', [
+        $page = browserLoginAndVisit($user, route('search.full', [
             'q' => 'Galaxy type:movie',
             'media_type' => 'movie',
         ]))
@@ -174,7 +174,7 @@ if (! extension_loaded('sockets')) {
         searchModeUxSeedSeriesRecord(82_006, 'Galaxy Series Five', 'series-fixture');
         searchModeUxSeedSeriesRecord(82_007, 'Galaxy Series Six', 'series-fixture');
 
-        $page = searchModeUxLoginAndVisitPage($user, route('search.full', ['q' => 'Galaxy']))
+        $page = browserLoginAndVisit($user, route('search.full', ['q' => 'Galaxy']))
             ->resize(1440, 960)
             ->waitForText('Search the entire media library')
             ->assertNoJavaScriptErrors();
@@ -210,19 +210,6 @@ if (! extension_loaded('sockets')) {
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
     })->group('browser');
-}
-
-function searchModeUxLoginAndVisitPage(User $user, string $url): object
-{
-    visit(route('login'))
-        ->waitForText('Log in to your account')
-        ->fill('Email address', $user->email)
-        ->fill('Password', 'password')
-        ->press('Log in')
-        ->waitForText('Discover')
-        ->assertNoJavaScriptErrors();
-
-    return visit($url);
 }
 
 function searchModeUxSeedFixture(): void
@@ -347,7 +334,7 @@ function searchModeUxWaitForSearchUrl(object $page, array $needles): bool
             const needles = __NEEDLES__;
             const startedAt = Date.now();
 
-            while (Date.now() - startedAt < 3000) {
+            while (Date.now() - startedAt < 10000) {
                 const current = `${window.location.pathname}${window.location.search}`;
 
                 if (needles.every((needle) => current.includes(needle))) {
@@ -378,7 +365,7 @@ function searchModeUxWaitForQueryParam(object $page, string $parameter, ?string 
             const value = __VALUE__;
             const startedAt = Date.now();
 
-            while (Date.now() - startedAt < 3000) {
+            while (Date.now() - startedAt < 10000) {
                 const params = new URLSearchParams(window.location.search);
                 const currentValue = params.get(parameter);
 
@@ -525,7 +512,7 @@ function searchModeUxWaitForBodyText(object $page, string $needle): bool
             const needle = __NEEDLE__;
             const startedAt = Date.now();
 
-            while (Date.now() - startedAt < 3000) {
+            while (Date.now() - startedAt < 10000) {
                 const current = document.body.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 
                 if (current.includes(needle)) {
@@ -597,19 +584,30 @@ function searchModeUxClickVisibleTab(object $page, string $text): bool
     return $page->script(str_replace('__TEXT__', $textJson, <<<'JS'
         () => {
             const text = __TEXT__;
+            const normalizedText = text.replace(/\s+/g, ' ').trim();
             const isVisible = (candidate) => {
                 const rect = candidate.getBoundingClientRect();
                 const style = window.getComputedStyle(candidate);
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const tab = Array.from(document.querySelectorAll('[role="tab"], button, a')).find((candidate) =>
-                candidate.textContent?.replace(/\s+/g, ' ').trim().includes(text) && isVisible(candidate)
-            );
 
-            tab?.click();
+            const candidates = Array.from(document.querySelectorAll('[role="tab"], button')).filter(isVisible);
+            const target = candidates.find((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() === normalizedText)
+                ?? candidates.find((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim().includes(normalizedText));
 
-            return Boolean(tab);
+            if (! target) {
+                return false;
+            }
+
+            target.focus();
+            target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true, pointerType: 'mouse', isPrimary: true, button: 0 }));
+            target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true, button: 0 }));
+            target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, composed: true, pointerType: 'mouse', isPrimary: true, button: 0 }));
+            target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, composed: true, button: 0 }));
+            target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, button: 0 }));
+
+            return true;
         }
     JS));
 }

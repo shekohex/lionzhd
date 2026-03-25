@@ -29,9 +29,19 @@ namespace {
 
     function browserLoginAndVisit(User $user, string $url): object
     {
-        browserLogin($user);
+        $page = browserLogin($user);
 
-        return visit($url);
+        $urlJson = json_encode($url, JSON_THROW_ON_ERROR);
+
+        $page->script(str_replace('__URL__', $urlJson, <<<'JS'
+            () => {
+                window.location.assign(__URL__);
+
+                return true;
+            }
+        JS));
+
+        return $page;
     }
 
     function browserWaitForPath(object $page, string $path): bool

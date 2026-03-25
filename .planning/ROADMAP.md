@@ -115,7 +115,12 @@ Plans:
   1. Browser login bootstrap used by search/navigation suites matches current auth copy and lands reliably on an authenticated page.
   2. `tests/Browser/SearchModeUxTest.php` reaches current mode, URL, history, and filtered-layout assertions without stale login blockers.
   3. `tests/Browser/SearchableCategoryNavigationTest.php` reaches current desktop and mobile category-search assertions without stale login blockers.
-**Plans**: 0 plans
+**Plans**: 3 plans
+
+Plans:
+- [ ] 13-01-PLAN.md — Centralize live browser login bootstrap and remove auth-helper drift
+- [ ] 13-02-PLAN.md — Refresh `/search` browser auth proof against the current search contract
+- [ ] 13-03-PLAN.md — Refresh searchable-navigation browser auth proof for desktop and mobile
 
 ### Phase 14: Refresh Ignored Discovery Browser Recovery Proof
 **Goal**: Current browser proof for ignored discovery recovery matches the live browse/manage UI and proves recovery behavior end to end.

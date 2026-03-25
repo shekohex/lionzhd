@@ -32,9 +32,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-action'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies', ['category' => 'movie-action']))
+        $page = browserLoginAndVisit($user, route('movies', ['category' => 'movie-action']))
             ->waitForText('Movie Categories')
             ->waitForText('This category is ignored')
             ->assertSee('Unignore and restore results')
@@ -68,9 +66,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-drama'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->waitForText('Movie Categories')
             ->waitForText('Your movie view is empty')
             ->assertSee('Manage categories')
@@ -111,9 +107,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-action'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->waitForText('Movie Categories')
             ->assertNoJavaScriptErrors();
 
@@ -184,9 +178,7 @@ if (! extension_loaded('sockets')) {
         seedMovieRecord(53_101, 'Movie Action', 'movie-action');
         seedMovieRecord(53_102, 'Movie Comedy', 'movie-comedy');
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->waitForText('Movie Categories')
             ->waitForText('Movie Action')
             ->waitForText('Movie Comedy')
@@ -236,9 +228,7 @@ if (! extension_loaded('sockets')) {
         seedMovieRecord(53_201, 'Movie Action', 'movie-action');
         seedMovieRecord(53_202, 'Movie Comedy', 'movie-comedy');
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies'))
+        $page = browserLoginAndVisit($user, route('movies'))
             ->resize(390, 844)
             ->waitForText('Movie Categories')
             ->waitForText('Movie Action')
@@ -318,13 +308,14 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['movie-action', 'movie-comedy'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('movies', ['category' => 'movie-action']))
+        $page = browserLoginAndVisit($user, route('movies', ['category' => 'movie-action']))
             ->waitForText('Movie Categories')
             ->waitForText('This category is ignored')
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('movies', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('movie-action');
 
         $page->click('Unignore and restore results')
             ->waitForText('Movie Action')
@@ -763,6 +754,8 @@ function updateCategoryPreferences(User $user, MediaType $mediaType, string $fro
         ->patch(route('category-preferences.update', ['mediaType' => $mediaType->value]), $payload)
         ->assertRedirect($from)
         ->assertSessionHasNoErrors();
+
+    app('auth')->forgetGuards();
 }
 
 function currentQueryValue(string $url, string $key): ?string

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests;
 
+require_once __DIR__.'/Browser/Support/browser-auth.php';
+
 /*
 |--------------------------------------------------------------------------
 | Test Case

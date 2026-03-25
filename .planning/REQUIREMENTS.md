@@ -76,8 +76,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERS-03 | Phase 8 | Complete |
 | PERS-04 | Phase 8 | Complete |
 | PERS-05 | Phase 8 | Complete |
-| IGNR-01 | Phase 14 | Pending |
-| IGNR-02 | Phase 14 | Pending |
+| IGNR-01 | Phase 14 | Complete |
+| IGNR-02 | Phase 14 | Complete |
 | NAVG-01 | Phase 13 | Complete |
 | SRCH-01 | Phase 13 | Complete |
 | SRCH-02 | Phase 13 | Complete |

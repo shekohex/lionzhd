@@ -4,39 +4,37 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 14
 current_phase_name: refresh ignored discovery browser recovery proof
-current_plan: Not started
-status: planning
-stopped_at: Completed 13-02-PLAN.md
-last_updated: "2026-03-25T10:58:20.727Z"
+current_plan: "01"
+status: complete
+stopped_at: Completed 14-01-PLAN.md
+last_updated: "2026-03-25T14:36:50.314Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 8
-  completed_phases: 6
-  total_plans: 25
-  completed_plans: 25
-  percent: 98
+  completed_phases: 7
+  total_plans: 26
+  completed_plans: 26
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
-
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 13 refresh-search-and-navigation-browser-auth-proof is in progress; plan 02 refreshed the `/search` browser auth proof and plan 03 is next.
+**Current focus:** Phase 14 ignored discovery browser recovery proof is complete; Phase 15 detail-page browser proof is next when planned.
 
 ## Current Position
-
 **Current Phase:** 14
 **Current Phase Name:** refresh ignored discovery browser recovery proof
-**Current Plan:** Not started
-**Status:** Ready to plan
+**Current Plan:** 01
+**Status:** Complete
 **Last Activity:** 2026-03-25
-**Last Activity Description:** Phase 13 complete, transitioned to Phase 14
+**Last Activity Description:** Completed Phase 14 plan 01 and closed the ignored discovery browser proof gap
 
-Plans completed: 2 of 3
-Progress: [██████████] 98%
+Plans completed: 1 of 1
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -53,8 +51,7 @@ Progress: [██████████] 98%
 | 08 | 4 | 24 min | 6 min |
 | 09 | 7 | 55 min | 7.9 min |
 
-**Recent Trend:** Last 5 plans: 10-03 completed in 31 min; 10-02 completed in 24 min; 10-01 completed in 6 min; 09-07 completed in 15 min; 09-05 completed in 7 min
-- Trend: Phase 13 search auth-proof refresh is partially complete with plan 13-03 remaining.
+**Recent Trend:** Phase 14 P01 completed in 2h 49m; earlier phase averages unchanged.
 - Phase 10-searchable-category-navigation P03 | 31 min | 2 tasks | 4 files |
 - Phase 10-searchable-category-navigation P02 | 24 min | 2 tasks | 3 files |
 - Phase 10-searchable-category-navigation P01 | 6 min | 3 tasks | 5 files |
@@ -70,6 +67,7 @@ Progress: [██████████] 98%
 | Phase 12-detail-page-category-context P04 | 5 min | 2 tasks | 4 files |
 | Phase 13 P01 | 3 min | 2 tasks | 3 files |
 | Phase 13 P02 | 9 min | 2 tasks | 2 files |
+| Phase 14 P01 | 2h 49m | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -133,6 +131,8 @@ Progress: [██████████] 98%
 - [Phase 13]: SearchModeUxTest should enter through browserLoginAndVisit instead of a suite-local login helper.
 - [Phase 13]: Search follow-up visits and refreshes should stay on the authenticated page instance to keep live-auth history proof stable.
 - [Phase 13]: Search control helpers should target only tab/button controls and dispatch pointer events so Radix tabs commit URL state deterministically.
+- [Phase 14]: IgnoredDiscoveryFiltersTest now enters every movie and series proof through browserLoginAndVisit instead of actingAs-only browser visits.
+- [Phase 14]: Seeded category preference PATCH setup clears auth guards, while mixed desktop/mobile checks reuse the authenticated browser session for follow-up visits.
 
 ### Pending Todos
 
@@ -144,6 +144,6 @@ Progress: [██████████] 98%
 
 ## Session Continuity
 
-Last session: 2026-03-25T10:51:32.087Z
-Stopped at: Completed 13-02-PLAN.md
+Last session: 2026-03-25T14:36:50.312Z
+Stopped at: Completed 14-01-PLAN.md
 Resume file: None

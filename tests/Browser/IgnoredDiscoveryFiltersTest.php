@@ -362,9 +362,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-drama'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('series', ['category' => 'series-drama']))
+        $page = browserLoginAndVisit($user, route('series', ['category' => 'series-drama']))
             ->waitForText('Series Categories')
             ->waitForText('This category is ignored')
             ->assertSee('Unignore and restore results')
@@ -398,9 +396,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-thriller'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->waitForText('Series Categories')
             ->waitForText('Your series view is empty')
             ->assertSee('Manage categories')
@@ -441,9 +437,7 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-drama'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->waitForText('Series Categories')
             ->assertNoJavaScriptErrors();
 
@@ -514,9 +508,7 @@ if (! extension_loaded('sockets')) {
         seedSeriesRecord(63_101, 'Drama Nights', 'series-drama');
         seedSeriesRecord(63_102, 'Comedy Nights', 'series-comedy');
 
-        test()->actingAs($user);
-
-        $page = visit(route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->waitForText('Series Categories')
             ->waitForText('Drama Nights')
             ->waitForText('Comedy Nights')
@@ -566,9 +558,7 @@ if (! extension_loaded('sockets')) {
         seedSeriesRecord(63_201, 'Drama Nights', 'series-drama');
         seedSeriesRecord(63_202, 'Comedy Nights', 'series-comedy');
 
-        test()->actingAs($user);
-
-        $page = visit(route('series'))
+        $page = browserLoginAndVisit($user, route('series'))
             ->resize(390, 844)
             ->waitForText('Series Categories')
             ->waitForText('Drama Nights')
@@ -648,13 +638,14 @@ if (! extension_loaded('sockets')) {
             'ignored_ids' => ['series-drama', 'series-comedy'],
         ]);
 
-        test()->actingAs($user);
-
-        $page = visit(route('series', ['category' => 'series-drama']))
+        $page = browserLoginAndVisit($user, route('series', ['category' => 'series-drama']))
             ->waitForText('Series Categories')
             ->waitForText('This category is ignored')
             ->assertSee('Unignore and restore results')
             ->assertNoJavaScriptErrors();
+
+        expect(parse_url($page->url(), PHP_URL_PATH))->toBe(route('series', [], false));
+        expect(currentQueryValue($page->url(), 'category'))->toBe('series-drama');
 
         $page->click('Unignore and restore results')
             ->waitForText('Drama Nights')

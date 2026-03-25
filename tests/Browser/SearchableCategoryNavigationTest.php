@@ -487,14 +487,25 @@ function searchableNavigationPressSearchKey(object $page, string $key): string|b
     $keyJson = json_encode($key, JSON_THROW_ON_ERROR);
 
     return $page->script(str_replace('__KEY__', $keyJson, <<<'JS'
-        () => {
+        async () => {
             const isVisible = (candidate) => {
                 const rect = candidate.getBoundingClientRect();
                 const style = window.getComputedStyle(candidate);
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const items = Array.from(document.querySelectorAll('[cmdk-item]')).filter((candidate) => isVisible(candidate));
+            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
+
+            input?.focus();
+
+            const resolveItems = () => Array.from(document.querySelectorAll('[cmdk-item], [role="option"]')).filter((candidate) => isVisible(candidate));
+            const startedAt = Date.now();
+            let items = resolveItems();
+
+            while (items.length === 0 && Date.now() - startedAt < 3000) {
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+                items = resolveItems();
+            }
 
             if (items.length === 0) {
                 return false;
@@ -617,7 +628,7 @@ function searchableNavigationVisibleHighlightedSegments(object $page): array
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
 
-            return Array.from(document.querySelectorAll('[cmdk-item] .font-semibold'))
+            return Array.from(document.querySelectorAll('[cmdk-item] .font-semibold, [role="option"] .font-semibold'))
                 .filter((candidate) => isVisible(candidate))
             .map((candidate) => candidate.textContent?.trim() ?? '')
                 .filter((text) => text !== '');
@@ -635,7 +646,7 @@ function searchableNavigationSelectedSearchResultText(object $page): string
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const selectedItem = Array.from(document.querySelectorAll('[cmdk-item]'))
+            const selectedItem = Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
                 .filter((candidate) => isVisible(candidate))
                 .find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true' || candidate.dataset.selected === 'true');
 

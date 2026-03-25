@@ -4,16 +4,16 @@ milestone: v1.1
 milestone_name: milestone
 current_phase: 13
 current_phase_name: refresh search and navigation browser auth proof
-current_plan: 02
+current_plan: 3
 status: executing
-stopped_at: Completed 13-01-PLAN.md
-last_updated: "2026-03-25T10:36:33.121Z"
+stopped_at: Completed 13-02-PLAN.md
+last_updated: "2026-03-25T10:51:32.089Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 97
 ---
 
@@ -24,24 +24,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 13 refresh-search-and-navigation-browser-auth-proof is in progress; plan 01 shipped the shared browser auth bootstrap and plan 02 is next.
+**Current focus:** Phase 13 refresh-search-and-navigation-browser-auth-proof is in progress; plan 02 refreshed the `/search` browser auth proof and plan 03 is next.
 
 ## Current Position
 
 **Current Phase:** 13
 **Current Phase Name:** refresh search and navigation browser auth proof
-**Current Plan:** 02
+**Current Plan:** 3
 **Total Plans in Phase:** 3
-**Status:** In Progress
+**Status:** Ready to execute
 **Last Activity:** 2026-03-25
-**Last Activity Description:** Completed plan 13-01
+**Last Activity Description:** Completed plan 13-02
 
 Phase: 13 of 15 (Refresh Search and Navigation Browser Auth Proof)
-Plan: 1 of 3
-Status: In Progress
-Last activity: 2026-03-25 - Completed plan 13-01 and centralized live browser auth proof for follow-on search and navigation suites
-
-Progress: [██████████] 97%
+Plans completed: 2 of 3
+Progress: [██████████] 98%
 
 ## Performance Metrics
 
@@ -58,9 +55,8 @@ Progress: [██████████] 97%
 | 08 | 4 | 24 min | 6 min |
 | 09 | 7 | 55 min | 7.9 min |
 
-**Recent Trend:**
-- Last 5 plans: 10-03 completed in 31 min; 10-02 completed in 24 min; 10-01 completed in 6 min; 09-07 completed in 15 min; 09-05 completed in 7 min
-- Trend: Phase 10 is complete with verified searchable category navigation across desktop and mobile.
+**Recent Trend:** Last 5 plans: 10-03 completed in 31 min; 10-02 completed in 24 min; 10-01 completed in 6 min; 09-07 completed in 15 min; 09-05 completed in 7 min
+- Trend: Phase 13 search auth-proof refresh is partially complete with plan 13-03 remaining.
 - Phase 10-searchable-category-navigation P03 | 31 min | 2 tasks | 4 files |
 - Phase 10-searchable-category-navigation P02 | 24 min | 2 tasks | 3 files |
 - Phase 10-searchable-category-navigation P01 | 6 min | 3 tasks | 5 files |
@@ -75,6 +71,7 @@ Progress: [██████████] 97%
 | Phase 12-detail-page-category-context P03 | 3 min | 2 tasks | 3 files |
 | Phase 12-detail-page-category-context P04 | 5 min | 2 tasks | 4 files |
 | Phase 13 P01 | 3 min | 2 tasks | 3 files |
+| Phase 13 P02 | 9 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -135,6 +132,9 @@ Progress: [██████████] 97%
 - [Phase 12-detail-page-category-context]: Detail chip coverage locks hidden and ignored browse recovery through real browser navigation instead of unit-only assertions.
 - [Phase 13]: Browser auth proof now lives in a single Pest-loaded support helper instead of suite-local login helpers.
 - [Phase 13]: The shared helper asserts the live login form copy and the authenticated /discover landing before suite navigation begins.
+- [Phase 13]: SearchModeUxTest should enter through browserLoginAndVisit instead of a suite-local login helper.
+- [Phase 13]: Search follow-up visits and refreshes should stay on the authenticated page instance to keep live-auth history proof stable.
+- [Phase 13]: Search control helpers should target only tab/button controls and dispatch pointer events so Radix tabs commit URL state deterministically.
 
 ### Pending Todos
 
@@ -146,6 +146,6 @@ Progress: [██████████] 97%
 
 ## Session Continuity
 
-Last session: 2026-03-25T10:36:33.120Z
-Stopped at: Completed 13-01-PLAN.md
+Last session: 2026-03-25T10:51:32.087Z
+Stopped at: Completed 13-02-PLAN.md
 Resume file: None

@@ -194,13 +194,13 @@ export default function Search() {
 
                     <Tabs value={activeMode} onValueChange={handleModeChange} className="mt-4 w-full">
                         <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl p-1">
-                            <TabsTrigger value="all" className="py-2" onClick={() => handleModeChange('all')}>
+                            <TabsTrigger value="all" className="py-2">
                                 All
                             </TabsTrigger>
-                            <TabsTrigger value="movie" className="py-2" onClick={() => handleModeChange('movie')}>
+                            <TabsTrigger value="movie" className="py-2">
                                 Movies
                             </TabsTrigger>
-                            <TabsTrigger value="series" className="py-2" onClick={() => handleModeChange('series')}>
+                            <TabsTrigger value="series" className="py-2">
                                 TV Series
                             </TabsTrigger>
                         </TabsList>

@@ -31,12 +31,10 @@ See: .planning/PROJECT.md (updated 2026-03-15)
 **Current Phase:** 13
 **Current Phase Name:** refresh search and navigation browser auth proof
 **Current Plan:** 3
-**Total Plans in Phase:** 3
 **Status:** Ready to execute
 **Last Activity:** 2026-03-25
 **Last Activity Description:** Completed plan 13-02
 
-Phase: 13 of 15 (Refresh Search and Navigation Browser Auth Proof)
 Plans completed: 2 of 3
 Progress: [██████████] 98%
 

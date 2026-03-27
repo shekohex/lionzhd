@@ -136,7 +136,7 @@ it('keeps selected zero-item category enabled and returns empty paginator withou
     $response->assertJsonPath('props.movies.total', 0);
     $response->assertJsonCount(0, 'props.movies.data');
 
-    $selectedCategory = collect($response->json('props.categories'))->firstWhere('id', 'vod-zero');
+    $selectedCategory = movieBrowseCategoryItem($response, 'vod-zero');
 
     expect($selectedCategory)->not->toBeNull();
     expect($selectedCategory['disabled'])->toBeFalse();
@@ -161,7 +161,7 @@ it('disables zero-item category when it is not selected', function (): void {
 
     $response->assertOk();
 
-    $zeroCategory = collect($response->json('props.categories'))->firstWhere('id', 'vod-zero');
+    $zeroCategory = movieBrowseCategoryItem($response, 'vod-zero');
 
     expect($zeroCategory)->not->toBeNull();
     expect($zeroCategory['disabled'])->toBeTrue();
@@ -236,11 +236,10 @@ it('returns categories ordered alphabetically with uncategorized last', function
 
     $response->assertOk();
 
-    $categoryIds = collect($response->json('props.categories'))
-        ->pluck('id')
-        ->all();
+    $categoryIds = movieBrowseVisibleIds($response);
 
     expect($categoryIds)->toBe([
+        'all-categories',
         'vod-alpha',
         'vod-bravo',
         'vod-zeta',
@@ -274,4 +273,20 @@ function seedMovieRecord(int $streamId, string $name, ?string $categoryId): void
             ]);
         });
     });
+}
+
+function movieBrowseVisibleIds($response): array
+{
+    return collect($response->json('props.categories.visibleItems'))->pluck('id')->all();
+}
+
+function movieBrowseCategoryItem($response, string $id): array
+{
+    $item = collect($response->json('props.categories.visibleItems'))->firstWhere('id', $id);
+
+    if (! is_array($item)) {
+        throw new \RuntimeException(sprintf('Category %s not found in response.', $id));
+    }
+
+    return $item;
 }

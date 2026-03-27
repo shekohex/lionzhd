@@ -140,9 +140,10 @@ it('orders categories case-insensitively and keeps uncategorized last', function
 
     $response->assertOk();
 
-    $orderedIds = collect($response->json('props.categories'))->pluck('id')->all();
+    $orderedIds = seriesBrowseVisibleIds($response);
 
     expect($orderedIds)->toBe([
+        'all-categories',
         'series-alpha',
         'series-bravo',
         'series-zeta',
@@ -182,13 +183,18 @@ function seriesBrowseCreateSeriesRecord(int $seriesId, ?string $categoryId): voi
 
 function seriesBrowseCategoryItem(TestResponse $response, string $id): array
 {
-    $item = collect($response->json('props.categories'))->firstWhere('id', $id);
+    $item = collect($response->json('props.categories.visibleItems'))->firstWhere('id', $id);
 
     if (! is_array($item)) {
         throw new \RuntimeException(sprintf('Category %s not found in response.', $id));
     }
 
     return $item;
+}
+
+function seriesBrowseVisibleIds(TestResponse $response): array
+{
+    return collect($response->json('props.categories.visibleItems'))->pluck('id')->all();
 }
 
 function seriesBrowseInertiaHeaders(): array

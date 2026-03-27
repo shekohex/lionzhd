@@ -2,18 +2,18 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: milestone
-current_phase: 15
-current_phase_name: refresh detail page category browser proof
-current_plan: Not started
+current_phase: 16
+current_phase_name: restore search history state
+current_plan: 01
 status: completed
-stopped_at: Completed 15-01-PLAN.md
-last_updated: "2026-03-25T20:08:57.943Z"
-last_activity: 2026-03-25
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-27T14:48:16.546Z"
+last_activity: 2026-03-27
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 27
-  completed_plans: 27
+  total_phases: 9
+  completed_phases: 9
+  total_plans: 28
+  completed_plans: 28
   percent: 100
 ---
 
@@ -23,15 +23,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-15)
 
 **Core value:** Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
-**Current focus:** Phase 15 detail-page browser proof is complete; milestone v1.1 is ready for transition.
+**Current focus:** Phase 16 search history restoration is complete; milestone v1.1 is ready for re-audit closeout.
 
 ## Current Position
-**Current Phase:** 15
-**Current Phase Name:** refresh detail page category browser proof
-**Current Plan:** Not started
+**Current Phase:** 16
+**Current Phase Name:** restore search history state
+**Current Plan:** 01
 **Status:** Milestone complete
-**Last Activity:** 2026-03-25
-**Last Activity Description:** Phase 15 complete
+**Last Activity:** 2026-03-27
+**Last Activity Description:** Phase 16 complete
 
 Plans completed: 1 of 1
 Progress: [██████████] 100%
@@ -39,7 +39,7 @@ Progress: [██████████] 100%
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 50
+- Total plans completed: 51
 - Average duration: Not tracked
 - Total execution time: 4 days across shipped v1 milestone
 
@@ -50,8 +50,9 @@ Progress: [██████████] 100%
 | 01-07 | 39 | 4 days | Not tracked |
 | 08 | 4 | 24 min | 6 min |
 | 09 | 7 | 55 min | 7.9 min |
+| 16 | 1 | 5 min | 5 min |
 
-**Recent Trend:** Phase 15 P01 completed in 8 min; earlier phase averages unchanged.
+**Recent Trend:** Phase 16 P01 completed in 5 min; earlier phase averages unchanged.
 - Phase 09-ignored-discovery-filters P07 | 15 min | 1 task | 2 files |
 - Phase 09-ignored-discovery-filters P05 | 7 min | 2 tasks | 3 files |
 | Phase 11 P01 | 2 min | 3 tasks | 4 files |
@@ -66,6 +67,7 @@ Progress: [██████████] 100%
 | Phase 13 P02 | 9 min | 2 tasks | 2 files |
 | Phase 14 P01 | 2h 49m | 2 tasks | 1 files |
 | Phase 15 P01 | 8 min | 2 tasks | 1 files |
+| Phase 16-restore-search-history-state P01 | 5 min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -133,6 +135,8 @@ Progress: [██████████] 100%
 - [Phase 14]: Seeded category preference PATCH setup clears auth guards, while mixed desktop/mobile checks reuse the authenticated browser session for follow-up visits.
 - [Phase 15]: Detail browser proof should enter through browserLoginAndVisit instead of actingAs-only browser visits.
 - [Phase 15]: Movie-to-series follow-up coverage should reuse the authenticated page instance instead of logging in twice.
+- [Phase 16-restore-search-history-state]: Mixed /search stays on one shared page param; no separate movie or series pagination contract is allowed.
+- [Phase 16-restore-search-history-state]: Browser history proof should wait for visible mixed result counts and committed body text, not only URL mutation.
 
 ### Pending Todos
 
@@ -144,6 +148,6 @@ Progress: [██████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-03-25T20:03:04.543Z
-Stopped at: Completed 15-01-PLAN.md
+Last session: 2026-03-27T14:48:16.544Z
+Stopped at: Completed 16-01-PLAN.md
 Resume file: None

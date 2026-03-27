@@ -19,7 +19,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end. (completed 2026-03-25)
 - [x] **Phase 14: Refresh Ignored Discovery Browser Recovery Proof** - Update ignored discovery browser expectations so current recovery flows prove correctly. (completed 2026-03-25)
 - [x] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end. (completed 2026-03-25)
-- [ ] **Phase 16: Restore Search History State** - Close the remaining `/search` browser history restoration regression so milestone v1.1 can pass re-audit.
+- [x] **Phase 16: Restore Search History State** - Close the remaining `/search` browser history restoration regression so milestone v1.1 can pass re-audit. (completed 2026-03-27)
 
 ## Phase Details
 
@@ -160,7 +160,10 @@ Plans:
   1. Navigating from the base mixed-results `/search` query to `page=2` and back restores the same movie and series result counts shown by the rewound URL.
   2. The `/search` page treats browser history changes as the source of truth for mixed-results pagination state instead of keeping stale paginated subsets rendered.
   3. `tests/Browser/SearchModeUxTest.php` passes the `restores search state across refresh and history` scenario against the live app flow.
-**Plans**: 0 plans (`/gsd-plan-phase 16`)
+**Plans**: 1 plan
+
+Plans:
+- [x] 16-01-PLAN.md — Re-prove mixed `/search` pagination state and restore reliable history replay
 
 ## Progress
 
@@ -174,4 +177,4 @@ Plans:
 | 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | Complete    | 2026-03-25 |
 | 14. Refresh Ignored Discovery Browser Recovery Proof | 1/1 | Complete    | 2026-03-25 |
 | 15. Refresh Detail Page Category Browser Proof | 1/1 | Complete    | 2026-03-25 |
-| 16. Restore Search History State | 0/0 | Planned | - |
+| 16. Restore Search History State | 1/1 | Complete   | 2026-03-27 |

@@ -3,11 +3,11 @@
 ## Milestones
 
 - SHIPPED: **v1 Streaming Platform Enhancements** - Phases 01-07 (39 plans), completed 2026-02-28. See `.planning/milestones/v1-ROADMAP.md`.
-- ACTIVE: **v1.1 Category Personalization & Search UX** - Phases 8-15.
+- ACTIVE: **v1.1 Category Personalization & Search UX** - Phases 8-16.
 
 ## Overview
 
-Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy. The delivery path starts with per-user category controls, then applies shared filtering semantics to discovery, adds searchable navigation, fixes the search contract, finishes with category context on detail surfaces, and closes with refreshed browser proof for the shipped flows.
+Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy. The delivery path starts with per-user category controls, then applies shared filtering semantics to discovery, adds searchable navigation, fixes the search contract, finishes with category context on detail surfaces, closes with refreshed browser proof for the shipped flows, and now includes one final gap-closure phase to restore `/search` history replay correctness before re-audit.
 
 ## Phases
 
@@ -19,6 +19,7 @@ Milestone v1.1 makes discovery feel user-owned without mutating shared taxonomy.
 - [x] **Phase 13: Refresh Search and Navigation Browser Auth Proof** - Update stale browser auth bootstrap assertions so current search and navigation flows execute end to end. (completed 2026-03-25)
 - [x] **Phase 14: Refresh Ignored Discovery Browser Recovery Proof** - Update ignored discovery browser expectations so current recovery flows prove correctly. (completed 2026-03-25)
 - [x] **Phase 15: Refresh Detail Page Category Browser Proof** - Update stale detail-page browser expectations so category chips and browse handoff are proven end to end. (completed 2026-03-25)
+- [ ] **Phase 16: Restore Search History State** - Close the remaining `/search` browser history restoration regression so milestone v1.1 can pass re-audit.
 
 ## Phase Details
 
@@ -150,6 +151,17 @@ Plans:
 Plans:
 - [ ] 15-01-PLAN.md — Refresh detail-page browser proof around shared auth, current detail titles, and deterministic movie/series/mobile chip assertions
 
+### Phase 16: Restore Search History State
+**Goal**: Browser history rewind and forward navigation on `/search` restore the URL-authoritative mixed-results state, including pagination transitions.
+**Depends on**: Phases 11, 13
+**Requirements**: SRCH-04
+**Gap Closure**: Closes audit gaps from `search-results pagination state -> browser history restoration on /search` and the broken `Search mode UX history restoration` flow proof.
+**Success Criteria** (what must be TRUE):
+  1. Navigating from the base mixed-results `/search` query to `page=2` and back restores the same movie and series result counts shown by the rewound URL.
+  2. The `/search` page treats browser history changes as the source of truth for mixed-results pagination state instead of keeping stale paginated subsets rendered.
+  3. `tests/Browser/SearchModeUxTest.php` passes the `restores search state across refresh and history` scenario against the live app flow.
+**Plans**: 0 plans (`/gsd-plan-phase 16`)
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -162,3 +174,4 @@ Plans:
 | 13. Refresh Search and Navigation Browser Auth Proof | 2/3 | Complete    | 2026-03-25 |
 | 14. Refresh Ignored Discovery Browser Recovery Proof | 1/1 | Complete    | 2026-03-25 |
 | 15. Refresh Detail Page Category Browser Proof | 1/1 | Complete    | 2026-03-25 |
+| 16. Restore Search History State | 0/0 | Planned | - |

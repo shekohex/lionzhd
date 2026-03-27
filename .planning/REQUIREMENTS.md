@@ -26,7 +26,7 @@ Requirements for milestone `v1.1 Category Personalization & Search UX`. Each map
 - [x] **SRCH-01**: User can switch search media type between all, movies, and series and see UI state stay in sync with the URL
 - [x] **SRCH-02**: User sees only matching media-type results when search is filtered to movies or series
 - [x] **SRCH-03**: User sees movie-only or series-only search results in a full-width result mode
-- [x] **SRCH-04**: User can refresh, deep-link, and use back or forward navigation without losing correct search mode behavior
+- [ ] **SRCH-04**: User can refresh, deep-link, and use back or forward navigation without losing correct search mode behavior
 
 ### Detail Context
 
@@ -82,15 +82,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SRCH-01 | Phase 13 | Complete |
 | SRCH-02 | Phase 13 | Complete |
 | SRCH-03 | Phase 13 | Complete |
-| SRCH-04 | Phase 13 | Complete |
+| SRCH-04 | Phase 16 | Pending |
 | CTXT-01 | Phase 15 | Complete |
 | CTXT-02 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 14 total
+- Checked complete: 13
+- Pending rework: 1
 - Mapped to phases: 14
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-15*
-*Last updated: 2026-03-25 after adding gap-closure phases 13-15*
+*Last updated: 2026-03-27 after adding gap-closure phase 16*

@@ -181,23 +181,33 @@ if (! extension_loaded('sockets')) {
 
         expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy']))->toBeTrue();
         expect(searchModeUxActiveMode($page))->toBe('all');
+        expect(searchModeUxWaitForBodyText($page, 'Found 12 results for "Galaxy"'))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'Movies', '/movies/', 5))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'TV Series', '/series/', 5))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(5);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(5);
 
         expect(searchModeUxClickPaginationLink($page, 'page=2'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'page', '2'))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'Movies', '/movies/', 1))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'TV Series', '/series/', 1))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
 
         searchModeUxHistoryBack($page);
 
         expect(searchModeUxWaitForQueryParam($page, 'page', null))->toBeTrue();
+        expect(searchModeUxWaitForBodyText($page, 'Found 12 results for "Galaxy"'))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'Movies', '/movies/', 5))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'TV Series', '/series/', 5))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(5);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(5);
 
         searchModeUxHistoryForward($page);
 
         expect(searchModeUxWaitForSearchUrl($page, ['q=Galaxy', 'page=2']))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'Movies', '/movies/', 1))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'TV Series', '/series/', 1))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
 
@@ -207,6 +217,8 @@ if (! extension_loaded('sockets')) {
 
         expect(searchModeUxCurrentLocation($page))->toContain('page=2');
         expect(searchModeUxActiveMode($page))->toBe('all');
+        expect(searchModeUxWaitForVisibleResultCount($page, 'Movies', '/movies/', 1))->toBeTrue();
+        expect(searchModeUxWaitForVisibleResultCount($page, 'TV Series', '/series/', 1))->toBeTrue();
         expect(searchModeUxVisibleResultCount($page, 'Movies', '/movies/'))->toBe(1);
         expect(searchModeUxVisibleResultCount($page, 'TV Series', '/series/'))->toBe(1);
     })->group('browser');
@@ -570,6 +582,39 @@ function searchModeUxVisibleResultCount(object $page, string $sectionTitle, stri
             }
 
             return section.querySelectorAll(`a[href*="${hrefFragment}"]`).length;
+        }
+    JS));
+}
+
+function searchModeUxWaitForVisibleResultCount(object $page, string $sectionTitle, string $hrefFragment, int $expectedCount): bool
+{
+    $sectionTitleJson = json_encode($sectionTitle, JSON_THROW_ON_ERROR);
+    $hrefFragmentJson = json_encode($hrefFragment, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace(['__SECTION__', '__HREF__', '__COUNT__'], [$sectionTitleJson, $hrefFragmentJson, (string) $expectedCount], <<<'JS'
+        async () => {
+            const sectionTitle = __SECTION__;
+            const hrefFragment = __HREF__;
+            const expectedCount = __COUNT__;
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 10000) {
+                const section = Array.from(document.querySelectorAll('section')).find((candidate) => {
+                    const heading = candidate.querySelector('h2');
+
+                    return heading?.textContent?.replace(/\s+/g, ' ').trim() === sectionTitle;
+                });
+
+                const count = section?.querySelectorAll(`a[href*="${hrefFragment}"]`).length ?? 0;
+
+                if (count === expectedCount) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
         }
     JS));
 }

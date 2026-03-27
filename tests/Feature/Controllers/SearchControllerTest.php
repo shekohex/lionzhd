@@ -200,6 +200,70 @@ it('searches with the stripped base query while keeping visible sort tokens in q
     $response->assertJsonPath('props.series.total', 1);
 });
 
+it('shared page param keeps mixed search sections aligned', function (): void {
+    config()->set('scout.driver', 'database');
+
+    $user = User::factory()->create();
+
+    foreach (range(1, 6) as $index) {
+        seedSearchControllerMovie(5_000 + $index, "Galaxy Movie {$index}");
+        seedSearchControllerSeries(6_000 + $index, "Galaxy Series {$index}");
+    }
+
+    $pageOne = test()->actingAs($user)
+        ->withHeaders(searchInertiaHeaders())
+        ->get(route('search.full', [
+            'q' => 'Galaxy',
+        ]));
+
+    $pageOne->assertOk();
+    $pageOne->assertJsonPath('props.filters.q', 'Galaxy');
+    $pageOne->assertJsonPath('props.filters.page', 1);
+    $pageOne->assertJsonMissingPath('props.filters.movie_page');
+    $pageOne->assertJsonMissingPath('props.filters.series_page');
+    $pageOne->assertJsonPath('props.movies.current_page', 1);
+    $pageOne->assertJsonPath('props.series.current_page', 1);
+    $pageOne->assertJsonPath('props.movies.per_page', 5);
+    $pageOne->assertJsonPath('props.series.per_page', 5);
+    $pageOne->assertJsonPath('props.movies.total', 6);
+    $pageOne->assertJsonPath('props.series.total', 6);
+    expect(searchControllerPaginatorDataCount($pageOne, 'movies'))->toBe(5);
+    expect(searchControllerPaginatorDataCount($pageOne, 'series'))->toBe(5);
+    expect(searchControllerPaginatorUrls($pageOne, 'movies'))->each->toContain('page=');
+    expect(searchControllerPaginatorUrls($pageOne, 'series'))->each->toContain('page=');
+    expect(searchControllerPaginatorUrls($pageOne, 'movies'))->each->not->toContain('movie_page=');
+    expect(searchControllerPaginatorUrls($pageOne, 'movies'))->each->not->toContain('series_page=');
+    expect(searchControllerPaginatorUrls($pageOne, 'series'))->each->not->toContain('movie_page=');
+    expect(searchControllerPaginatorUrls($pageOne, 'series'))->each->not->toContain('series_page=');
+
+    $pageTwo = test()->actingAs($user)
+        ->withHeaders(searchInertiaHeaders())
+        ->get(route('search.full', [
+            'q' => 'Galaxy',
+            'page' => 2,
+        ]));
+
+    $pageTwo->assertOk();
+    $pageTwo->assertJsonPath('props.filters.q', 'Galaxy');
+    $pageTwo->assertJsonPath('props.filters.page', 2);
+    $pageTwo->assertJsonMissingPath('props.filters.movie_page');
+    $pageTwo->assertJsonMissingPath('props.filters.series_page');
+    $pageTwo->assertJsonPath('props.movies.current_page', 2);
+    $pageTwo->assertJsonPath('props.series.current_page', 2);
+    $pageTwo->assertJsonPath('props.movies.per_page', 5);
+    $pageTwo->assertJsonPath('props.series.per_page', 5);
+    $pageTwo->assertJsonPath('props.movies.total', 6);
+    $pageTwo->assertJsonPath('props.series.total', 6);
+    expect(searchControllerPaginatorDataCount($pageTwo, 'movies'))->toBe(1);
+    expect(searchControllerPaginatorDataCount($pageTwo, 'series'))->toBe(1);
+    expect(searchControllerPaginatorUrls($pageTwo, 'movies'))->each->toContain('page=');
+    expect(searchControllerPaginatorUrls($pageTwo, 'series'))->each->toContain('page=');
+    expect(searchControllerPaginatorUrls($pageTwo, 'movies'))->each->not->toContain('movie_page=');
+    expect(searchControllerPaginatorUrls($pageTwo, 'movies'))->each->not->toContain('series_page=');
+    expect(searchControllerPaginatorUrls($pageTwo, 'series'))->each->not->toContain('movie_page=');
+    expect(searchControllerPaginatorUrls($pageTwo, 'series'))->each->not->toContain('series_page=');
+});
+
 function searchInertiaHeaders(): array
 {
     $version = app(HandleInertiaRequests::class)->version(Request::create('/'));
@@ -251,4 +315,18 @@ function seedSearchControllerSeries(int $seriesId, string $name): void
         'created_at' => now(),
         'updated_at' => now(),
     ]);
+}
+
+function searchControllerPaginatorDataCount(TestResponse $response, string $key): int
+{
+    return count($response->json("props.{$key}.data") ?? []);
+}
+
+function searchControllerPaginatorUrls(TestResponse $response, string $key): array
+{
+    return collect($response->json("props.{$key}.links") ?? [])
+        ->pluck('url')
+        ->filter(static fn (?string $url): bool => filled($url))
+        ->values()
+        ->all();
 }

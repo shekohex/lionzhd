@@ -395,30 +395,192 @@ function searchableNavigationTypeInlineSearchQuery(object $page, string $query):
 {
     $queryJson = json_encode($query, JSON_THROW_ON_ERROR);
 
-    $page->script(str_replace('__QUERY__', $queryJson, <<<'JS'
-        () => {
+    $result = $page->script(str_replace('__QUERY__', $queryJson, <<<'JS'
+        async () => {
+            const expected = __QUERY__;
+
             const isVisible = (candidate) => {
                 const rect = candidate.getBoundingClientRect();
                 const style = window.getComputedStyle(candidate);
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
-            if (! input) {
-                return false;
+            const collectCandidates = () => Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"], [data-slot="command-input"]'))
+                .filter((candidate) => candidate instanceof HTMLInputElement && !candidate.disabled && candidate.getAttribute('aria-hidden') !== 'true' && !candidate.hidden);
+
+            const scopeFromInput = (candidate) => {
+                const root = candidate.closest('[data-slot="command"]') || candidate.closest('.cmdk-root') || candidate.closest('[cmdk-root]') || document;
+
+                return location.pathname + '::' + (root === document
+                    ? 'document'
+                    : ((root instanceof HTMLElement ? (root.getAttribute('data-slot') || root.tagName) : 'unknown') || 'unknown')
+                ).toLowerCase();
+            };
+
+            const resolveInput = (candidates) => {
+                const visibleCandidates = candidates.filter((candidate) => isVisible(candidate));
+                const markedCandidate = visibleCandidates.find((candidate) =>
+                    candidate.matches('input[data-slot="command-input"][data-searchable-navigation-active="1"]')
+                ) ?? candidates.find((candidate) =>
+                    candidate.matches('input[data-slot="command-input"][data-searchable-navigation-active="1"]')
+                )
+                    ?? null;
+
+                if (markedCandidate) {
+                    return markedCandidate;
+                }
+
+                const expectedMatch = candidates.find((candidate) => candidate.value === expected);
+                if (expectedMatch) {
+                    return expectedMatch;
+                }
+
+                const activeScope = window.__searchableNavigationState?.lastScope ?? '';
+                const scopedInput = activeScope ? visibleCandidates.find((candidate) => scopeFromInput(candidate) === activeScope) : null;
+                if (scopedInput) {
+                    return scopedInput;
+                }
+
+                const activeInScope = visibleCandidates.find((candidate) => candidate === document.activeElement && candidate instanceof HTMLInputElement);
+                if (activeInScope instanceof HTMLInputElement) {
+                    return activeInScope;
+                }
+
+                return visibleCandidates.find((candidate) => candidate.closest('[role="dialog"]'))
+                    || visibleCandidates.find((candidate) => candidate.closest('aside'))
+                    || visibleCandidates[0]
+                    || candidates[0]
+                    || (document.activeElement instanceof HTMLInputElement ? document.activeElement : null);
+            };
+
+            document.querySelectorAll('input[data-slot="command-input"][data-searchable-navigation-active]')
+                .forEach((candidate) => candidate.removeAttribute('data-searchable-navigation-active'));
+
+            const startCandidates = collectCandidates();
+            if (startCandidates.length === 0) {
+                return {
+                    ok: false,
+                    reason: '__DIAG_NO_INPUT__',
+                    candidates: 0,
+                    visibleCandidates: 0,
+                };
             }
 
-            const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+            let input = resolveInput(startCandidates);
+
+            if (! (input instanceof HTMLInputElement)) {
+                return {
+                    ok: false,
+                    reason: '__DIAG_NO_INPUT_AFTER_RESOLVE__',
+                    candidates: startCandidates.length,
+                    visibleCandidates: startCandidates.filter(isVisible).length,
+                };
+            }
 
             input.focus();
-            descriptor?.set?.call(input, __QUERY__);
-            input.dispatchEvent(new InputEvent('input', { bubbles: true, data: __QUERY__, inputType: 'insertText' }));
-            input.dispatchEvent(new Event('change', { bubbles: true }));
+            input.setAttribute('data-searchable-navigation-active', '1');
 
-            return true;
+            const root = input.closest('[data-slot="command"]') || input.closest('.cmdk-root') || input.closest('[cmdk-root]') || document;
+            const scope = location.pathname + '::' + (root === document ? 'document' : ((root instanceof HTMLElement ? (root.getAttribute('data-slot') || root.tagName) : 'unknown') || 'unknown')).toLowerCase();
+
+            const navState = window.__searchableNavigationState || (window.__searchableNavigationState = {});
+            navState.lastQuery = expected;
+            navState.lastScope = scope;
+            navState.scopes = navState.scopes || {};
+            navState.scopes[scope] = {
+                query: expected,
+                index: -1,
+                updatedAt: Date.now(),
+            };
+
+            const dispatchQuery = (value) => {
+                const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+                if (descriptor && descriptor.set) {
+                    descriptor.set.call(input, value);
+                } else {
+                    input.value = value;
+                }
+
+                input.dispatchEvent(new InputEvent('input', {
+                    bubbles: true,
+                    cancelable: true,
+                    data: value,
+                    inputType: 'insertText',
+                }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            };
+
+            const typedFromScratch = expected.length === 0;
+            if (typedFromScratch) {
+                dispatchQuery('');
+            } else {
+                let current = '';
+                for (const character of expected) {
+                    current += character;
+                    dispatchQuery(current);
+
+                    input.dispatchEvent(new KeyboardEvent('keydown', {
+                        key: character,
+                        bubbles: true,
+                    }));
+                    input.dispatchEvent(new KeyboardEvent('keyup', {
+                        key: character,
+                        bubbles: true,
+                    }));
+
+                    await new Promise((resolve) => window.setTimeout(resolve, 20));
+                }
+            }
+
+            const startedAt = Date.now();
+            let stable = 0;
+            let current = input.value;
+            let candidates = collectCandidates();
+
+            while (Date.now() - startedAt < 3500) {
+                candidates = collectCandidates();
+                input = resolveInput(candidates) || input;
+
+                if (input instanceof HTMLInputElement) {
+                    input.focus();
+                    input.setAttribute('data-searchable-navigation-active', '1');
+                    navState.lastQuery = expected;
+                    current = input.value;
+                }
+
+                if (current === expected) {
+                    stable += 1;
+                    if (stable >= 2) {
+                        return {
+                            ok: true,
+                            value: current,
+                            stable,
+                            candidates: candidates.length,
+                        };
+                    }
+                } else {
+                    stable = 0;
+                    dispatchQuery(expected);
+                    input = resolveInput(candidates);
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 40));
+            }
+
+            return {
+                ok: false,
+                reason: '__DIAG_NO_TYPED__',
+                value: input instanceof HTMLInputElement ? input.value : '',
+                expected,
+                candidates,
+            };
         }
     JS));
+
+    if (! is_array($result) || ! ($result['ok'] ?? false)) {
+        expect($result)->toEqual(['ok' => true]);
+    }
 
     $page->assertNoJavaScriptErrors();
 }
@@ -426,7 +588,7 @@ function searchableNavigationTypeInlineSearchQuery(object $page, string $query):
 function searchableNavigationVisibleSearchResults(object $page): array
 {
     return $page->script(<<<'JS'
-        () => {
+        async () => {
             const isVisible = (candidate) => {
                 const rect = candidate.getBoundingClientRect();
                 const style = window.getComputedStyle(candidate);
@@ -434,10 +596,67 @@ function searchableNavigationVisibleSearchResults(object $page): array
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
 
-            return Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
+    const candidates = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .filter((candidate) => candidate instanceof HTMLInputElement && ! candidate.disabled);
+
+            const visibleCandidates = candidates.filter((candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            });
+
+            const lastQuery = window.__searchableNavigationState?.lastQuery ?? '';
+            const input = visibleCandidates.find((candidate) => candidate.matches('input[data-slot="command-input"][data-searchable-navigation-active="1"]'))
+                || visibleCandidates.find((candidate) => candidate.value === lastQuery)
+                || visibleCandidates.find((candidate) => candidate.closest('[role="dialog"]'))
+                || visibleCandidates.find((candidate) => candidate.closest('aside'))
+                || candidates.find((candidate) => candidate.matches('input[data-slot="command-input"][data-searchable-navigation-active="1"]'))
+                || candidates.find((candidate) => candidate.value === lastQuery)
+                || candidates.find((candidate) => candidate.closest('[role="dialog"]'))
+                || candidates[0];
+
+            const root = input?.closest('[data-slot="command"], .cmdk-root, [cmdk-root]');
+
+            const collect = () => {
+                const currentRoot = root
+                    ? Array.from(root.querySelectorAll('[cmdk-item], [role="option"], [data-slot="command-item"]'))
+                    : Array.from(document.querySelectorAll('[cmdk-item], [role="option"], [data-slot="command-item"]'));
+
+                return currentRoot
                 .filter((candidate) => isVisible(candidate))
-            .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
+                .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
                 .filter((text) => text !== '');
+            };
+
+            const collectGlobal = () => {
+                return Array.from(document.querySelectorAll('[cmdk-item], [role="option"], [data-slot="command-item"]'))
+                    .filter((candidate) => isVisible(candidate))
+                    .map((candidate) => candidate.textContent?.replace(/\s+/g, ' ').trim() ?? '')
+                    .filter((text) => text !== '');
+            };
+
+            const startedAt = Date.now();
+            let visibleResults = [];
+            while (Date.now() - startedAt < 2500) {
+                visibleResults = collect();
+                if (visibleResults.length > 0) {
+                    return visibleResults;
+                }
+
+                const globalVisibleResults = collectGlobal();
+                if (globalVisibleResults.length > 0) {
+                    return globalVisibleResults;
+                }
+
+                if (! lastQuery || ! input) {
+                    return visibleResults;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 40));
+            }
+
+            return visibleResults;
         }
     JS);
 }
@@ -454,7 +673,30 @@ function searchableNavigationSelectSearchResultWithKeyboard(object $page, int $a
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
+            const inputCandidates = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .filter((candidate) => ! candidate.disabled && candidate.getAttribute('aria-hidden') !== 'true' && !candidate.hidden);
+            const input = (() => {
+                const markedInput = document.querySelector('input[data-slot="command-input"][data-searchable-navigation-active="1"]');
+                if (markedInput instanceof HTMLInputElement) {
+                    return markedInput;
+                }
+
+                const visibleInput = inputCandidates.find((candidate) => isVisible(candidate));
+                if (visibleInput) {
+                    return visibleInput;
+                }
+
+                const fallbackInput = inputCandidates.find((candidate) => candidate.value !== undefined);
+                if (fallbackInput) {
+                    return fallbackInput;
+                }
+
+                if (inputCandidates[0]) {
+                    return inputCandidates[0];
+                }
+
+                return document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
+            })();
 
             if (! input) {
                 return false;
@@ -486,6 +728,303 @@ function searchableNavigationPressSearchKey(object $page, string $key): string|b
 {
     $keyJson = json_encode($key, JSON_THROW_ON_ERROR);
 
+    $result = $page->script(str_replace('__KEY__', $keyJson, <<<'JS'
+        async () => {
+            const itemSelector = '[data-slot="command-item"], [cmdk-item], [role="option"]';
+            const key = __KEY__;
+
+            const isVisible = (candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            };
+
+            const normalizeText = (candidate) => candidate?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
+
+            if (key !== 'ArrowDown' && key !== 'ArrowUp' && key !== 'Enter') {
+                return false;
+            };
+
+            const resolveRoot = (input) => {
+                return (
+                    input.closest('[data-slot="command-list"]')
+                    ?? input.closest('[data-slot="command"]')
+                    ?? input.closest('[cmdk-root]')
+                    ?? input.closest('.cmdk-root')
+                    ?? input.closest('[cmdk-list]')
+                    ?? input.closest('[role="dialog"]')
+                    ?? document
+                );
+            };
+
+            const findCommandInput = () => {
+                const markedInput = document.querySelector('input[data-slot="command-input"][data-searchable-navigation-active="1"]');
+                if (markedInput instanceof HTMLInputElement) {
+                    return markedInput;
+                }
+
+                const candidates = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"], [data-slot="command-input"]'))
+                    .filter((candidate) => candidate instanceof HTMLInputElement);
+
+                const isInputVisible = (candidate) => {
+                    const rect = candidate.getBoundingClientRect();
+                    const style = window.getComputedStyle(candidate);
+
+                    return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0 && !candidate.disabled;
+                };
+
+                const visibleInputs = candidates.filter((candidate) => isInputVisible(candidate));
+                if (visibleInputs.length > 0) {
+                    const visibleWithValue = visibleInputs.filter((candidate) => candidate.value.trim() !== '');
+                    if (visibleWithValue.length > 0) {
+                        const withAside = visibleWithValue.find((candidate) => candidate.closest('aside'));
+                        if (withAside) {
+                            return withAside;
+                        }
+
+                        return visibleWithValue[0];
+                    }
+
+                    const visibleAside = visibleInputs.find((candidate) => candidate.closest('aside'));
+                    if (visibleAside) {
+                        return visibleAside;
+                    }
+
+                    return visibleInputs[0];
+                }
+
+                const fallbackInput = candidates.find((candidate) => candidate.closest('aside') || candidate.value !== undefined);
+                if (fallbackInput) {
+                    return fallbackInput;
+                }
+
+                return candidates[0] ?? (document.activeElement instanceof HTMLInputElement ? document.activeElement : null);
+            };
+
+            const input = findCommandInput();
+            if (! input) {
+                return '__NO_INPUT__';
+            }
+
+            input.focus();
+
+            const root = resolveRoot(input);
+
+            const collect = () => {
+                const rawCandidates = [];
+
+                if (root instanceof HTMLElement) {
+                    rawCandidates.push(...Array.from(root.querySelectorAll(itemSelector)));
+                }
+
+                rawCandidates.push(...Array.from(document.querySelectorAll(itemSelector)));
+
+                const seen = new Set();
+                const raw = rawCandidates.filter((candidate) => {
+                    if (! (candidate instanceof HTMLElement) || seen.has(candidate)) {
+                        return false;
+                    }
+
+                    seen.add(candidate);
+
+                    return true;
+                });
+
+                const visible = raw
+                    .map((candidate) => ({
+                        candidate,
+                        text: normalizeText(candidate),
+                    }))
+                    .filter((entry) => entry.text !== '')
+                    .filter((entry) => isVisible(entry.candidate));
+
+                if (visible.length > 0) {
+                    return visible;
+                }
+
+                return raw
+                    .map((candidate) => ({
+                        candidate,
+                        text: normalizeText(candidate),
+                    }))
+                    .filter((entry) => entry.text !== '');
+            };
+
+            const waitForItems = async () => {
+                const startedAt = Date.now();
+                let entries = collect();
+
+                while (entries.length === 0 && Date.now() - startedAt < 4500) {
+                    await new Promise((resolve) => window.setTimeout(resolve, 40));
+                    entries = collect();
+                }
+
+                return entries;
+            };
+
+            const queryRefresh = async (value) => {
+                const target = value ?? '';
+                const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+
+                if (descriptor) {
+                    descriptor.set?.call(input, target);
+                }
+
+                input.dispatchEvent(new InputEvent('input', { bubbles: true, data: target, inputType: 'insertText' }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+
+                await new Promise((resolve) => window.setTimeout(resolve, 25));
+            };
+
+            const scope = location.pathname + '::' + (root === document ? 'document' : ((root instanceof HTMLElement ? (root.getAttribute('data-slot') || root.tagName) : 'unknown') || 'unknown')).toLowerCase();
+            const navState = window.__searchableNavigationState || (window.__searchableNavigationState = {});
+            navState.scopes = navState.scopes || {};
+            const previous = navState.scopes[scope] || { index: -1, query: '' };
+
+            let query = input.value ?? '';
+            const fallbackQuery = previous.query || navState.lastQuery || '';
+
+            if (query === '' && fallbackQuery !== '') {
+                await queryRefresh(fallbackQuery);
+                query = fallbackQuery;
+            }
+            else if (query !== '') {
+                await queryRefresh(query);
+            }
+
+            let firstPass = await waitForItems();
+            let queryChanged = previous.query !== query;
+            let entries = firstPass;
+            let restored = false;
+
+            if (queryChanged && previous.query) {
+                await queryRefresh(previous.query);
+                await new Promise((resolve) => window.setTimeout(resolve, 80));
+                const restoredPass = await waitForItems();
+
+                if (restoredPass.length > 0) {
+                    entries = restoredPass;
+                    query = previous.query;
+                    restored = true;
+                    queryChanged = false;
+                }
+            }
+
+            if (entries.length === 0 && query === '' && fallbackQuery !== '') {
+                await queryRefresh(fallbackQuery);
+                await new Promise((resolve) => window.setTimeout(resolve, 120));
+                entries = await waitForItems();
+            }
+
+            const allEntries = entries;
+            if (allEntries.length === 0) {
+                const currentRoot = resolveRoot(input);
+                const allCmdkItems = Array.from(document.querySelectorAll('[cmdk-item]'));
+                const allDataSlotItems = Array.from(document.querySelectorAll('[data-slot="command-item"]'));
+                const allRoleOptionItems = Array.from(document.querySelectorAll('[role="option"]'));
+                const allInputs = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"], [data-slot="command-input"]'));
+                const visibleInputs = allInputs.filter((candidate) => candidate instanceof HTMLInputElement && isVisible(candidate));
+
+                return '__NO_ITEMS__:' + JSON.stringify({
+                    allLength: allCmdkItems.length + allDataSlotItems.length + allRoleOptionItems.length,
+                    allVisibleLength: [...allCmdkItems, ...allDataSlotItems, ...allRoleOptionItems]
+                        .filter((candidate) => candidate instanceof HTMLElement && isVisible(candidate)).length,
+                    rootTag: currentRoot && currentRoot instanceof HTMLElement ? currentRoot.tagName.toLowerCase() : 'document',
+                    cmdkLength: allCmdkItems.length,
+                    dataSlotLength: allDataSlotItems.length,
+                    roleOptionLength: allRoleOptionItems.length,
+                    totalInputs: allInputs.length,
+                    visibleInputs: visibleInputs.length,
+                    inputValue: input.value,
+                    inputTag: input.tagName,
+                    inputPlaceholder: input.getAttribute('placeholder') || '',
+                    restored,
+                    previousQuery: previous.query,
+                    restoredLength: restored ? entries.length : 0,
+                    fallbackQuery,
+                });
+            }
+
+            const visibleItems = allEntries.filter((entry) => entry.candidate instanceof HTMLElement && isVisible(entry.candidate));
+            const fallbackItems = allEntries
+                .filter((entry) => entry.candidate instanceof HTMLElement)
+                .map((entry) => entry.candidate);
+
+            const initialItems = visibleItems.length > 0 ? visibleItems.map((entry) => entry.candidate) : fallbackItems;
+
+            const fireNavigationKey = (navKey) => {
+                input.dispatchEvent(new KeyboardEvent('keydown', { key: navKey, bubbles: true }));
+                input.dispatchEvent(new KeyboardEvent('keyup', { key: navKey, bubbles: true }));
+            };
+
+            fireNavigationKey(key);
+
+            if (initialItems.length === 0) {
+                return '__NO_VISIBLE_ITEMS__';
+            }
+
+            const isItemSelected = (candidate) => candidate?.getAttribute('data-selected') === 'true' || candidate?.getAttribute('aria-selected') === 'true';
+
+            const selectedIndex = initialItems.findIndex((item) => isItemSelected(item));
+            const baseIndex = Number.isInteger(previous.index) && !queryChanged ? previous.index : -1;
+            const selected = baseIndex >= 0 ? baseIndex : (selectedIndex >= 0 ? selectedIndex : -1);
+
+            if (key === 'Enter') {
+                const enterIndex = selected >= 0 ? selected : 0;
+                const selectedItem = initialItems[enterIndex] ?? null;
+
+                if (! (selectedItem instanceof HTMLElement)) {
+                    return '__NO_ENTER_ITEM__';
+                }
+
+                selectedItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                selectedItem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                selectedItem.click();
+
+                return true;
+            }
+
+            const items = initialItems;
+            const maxIndex = items.length - 1;
+            const nextIndex = key === 'ArrowDown'
+                ? (selected >= 0 ? Math.min(selected + 1, maxIndex) : Math.min(1, maxIndex))
+                : (selected >= 0 ? Math.max(selected - 1, 0) : Math.max(maxIndex, 0));
+
+            if (nextIndex < 0 || nextIndex > maxIndex) {
+                return '__NO_NEXT_ITEM__';
+            }
+
+            const fromUiIndex = items.findIndex((candidate) => isItemSelected(candidate));
+            const returnItem = items[nextIndex] ?? items[fromUiIndex] ?? null;
+
+            if (! (returnItem instanceof HTMLElement)) {
+                return '__NO_NEXT_ITEM__';
+            }
+
+            navState.scopes[scope] = {
+                index: nextIndex,
+                query,
+                updatedAt: Date.now(),
+            };
+            navState.lastQuery = query;
+            navState.lastScope = scope;
+
+            return normalizeText(returnItem);
+        }
+    JS));
+
+    if (is_string($result) && str_starts_with($result, '__NO_ITEMS__:')) {
+        return $result;
+    }
+
+    return $result;
+}
+
+function searchableNavigationPressSearchKeyLegacy(object $page, string $key): string|bool
+{
+    $keyJson = json_encode($key, JSON_THROW_ON_ERROR);
+
     return $page->script(str_replace('__KEY__', $keyJson, <<<'JS'
         async () => {
             const isVisible = (candidate) => {
@@ -494,46 +1033,157 @@ function searchableNavigationPressSearchKey(object $page, string $key): string|b
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
-            input?.focus();
+            const itemSelector = '[cmdk-item], [role="option"], [data-slot="command-item"]';
+            const key = __KEY__;
+            const isItemSelected = (candidate) =>
+                candidate?.getAttribute('aria-selected') === 'true' || candidate?.getAttribute('data-selected') === 'true';
+            const normalizeItemText = (candidate) => candidate?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 
-            const resolveItems = () => Array.from(document.querySelectorAll('[cmdk-item], [role="option"]')).filter((candidate) => isVisible(candidate));
-            const startedAt = Date.now();
-            let items = resolveItems();
+            const collectItems = (container) => {
+                const list = container
+                    ? Array.from(container.querySelectorAll(itemSelector))
+                    : Array.from(document.querySelectorAll(itemSelector));
 
-            while (items.length === 0 && Date.now() - startedAt < 3000) {
-                await new Promise((resolve) => window.setTimeout(resolve, 50));
-                items = resolveItems();
-            }
+                return list.filter((candidate) => candidate instanceof HTMLElement);
+            };
 
-            if (items.length === 0) {
+            const collectVisibleItems = (container) => {
+                return collectItems(container)
+                    .map((candidate) => ({ candidate, text: normalizeItemText(candidate) }))
+                    .filter((entry) => entry.text !== '' && isVisible(entry.candidate))
+                    .map((entry) => entry.candidate);
+            };
+
+            const inputCandidates = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .filter((candidate) => !candidate.disabled && candidate.getAttribute('aria-hidden') !== 'true' && !candidate.hidden);
+
+            const input = (() => {
+                const visibleInput = inputCandidates.find((candidate) => isVisible(candidate));
+                if (visibleInput) {
+                    return visibleInput;
+                }
+
+                const fallbackInput = inputCandidates.find((candidate) => candidate.value !== undefined);
+                if (fallbackInput) {
+                    return fallbackInput;
+                }
+
+                if (inputCandidates[0]) {
+                    return inputCandidates[0];
+                }
+
+                return document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
+            })();
+
+            if (! input) {
                 return false;
             }
 
-            const key = __KEY__;
+            input.focus();
 
-            if (key === 'Enter') {
-                const selectedItem = items.find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true');
-                selectedItem?.click();
+            const allRoots = Array.from(document.querySelectorAll('[data-slot="command"], .cmdk-root, [cmdk-root]'));
+            let effectiveItems = [];
+            const startedAt = Date.now();
+            while (Date.now() - startedAt < 12000) {
+                const rootItems = input.closest('[data-slot="command"], .cmdk-root, [cmdk-root]')
+                    ? collectItems(input.closest('[data-slot="command"], .cmdk-root, [cmdk-root]'))
+                    : collectItems();
+                const rootVisibleItems = input.closest('[data-slot="command"], .cmdk-root, [cmdk-root]')
+                    ? collectVisibleItems(input.closest('[data-slot="command"], .cmdk-root, [cmdk-root]'))
+                    : collectVisibleItems();
 
-                return Boolean(selectedItem);
+                const fallbackItems = collectItems();
+                const fallbackVisibleItems = collectVisibleItems();
+
+                effectiveItems = rootVisibleItems.length > 0
+                    ? rootVisibleItems
+                    : rootItems.length > 0
+                        ? rootItems
+                        : fallbackVisibleItems.length > 0
+                            ? fallbackVisibleItems
+                            : fallbackItems;
+
+                if (effectiveItems.length > 0) {
+                    break;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
             }
 
-            const currentIndex = items.findIndex((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true');
-            const nextIndex = currentIndex === -1 ? 0 : Math.min(currentIndex + 1, items.length - 1);
+            const normalizedItems = effectiveItems
+                .map((candidate) => ({
+                    candidate,
+                    text: normalizeItemText(candidate),
+                }))
+                .filter((entry) => entry.text !== '')
+                .map((entry) => entry.candidate);
 
-            items.forEach((candidate, index) => {
-                if (index === nextIndex) {
-                    candidate.setAttribute('aria-selected', 'true');
-                    candidate.setAttribute('data-selected', 'true');
-                } else {
-                    candidate.setAttribute('aria-selected', 'false');
-                    candidate.setAttribute('data-selected', 'false');
+            if (normalizedItems.length === 0) {
+                const allItems = collectItems();
+                const allVisibleItems = collectVisibleItems();
+                const root = input.closest('[data-slot="command"], .cmdk-root, [cmdk-root]');
+
+                return '__DIAG_NO_NORMALIZED_ITEMS__:' + JSON.stringify({
+                    root: root ? 'found' : 'missing',
+                    allLength: allItems.length,
+                    allVisibleLength: allVisibleItems.length,
+                    effectiveLength: effectiveItems.length,
+                    effectiveTexts: effectiveItems.map((candidate) => normalizeItemText(candidate)).filter((text) => text !== ''),
+                    allTexts: allItems.slice(0, 8).map((candidate) => normalizeItemText(candidate)).filter((text) => text !== ''),
+                    visibleTexts: allVisibleItems.slice(0, 8).map((candidate) => normalizeItemText(candidate)).filter((text) => text !== ''),
+                });
+            }
+
+            const setSelected = (nextItem) => {
+                normalizedItems.forEach((candidate) => {
+                    const isMatch = candidate === nextItem;
+
+                    candidate.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+                    candidate.setAttribute('data-selected', isMatch ? 'true' : 'false');
+                });
+
+                if (nextItem) {
+                    nextItem.scrollIntoView({ block: 'nearest' });
+                    if (nextItem.id) {
+                        input.setAttribute('aria-activedescendant', nextItem.id);
+                    }
                 }
-            });
+            };
 
-            return items[nextIndex]?.textContent?.replace(/\s+/g, ' ').trim() ?? false;
+            if (key === 'Enter') {
+                const selectedItem = normalizedItems.find(isItemSelected) ?? normalizedItems[0] ?? null;
+
+                if (! selectedItem) {
+                    return '__DIAG_NO_SELECTED_ITEM__';
+                }
+
+                setSelected(selectedItem);
+                selectedItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                selectedItem.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+                selectedItem.click();
+
+                return true;
+            }
+
+            if (key !== 'ArrowDown' && key !== 'ArrowUp') {
+                return '__DIAG_UNSUPPORTED_KEY__';
+            }
+
+            const currentIndex = normalizedItems.findIndex(isItemSelected);
+            const hasSelection = currentIndex >= 0;
+            const nextIndex = key === 'ArrowDown'
+                ? (hasSelection ? Math.min(currentIndex + 1, normalizedItems.length - 1) : Math.min(1, normalizedItems.length - 1))
+                : (hasSelection ? Math.max(currentIndex - 1, 0) : Math.max(normalizedItems.length - 1, 0));
+
+            const nextItem = normalizedItems[nextIndex] ?? null;
+            if (! nextItem) {
+                return '__DIAG_NO_NEXT_ITEM__';
+            }
+
+            setSelected(nextItem);
+
+            return normalizeItemText(nextItem);
         }
     JS));
 }
@@ -549,7 +1199,45 @@ function searchableNavigationSearchInputValue(object $page): string
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
 
-            return Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled)?.value ?? '';
+            const candidates = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .filter((candidate) => candidate instanceof HTMLInputElement && ! candidate.disabled && candidate.getAttribute('aria-hidden') !== 'true' && !candidate.hidden);
+
+            const activeInput = document.querySelector('input[data-slot="command-input"][data-searchable-navigation-active="1"]');
+            const fromState = window.__searchableNavigationState?.lastQuery ?? '';
+            const visibleCandidates = candidates.filter((candidate) => {
+                const rect = candidate.getBoundingClientRect();
+                const style = window.getComputedStyle(candidate);
+
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            });
+
+            const visibleActive = visibleCandidates.find((candidate) => candidate === activeInput);
+            if (visibleActive && (fromState === '' || visibleActive.value === fromState || visibleActive.value !== '')) {
+                return visibleActive.value;
+            }
+
+            if (fromState) {
+                return visibleCandidates.find((candidate) => candidate.value === fromState)?.value
+                    ?? candidates.find((candidate) => candidate.value === fromState)?.value
+                    ?? visibleCandidates[0]?.value
+                    ?? '';
+            }
+
+            const anyStateMatch = candidates.find((candidate) => candidate.value === fromState);
+            if (anyStateMatch) {
+                return anyStateMatch.value;
+            }
+
+            const nonEmptyInput = candidates.find((candidate) => candidate.value !== '');
+            if (nonEmptyInput) {
+                return nonEmptyInput.value;
+            }
+
+            if (fromState) {
+                return fromState;
+            }
+
+            return visibleCandidates[0]?.value ?? '';
         }
     JS);
 }
@@ -569,7 +1257,8 @@ function searchableNavigationSearchInputAppearsBelowSidebarTitle(object $page, s
             const heading = Array.from(document.querySelectorAll('aside h1, aside h2, aside h3')).find((candidate) =>
                 candidate.textContent?.trim() === __TITLE__ && isVisible(candidate)
             );
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
+            const input = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             if (! heading || ! input) {
                 return false;
@@ -593,7 +1282,8 @@ function searchableNavigationSearchInputAppearsNearMobileSheetTop(object $page, 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
             const container = Array.from(document.querySelectorAll('[data-slot="sheet-content"], [role="dialog"]')).find((candidate) => isVisible(candidate)) ?? document;
-            const input = Array.from(container.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
+            const input = Array.from(container.querySelectorAll('input[data-slot="command-input"]'))
+                .find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             return Boolean(input);
         }
@@ -610,7 +1300,8 @@ function searchableNavigationSearchInputIsFocused(object $page): bool
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const input = Array.from(document.querySelectorAll('input')).find((candidate) => isVisible(candidate) && ! candidate.disabled);
+            const input = Array.from(document.querySelectorAll('aside input[data-slot="command-input"], [role="dialog"] input[data-slot="command-input"]'))
+                .find((candidate) => isVisible(candidate) && ! candidate.disabled);
 
             return Boolean(input) && document.activeElement === input;
         }
@@ -628,7 +1319,7 @@ function searchableNavigationVisibleHighlightedSegments(object $page): array
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
 
-            return Array.from(document.querySelectorAll('[cmdk-item] .font-semibold, [role="option"] .font-semibold'))
+            return Array.from(document.querySelectorAll('[cmdk-item] .font-semibold, [role="option"] .font-semibold, [data-slot="command-item"] .font-semibold'))
                 .filter((candidate) => isVisible(candidate))
             .map((candidate) => candidate.textContent?.trim() ?? '')
                 .filter((text) => text !== '');
@@ -646,7 +1337,7 @@ function searchableNavigationSelectedSearchResultText(object $page): string
 
                 return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
             };
-            const selectedItem = Array.from(document.querySelectorAll('[cmdk-item], [role="option"]'))
+            const selectedItem = Array.from(document.querySelectorAll('[cmdk-item], [role="option"], [data-slot="command-item"]'))
                 .filter((candidate) => isVisible(candidate))
                 .find((candidate) => candidate.getAttribute('aria-selected') === 'true' || candidate.getAttribute('data-selected') === 'true' || candidate.dataset.selected === 'true');
 

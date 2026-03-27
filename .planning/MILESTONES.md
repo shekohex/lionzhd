@@ -1,5 +1,31 @@
 # Project Milestones: LionzHD Streaming Platform Enhancements
 
+## v1.1 Category Personalization & Search UX (Shipped: 2026-03-27)
+
+**Delivered:** Per-user category personalization, ignored discovery recovery, searchable category navigation, detail-page category context, and stable `/search` mode behavior with refreshed browser proof.
+
+**Phases completed:** 8-16 (28 plans total)
+
+**Key accomplishments:**
+- Shipped per-user movie and series category personalization with instant-save pin, hide, reorder, and reset flows.
+- Shipped ignored-category filtering with same-page recovery behavior across movies and series discovery.
+- Shipped searchable category navigation across the desktop sidebar and mobile category sheet.
+- Shipped canonical URL-authoritative `/search` filtering, layout, refresh, and history behavior.
+- Shipped detail-page category chips with browse handoff for both movies and series.
+- Closed the stale `SRCH-04` milestone audit gap with Phase 16 and a passing re-audit.
+
+**Stats:**
+- 156 files changed in milestone git range
+- +20,319 / -649 lines changed
+- 9 phases, 28 plans, 58 tasks
+- 12 days from start to ship (2026-03-15 -> 2026-03-27)
+
+**Git range:** `test(08-01)` -> `docs(16-01)`
+
+**What's next:** Define the next milestone and fresh requirements with `/gsd-new-milestone`.
+
+---
+
 ## v1 Streaming Platform Enhancements (Shipped: 2026-02-28)
 
 **Delivered:** Multi-user access control, category discovery, user-scoped download ownership, reliable download lifecycle, and auto-episodes monitoring for Xtream VOD/Series.

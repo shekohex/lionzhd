@@ -2,29 +2,25 @@
 
 ## What This Is
 
-LionzHD is a Laravel + Inertia streaming companion for Xtream VOD and Series catalogs. It now supports production-ready multi-user usage with category-based discovery, permissioned access control, user-owned downloads, hardened download lifecycle behavior, and per-user auto-episodes monitoring.
+LionzHD is a Laravel + Inertia streaming companion for Xtream VOD and Series catalogs. It now ships production-ready multi-user access control, permissioned downloads and automation, and user-owned discovery with personalized categories, ignored filters, searchable navigation, and detail-page category context.
 
 ## Core Value
 
 Users can quickly find the right movie/series and reliably get their own downloads with correct permissions and automation.
 
-## Current Milestone: v1.1 Category Personalization & Search UX
-
-**Goal:** Make discovery feel user-owned by adding per-user category controls and fixing search filtering behavior across web and mobile.
-
-**Target features:**
-- Per-user category preferences for movies and series: reorder, pin up to 5, hide
-- Ignored categories remove matching titles from catalog listings for that user
-- Category labels visible on movie and series detail pages
-- Searchable category sidebar/navigation on web and mobile
-- Search media-type filtering fixed with adaptive full-width filtered results and regression coverage
-
 ## Current State
 
-- Latest shipped milestone: **v1** (2026-02-28)
-- Shipped scope: access control, ownership and authorization, categories sync + browse UX, lifecycle reliability, mobile pagination correctness, auto-episodes scheduling/dedupe
-- Delivery size: 7 phases, 39 plans, 99 tasks
-- Archive: `.planning/milestones/v1-ROADMAP.md` and `.planning/milestones/v1-REQUIREMENTS.md`
+- Latest shipped milestone: **v1.1 Category Personalization & Search UX** (2026-03-27)
+- Shipped scope: per-user category personalization, ignored discovery recovery, searchable category navigation, canonical `/search` mode + history behavior, detail-page category chips, and refreshed browser proof
+- Delivery size: 9 phases, 28 plans, 58 tasks
+- Archive: `.planning/milestones/v1.1-ROADMAP.md`, `.planning/milestones/v1.1-REQUIREMENTS.md`, `.planning/milestones/v1.1-MILESTONE-AUDIT.md`
+- Prior shipped milestone: **v1 Streaming Platform Enhancements** (2026-02-28)
+
+## Next Milestone Goals
+
+- Tighten automation with unplayed-only episode rules and per-series queue or storage caps.
+- Add governance and audit controls for external-user quotas, rate limits, and direct-link history.
+- Improve discovery UX with bulk category management and clearer onboarding for hide vs ignore behavior.
 
 ## Requirements
 
@@ -45,24 +41,40 @@ Users can quickly find the right movie/series and reliably get their own downloa
 - ✓ Detect new episodes by comparing Xtream episode IDs and auto-download when enabled — v1
 - ✓ Fix download progress/abort/resume reliability while keeping aria2 and add lifecycle tests — v1
 - ✓ Fix mobile infinite-scroll boundary bug where last item can be skipped during page transition — v1
+- ✓ User can personalize movie and series category order per account, including pinning up to 5 categories — v1.1
+- ✓ User can hide categories from sidebar/navigation without affecting default behavior for other users — v1.1
+- ✓ User can ignore categories so matching movies and series are removed from their catalog listings — v1.1
+- ✓ User can search categories in sidebar/navigation on web and mobile — v1.1
+- ✓ Search media-type filtering stays URL-authoritative across refresh, deep links, and browser history — v1.1
+- ✓ User can see all assigned categories on movie and series detail pages — v1.1
 
 ### Active
 
-- [ ] User can personalize movie and series category order per account, including pinning up to 5 categories
-- [ ] User can hide categories from sidebar/navigation without affecting default behavior for other users
-- [ ] User can ignore categories so matching movies and series are removed from their catalog listings
-- [ ] User can see all assigned categories on movie and series detail pages
-- [ ] User can search categories in sidebar/navigation on web and mobile, and search media-type filtering behaves correctly
+- [ ] User can restrict auto-downloads to unplayed episodes only
+- [ ] User can limit maximum queued episodes per series
+- [ ] User can define per-series caps for storage or download count
+- [ ] Admin can configure quotas or rate limits for external users
+- [ ] Admin can audit external direct-link usage history
+- [ ] User can bulk manage many categories in a dedicated management flow
+- [ ] User can see onboarding guidance that explains the difference between hiding and ignoring a category
 
 ### Out of Scope
 
 - Live TV categories and Live playback — current product scope is VOD + series only
 - Replacing aria2 with a different downloader — defer until hardening effort proves insufficient
 - Switching mobile pagination to Load More — decision is to keep infinite scroll and fix current behavior
+- Global category order or visibility changes — personalization remains per user and must not mutate shared taxonomy
+- Separate search implementations for All, Movies, and Series — one shared search contract remains required
 
 ## Context
 
-This is a brownfield Laravel 12 monolith with Inertia React frontend, Saloon integrations, and action-based application services. Xtream categories are now modeled and surfaced in browsing UX. Download lifecycle reliability is implemented with persisted lifecycle state and retry policy. Auto-episodes scheduling and dedupe queueing are live with monitoring activity visibility.
+This is a brownfield Laravel 12 monolith with Inertia React frontend, Saloon integrations, and action-based application services. Shipped `v1.1` extended the existing access-control and download foundations with user-scoped category preferences, ignored discovery filtering, searchable navigation, canonical `/search` state handling, and normalized detail-page category chips.
+
+Recent milestone stats: 156 files changed, +20,319 / -649 lines changed, 12 days from start to ship.
+
+Known tech debt:
+- Existing `console.log` placeholders remain in `resources/js/pages/movies/show.tsx`.
+- Existing `console.log` placeholders remain in `resources/js/pages/series/show.tsx`.
 
 Reference API source used for this milestone:
 - Xtream player API reference: https://raw.githubusercontent.com/gtaman92/XtreamCodesExtendAPI/refs/heads/master/player_api.php
@@ -87,6 +99,24 @@ Reference API source used for this milestone:
 | New episode detection uses Xtream episode IDs | Most deterministic signal for newly available episodes | ✓ Shipped in v1 |
 | Keep aria2 and harden lifecycle behavior | Reduce risk of engine migration while solving current reliability issues | ✓ Shipped in v1 |
 | Keep infinite scroll on mobile and fix boundary logic | Preserve UX while addressing missed-item bug | ✓ Shipped in v1 |
+| Keep category personalization as a user-scoped overlay on shared taxonomy | Avoid mutating shared category ordering or visibility across users | ✓ Shipped in v1.1 |
+| Keep ignored discovery and category navigation on shared read paths | Prevent browse, navigation, and recovery behavior drift | ✓ Shipped in v1.1 |
+| Keep `/search` URL-authoritative for media type, sort, and pagination | Refresh and history replay must restore the same committed search state | ✓ Shipped in v1.1 |
+| Resolve detail-page category chips from normalized assignments | Avoid coupling detail context to user preference state or legacy payload fields | ✓ Shipped in v1.1 |
+| Reuse one live browser auth bootstrap across milestone browser suites | Keep proof aligned with the current login experience and reduce suite drift | ✓ Shipped in v1.1 |
+
+<details>
+<summary>Archived milestone planning: v1.1 Category Personalization & Search UX</summary>
+
+**Goal:** Make discovery feel user-owned by adding per-user category controls and fixing search filtering behavior across web and mobile.
+
+**Target features:**
+- Per-user category preferences for movies and series: reorder, pin up to 5, hide
+- Ignored categories remove matching titles from catalog listings for that user
+- Category labels visible on movie and series detail pages
+- Searchable category sidebar/navigation on web and mobile
+- Search media-type filtering fixed with adaptive full-width filtered results and regression coverage
+</details>
 
 ---
-*Last updated: 2026-03-15 after starting milestone v1.1*
+*Last updated: 2026-03-27 after shipping milestone v1.1*

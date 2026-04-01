@@ -218,6 +218,11 @@ final class VodStreamController extends Controller
     public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
     {
         $vod = $client->send(new GetVodInfoRequest($model->stream_id));
+
+        if ($vod->status() === 404) {
+            abort(404);
+        }
+
         $inWatchlist = $user->inMyWatchlist($model->stream_id, VodStream::class);
 
         return Inertia::render('movies/show', [

@@ -235,7 +235,13 @@ final class SeriesController extends Controller
         Series $model,
     ): Response
     {
-        $series = $client->send(new GetSeriesInfoRequest($model->series_id))->dtoOrFail();
+        $series = $client->send(new GetSeriesInfoRequest($model->series_id));
+
+        if ($series->status() === 404) {
+            abort(404);
+        }
+
+        $series = $series->dtoOrFail();
         $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
         $monitor = SeriesMonitor::query()
             ->where('user_id', $user->id)

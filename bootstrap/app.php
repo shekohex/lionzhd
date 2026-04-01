@@ -43,6 +43,12 @@ return Application::configure(basePath: dirname(__DIR__))
         Integration::handles($exceptions);
 
         $exceptions->respond(function (SymfonyResponse $response, \Throwable $exception, Request $request): SymfonyResponse {
+            if ($response->getStatusCode() === 404 && ! $request->expectsJson()) {
+                return Inertia::render('errors/not-found', [
+                    'message' => 'The page you requested could not be found.',
+                ])->toResponse($request)->setStatusCode(404);
+            }
+
             if ($response->getStatusCode() !== 403 || ! $request->header('X-Inertia')) {
                 return $response;
             }

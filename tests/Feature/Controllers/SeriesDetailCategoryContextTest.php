@@ -92,10 +92,33 @@ it('normalizes series detail category context to uncategorized when assignments 
         ->assertJsonPath('props.category_context', $expected);
 });
 
+it('returns not found when upstream series detail is missing', function (): void {
+    $user = User::factory()->create();
+    $series = seriesDetailCreateSeries('legacy-series-category');
+
+    seriesDetailFakeMissingShowResponse();
+
+    seriesDetailShowResponse($user, $series)
+        ->assertNotFound()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/not-found');
+
+    seriesDetailPlainShowResponse($user, $series)
+        ->assertNotFound()
+        ->assertSee('"component":"errors\\/not-found"', false)
+        ->assertSee('The page you requested could not be found.', false);
+});
+
 function seriesDetailShowResponse(User $user, Series $series): TestResponse
 {
     return test()->actingAs($user)
         ->withHeaders(seriesDetailInertiaHeaders())
+        ->get(route('series.show', ['model' => $series->series_id]));
+}
+
+function seriesDetailPlainShowResponse(User $user, Series $series): TestResponse
+{
+    return test()->actingAs($user)
         ->get(route('series.show', ['model' => $series->series_id]));
 }
 
@@ -205,6 +228,19 @@ function seriesDetailFakeShowResponse(): void
                 ],
             ],
         ], 200),
+    ]);
+
+    app()->bind(XtreamCodesConnector::class, static function () use ($mockClient): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient($mockClient);
+    });
+}
+
+function seriesDetailFakeMissingShowResponse(): void
+{
+    $mockClient = new MockClient([
+        GetSeriesInfoRequest::class => MockResponse::make([], 404),
     ]);
 
     app()->bind(XtreamCodesConnector::class, static function () use ($mockClient): XtreamCodesConnector {

@@ -14,6 +14,7 @@ use App\Models\VodStream;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Testing\TestResponse;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -98,6 +99,36 @@ it('normalizes movie detail category context to uncategorized when no concrete a
     $withUncategorizedAssignmentResponse->assertOk();
     $withUncategorizedAssignmentResponse->assertJsonPath('props.category_context', $expectedChip);
 });
+
+it('returns custom not found when upstream movie detail is missing', function (): void {
+    $user = User::factory()->create();
+    $movie = movieDetailCreateMovie('legacy-category');
+
+    movieDetailBindMissingInfo();
+
+    movieDetailShowResponse($user, $movie)
+        ->assertNotFound()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/not-found');
+
+    movieDetailPlainShowResponse($user, $movie)
+        ->assertNotFound()
+        ->assertSee('"component":"errors\\/not-found"', false)
+        ->assertSee('The page you requested could not be found.', false);
+});
+
+function movieDetailShowResponse(User $user, VodStream $movie): TestResponse
+{
+    return test()->actingAs($user)
+        ->withHeaders(movieDetailInertiaHeaders())
+        ->get(route('movies.show', ['model' => $movie->getKey()]));
+}
+
+function movieDetailPlainShowResponse(User $user, VodStream $movie): TestResponse
+{
+    return test()->actingAs($user)
+        ->get(route('movies.show', ['model' => $movie->getKey()]));
+}
 
 function movieDetailCreateCategory(
     string $providerId,
@@ -205,6 +236,19 @@ function movieDetailBindInfo(int $streamId, string $name): void
                 'direct_source' => '',
             ],
         ], 200),
+    ]);
+
+    app()->bind(XtreamCodesConnector::class, static function () use ($mockClient): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient($mockClient);
+    });
+}
+
+function movieDetailBindMissingInfo(): void
+{
+    $mockClient = new MockClient([
+        GetVodInfoRequest::class => MockResponse::make([], 404),
     ]);
 
     app()->bind(XtreamCodesConnector::class, static function () use ($mockClient): XtreamCodesConnector {

@@ -16,13 +16,14 @@ it('lists movies as paginated json api resources', function (): void {
     createMovie(['stream_id' => 10, 'num' => 1, 'name' => 'First Movie']);
     createMovie(['stream_id' => 20, 'num' => 2, 'name' => 'Second Movie']);
 
-    $this->withToken($token)
-        ->getJson('/api/v1/movies?page[size]=1', ['Accept' => 'application/vnd.api+json'])
+    $response = $this->withToken($token)
+        ->getJson('/api/v1/movies?page[number]=2&page[size]=1', ['Accept' => 'application/vnd.api+json'])
         ->assertOk()
         ->assertHeader('Content-Type', 'application/vnd.api+json')
         ->assertJsonPath('data.0.type', 'movies')
-        ->assertJsonPath('data.0.id', '10')
-        ->assertJsonPath('data.0.attributes.name', 'First Movie')
+        ->assertJsonPath('data.0.id', '20')
+        ->assertJsonPath('data.0.attributes.name', 'Second Movie')
+        ->assertJsonPath('meta.current_page', 2)
         ->assertJsonPath('meta.per_page', 1)
         ->assertJsonStructure([
             'data' => [
@@ -31,6 +32,27 @@ it('lists movies as paginated json api resources', function (): void {
             'links' => ['first', 'last', 'prev', 'next'],
             'meta',
         ]);
+
+    $previousLink = (string) $response->json('links.prev');
+    parse_str((string) parse_url($previousLink, PHP_URL_QUERY), $previousQuery);
+
+    expect($previousQuery)->toMatchArray([
+        'page' => [
+            'number' => '1',
+            'size' => '1',
+        ],
+    ]);
+});
+
+it('requires the movies read ability for movie list routes', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['profile:read'])->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies', ['Accept' => 'application/vnd.api+json'])
+        ->assertForbidden()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '403');
 });
 
 it('formats movie list validation errors as json api errors', function (): void {

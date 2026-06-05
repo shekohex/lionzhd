@@ -7,6 +7,7 @@ namespace App\Data;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 #[TypeScript]
@@ -31,6 +32,7 @@ final class SeriesData extends Data
     /**
      * @var ArrayObject<string>
      */
+    #[LiteralTypeScriptType('string[]')]
     public ArrayObject $backdrop_path;
 
     public string $releaseDate;

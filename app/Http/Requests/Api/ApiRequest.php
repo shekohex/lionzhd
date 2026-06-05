@@ -10,6 +10,11 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 
 abstract class ApiRequest extends FormRequest
 {
+    /**
+     * @return array<string, mixed>
+     */
+    abstract public function rules(): array;
+
     final public function authorize(): bool
     {
         return true;

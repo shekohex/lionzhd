@@ -1,7 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "shekohex/lionz",
-    "version": "1.0.13",
     "type": "project",
     "description": "lionz.tv Download Tool using aria2 and built with the Laravel framework.",
     "keywords": [
@@ -23,9 +22,9 @@
         "laravel/tinker": "^3.0",
         "meilisearch/meilisearch-php": "^1.13",
         "saloonphp/cache-plugin": "^3.0",
-        "saloonphp/saloon": "^3.11",
+        "saloonphp/saloon": "^4.0",
         "sentry/sentry-laravel": "^4.25",
-        "spatie/laravel-data": "dev-l13-support#1c17f1b59070e018070c0c24c47758fe557b112f",
+        "spatie/laravel-data": "^4.23",
         "spatie/laravel-typescript-transformer": "^3.2",
         "tightenco/ziggy": "^2.4"
     },

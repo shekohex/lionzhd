@@ -22,4 +22,9 @@ final class ListMoviesRequest extends ApiRequest
     {
         return (int) $this->input('page.size', 15);
     }
+
+    public function pageNumber(): int
+    {
+        return (int) $this->input('page.number', 1);
+    }
 }

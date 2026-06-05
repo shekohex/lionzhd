@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\AcceptJsonApi;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Support\JsonApiErrorResponse;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Sentry\Laravel\Integration;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -33,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->alias([
             'AcceptJsonApi' => AcceptJsonApi::class,
+            'abilities' => CheckAbilities::class,
         ]);
 
         $middleware->trustProxies(
@@ -50,9 +53,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->respond(function (SymfonyResponse $response, Throwable $exception, Request $request): SymfonyResponse {
             if ($request->is('api/v1') || $request->is('api/v1/*')) {
-                $response->headers->set('Content-Type', 'application/vnd.api+json');
+                if (JsonApiErrorResponse::alreadyJsonApi($response)) {
+                    $response->headers->set('Content-Type', 'application/vnd.api+json');
 
-                return $response;
+                    return $response;
+                }
+
+                return JsonApiErrorResponse::make(
+                    $response->getStatusCode(),
+                    $exception->getMessage() !== '' ? $exception->getMessage() : (SymfonyResponse::$statusTexts[$response->getStatusCode()] ?? 'Error'),
+                );
             }
 
             if ($response->getStatusCode() === 404 && ! $request->expectsJson()) {

@@ -18,8 +18,16 @@ final class MoviesController extends Controller
         $collection = MovieResource::collection(
             VodStream::query()
                 ->orderBy('stream_id')
-                ->paginate($request->pageSize())
-        )->preserveQuery();
+                ->paginate(
+                    perPage: $request->pageSize(),
+                    pageName: 'page[number]',
+                    page: $request->pageNumber(),
+                )
+        )->withQuery([
+            'page' => [
+                'size' => $request->pageSize(),
+            ],
+        ]);
 
         return $collection;
     }

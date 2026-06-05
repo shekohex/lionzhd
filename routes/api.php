@@ -9,7 +9,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')
     ->middleware(['AcceptJsonApi', 'auth:sanctum', 'throttle:api'])
     ->group(function (): void {
-        Route::get('movies', [MoviesController::class, 'index'])->name('api.v1.movies.index');
+        Route::get('movies', [MoviesController::class, 'index'])
+            ->middleware('abilities:movies:read')
+            ->name('api.v1.movies.index');
 
-        Route::get('me', [ProfileController::class, 'show'])->name('api.v1.me');
+        Route::get('me', [ProfileController::class, 'show'])
+            ->middleware('abilities:profile:read')
+            ->name('api.v1.me');
     });

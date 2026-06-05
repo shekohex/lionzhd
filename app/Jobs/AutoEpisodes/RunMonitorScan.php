@@ -26,6 +26,11 @@ final class RunMonitorScan implements ShouldQueue
         public readonly array $options = [],
     ) {}
 
+    public static function lockKey(int $monitorId): string
+    {
+        return sprintf('auto:episodes:monitor:%d', $monitorId);
+    }
+
     public function handle(): void
     {
         $lock = Cache::lock(self::lockKey($this->monitorId), 300);
@@ -45,10 +50,5 @@ final class RunMonitorScan implements ShouldQueue
                 $lock->release();
             }
         }
-    }
-
-    public static function lockKey(int $monitorId): string
-    {
-        return sprintf('auto:episodes:monitor:%d', $monitorId);
     }
 }

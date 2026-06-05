@@ -26,17 +26,11 @@ test('it dispatches run monitor scans only for due enabled monitors', function (
         ->assertNotFailed()
         ->handle();
 
-    Queue::assertPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($dueMonitor): bool {
-        return $scanJob->monitorId === $dueMonitor->id;
-    });
+    Queue::assertPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $dueMonitor->id);
 
-    Queue::assertNotPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($futureMonitor): bool {
-        return $scanJob->monitorId === $futureMonitor->id;
-    });
+    Queue::assertNotPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $futureMonitor->id);
 
-    Queue::assertNotPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($disabledMonitor): bool {
-        return $scanJob->monitorId === $disabledMonitor->id;
-    });
+    Queue::assertNotPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $disabledMonitor->id);
 
     Queue::assertPushed(RunMonitorScan::class, 1);
 });
@@ -55,13 +49,9 @@ test('it skips due monitors for paused users', function (): void {
         ->assertNotFailed()
         ->handle();
 
-    Queue::assertPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($activeDueMonitor): bool {
-        return $scanJob->monitorId === $activeDueMonitor->id;
-    });
+    Queue::assertPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $activeDueMonitor->id);
 
-    Queue::assertNotPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($pausedDueMonitor): bool {
-        return $scanJob->monitorId === $pausedDueMonitor->id;
-    });
+    Queue::assertNotPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $pausedDueMonitor->id);
 
     Queue::assertPushed(RunMonitorScan::class, 1);
 });

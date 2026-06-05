@@ -6,6 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperCategory
+ */
 final class Category extends Model
 {
     public const string UNCATEGORIZED_VOD_PROVIDER_ID = '__uncategorized_vod__';

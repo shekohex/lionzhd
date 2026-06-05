@@ -3,15 +3,15 @@
 declare(strict_types=1);
 
 use App\Enums\MediaType;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringBackfillController;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
+use App\Http\Controllers\AutoEpisodes\SeriesMonitoringRunNowController;
 use App\Http\Controllers\DirectDownloadController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
 use App\Http\Controllers\Preferences\CategoryPreferenceController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\AutoEpisodes\SeriesMonitoringController;
-use App\Http\Controllers\AutoEpisodes\SeriesMonitoringBackfillController;
-use App\Http\Controllers\AutoEpisodes\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Series\SeriesCacheController;
 use App\Http\Controllers\Series\SeriesController;
 use App\Http\Controllers\Series\SeriesDownloadController;

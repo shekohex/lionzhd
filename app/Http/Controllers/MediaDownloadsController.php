@@ -10,8 +10,8 @@ use App\Actions\GetDownloadStatus;
 use App\Data\EditMediaDownloadData;
 use App\Data\MediaDownloadRefData;
 use App\Data\MediaDownloadStatusData;
-use App\Enums\UserRole;
 use App\Enums\MediaDownloadAction;
+use App\Enums\UserRole;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\JsonRpcException;
 use App\Http\Integrations\Aria2\Requests\PauseRequest;
@@ -20,8 +20,8 @@ use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
 use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
 use App\Models\MediaDownloadRef;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -171,7 +171,7 @@ final class MediaDownloadsController extends Controller
         }
 
         return collect(explode(',', $owners))
-            ->map(static fn (string $id): string => trim($id))
+            ->map(static fn (string $id): string => mb_trim($id))
             ->filter(static fn (string $id): bool => $id !== '' && ctype_digit($id))
             ->map(static fn (string $id): int => (int) $id)
             ->filter(static fn (int $id): bool => $id > 0)
@@ -197,5 +197,4 @@ final class MediaDownloadsController extends Controller
             ->values()
             ->all();
     }
-
 }

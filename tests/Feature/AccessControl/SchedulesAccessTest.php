@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 it('allows external members to access schedules settings', function (): void {

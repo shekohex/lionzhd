@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Series;
 
-use App\Actions\ResolveDetailPageCategories;
 use App\Actions\BuildPersonalizedCategorySidebar;
-use App\Data\CategoryBrowseRecoveryStateData;
+use App\Actions\ResolveDetailPageCategories;
 use App\Data\AutoEpisodes\SeriesMonitorData;
 use App\Data\CategoryBrowseFiltersData;
+use App\Data\CategoryBrowseRecoveryStateData;
 use App\Data\CategorySidebarData;
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
@@ -120,9 +120,43 @@ final class SeriesController extends Controller
         ]);
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(
+        #[CurrentUser] User $user,
+        XtreamCodesConnector $client,
+        ResolveDetailPageCategories $resolveDetailPageCategories,
+        Series $model,
+    ): Response {
+        $series = $client->send(new GetSeriesInfoRequest($model->series_id));
+
+        if ($series->status() === 404) {
+            abort(404);
+        }
+
+        $series = $series->dtoOrFail();
+        $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
+        $monitor = SeriesMonitor::query()
+            ->where('user_id', $user->id)
+            ->where('series_id', $model->series_id)
+            ->with(['series:series_id,name,cover'])
+            ->first();
+
+        return Inertia::render('series/show', [
+            'info' => $series,
+            'in_watchlist' => $inWatchlist,
+            'monitor' => $monitor === null ? null : SeriesMonitorData::from($monitor),
+            'category_context' => $resolveDetailPageCategories->forSeries($model),
+            'preset_times' => $this->presetTimes(),
+            'backfill_preset_counts' => $this->backfillPresetCounts(),
+            'run_now_cooldown_seconds' => max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300)),
+        ]);
+    }
+
     private function resolveCategoryId(Request $request): ?string
     {
-        $requestedCategoryId = trim((string) $request->query('category', ''));
+        $requestedCategoryId = mb_trim((string) $request->query('category', ''));
 
         return $requestedCategoryId === '' ? null : $requestedCategoryId;
     }
@@ -135,7 +169,7 @@ final class SeriesController extends Controller
             return null;
         }
 
-        $trimmed = trim($asOf);
+        $trimmed = mb_trim($asOf);
 
         return $trimmed === '' ? null : $trimmed;
     }
@@ -223,41 +257,6 @@ final class SeriesController extends Controller
         return Series::query()
             ->whereIn('category_id', $categoryIds)
             ->exists();
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(
-        #[CurrentUser] User $user,
-        XtreamCodesConnector $client,
-        ResolveDetailPageCategories $resolveDetailPageCategories,
-        Series $model,
-    ): Response
-    {
-        $series = $client->send(new GetSeriesInfoRequest($model->series_id));
-
-        if ($series->status() === 404) {
-            abort(404);
-        }
-
-        $series = $series->dtoOrFail();
-        $inWatchlist = $user->inMyWatchlist($model->series_id, Series::class);
-        $monitor = SeriesMonitor::query()
-            ->where('user_id', $user->id)
-            ->where('series_id', $model->series_id)
-            ->with(['series:series_id,name,cover'])
-            ->first();
-
-        return Inertia::render('series/show', [
-            'info' => $series,
-            'in_watchlist' => $inWatchlist,
-            'monitor' => $monitor === null ? null : SeriesMonitorData::from($monitor),
-            'category_context' => $resolveDetailPageCategories->forSeries($model),
-            'preset_times' => $this->presetTimes(),
-            'backfill_preset_counts' => $this->backfillPresetCounts(),
-            'run_now_cooldown_seconds' => max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300)),
-        ]);
     }
 
     private function presetTimes(): array

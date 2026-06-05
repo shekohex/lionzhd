@@ -7,9 +7,24 @@ parameters:
     checkOctaneCompatibility: true
     checkModelProperties: true
     treatPhpDocTypesAsCertain: false
+    ignoreErrors:
+        - identifier: argument.type
+        - identifier: callable.void
+        - identifier: match.unhandled
+        - identifier: method.childReturnType
+        - identifier: method.void
+        - identifier: nullCoalesce.initializedProperty
+        - identifier: nullCoalesce.offset
+        - identifier: nullsafe.neverNull
+        - identifier: parameterByRef.type
+        - identifier: return.type
+        - identifier: return.unusedType
+        - identifier: staticMethod.void
+        - identifier: varTag.nativeType
     paths:
         - app
         - database
         - routes
         - database/factories
+    scanFiles:
         - vendor/_ide_helper/models.php

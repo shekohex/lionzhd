@@ -95,7 +95,7 @@ final class SyncCategoriesController extends Controller
         $count = 0;
 
         foreach ($payload as $row) {
-            $categoryId = trim((string) ($row['category_id'] ?? ''));
+            $categoryId = mb_trim((string) ($row['category_id'] ?? ''));
 
             if ($categoryId !== '') {
                 $count++;

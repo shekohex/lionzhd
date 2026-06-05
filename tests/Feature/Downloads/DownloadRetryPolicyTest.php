@@ -24,6 +24,7 @@ use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\VodStream;
 use App\Models\XtreamCodesConfig;
+use DateTimeInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -86,11 +87,9 @@ it('schedules retry for transient monitor failures using deterministic backoff',
     expect($download->retry_next_at)->not->toBeNull();
     expect((int) now()->diffInSeconds($download->retry_next_at))->toBe($expectedBackoff);
 
-    Queue::assertPushed(RetryDownloadJob::class, function (RetryDownloadJob $job) use ($download): bool {
-        return $job->downloadRefId === $download->id
-            && $job->delay instanceof \DateTimeInterface
-            && Carbon::instance($job->delay)->equalTo($download->retry_next_at);
-    });
+    Queue::assertPushed(RetryDownloadJob::class, fn (RetryDownloadJob $job): bool => $job->downloadRefId === $download->id
+            && $job->delay instanceof DateTimeInterface
+            && Carbon::instance($job->delay)->equalTo($download->retry_next_at));
 });
 
 it('does not schedule auto retry when attempts are capped at five', function (): void {
@@ -301,9 +300,7 @@ it('sends resume-capable addUri options with deterministic out path on retry', f
 
     $response->assertRedirect();
 
-    $aria2Mock->assertSent(function ($request): bool {
-        return $request instanceof AddUriRequest;
-    });
+    $aria2Mock->assertSent(fn ($request): bool => $request instanceof AddUriRequest);
 
     $aria2Mock->assertSent(function ($request) use ($expectedOut): bool {
         if (! $request instanceof AddUriRequest) {

@@ -8,6 +8,9 @@ use App\Enums\CategorySyncRunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperCategorySyncRun
+ */
 final class CategorySyncRun extends Model
 {
     protected $table = 'category_sync_runs';

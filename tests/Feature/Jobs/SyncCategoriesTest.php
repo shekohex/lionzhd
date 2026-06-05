@@ -338,8 +338,8 @@ test('it passes force-empty options from job into action run', function (): void
 });
 
 /**
- * @param array<int, array<string, mixed>> $vodPayload
- * @param array<int, array<string, mixed>> $seriesPayload
+ * @param  array<int, array<string, mixed>>  $vodPayload
+ * @param  array<int, array<string, mixed>>  $seriesPayload
  */
 function fakeCategories(array $vodPayload, array $seriesPayload, int $vodStatus = 200, int $seriesStatus = 200): void
 {

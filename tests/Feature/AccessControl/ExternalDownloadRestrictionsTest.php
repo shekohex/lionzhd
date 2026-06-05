@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Models\MediaDownloadRef;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\JsonRpcBatchRequest;
-use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Aria2Config;
+use App\Models\MediaDownloadRef;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;

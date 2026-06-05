@@ -54,8 +54,8 @@ final class ResolveDetailPageCategories
 
         $assignmentCategoryIds = $assignments
             ->pluck('category_provider_id')
-            ->filter(static fn (mixed $categoryProviderId): bool => is_string($categoryProviderId) && trim($categoryProviderId) !== '')
-            ->map(static fn (string $categoryProviderId): string => trim($categoryProviderId))
+            ->filter(static fn (mixed $categoryProviderId): bool => is_string($categoryProviderId) && mb_trim($categoryProviderId) !== '')
+            ->map(static fn (string $categoryProviderId): string => mb_trim($categoryProviderId))
             ->values();
 
         if ($assignmentCategoryIds->isEmpty() || $assignmentCategoryIds->every(static fn (string $categoryProviderId): bool => $categoryProviderId === $uncategorizedProviderId)) {

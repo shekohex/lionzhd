@@ -30,7 +30,7 @@ final class VodStreamController extends Controller
      */
     public function index(Request $request, #[CurrentUser] User $user): Response|RedirectResponse
     {
-        $requestedCategoryId = trim((string) $request->query('category', ''));
+        $requestedCategoryId = mb_trim((string) $request->query('category', ''));
         $categoryId = $requestedCategoryId === '' ? null : $requestedCategoryId;
         $asOf = $this->resolveAsOf($request);
         $asOfId = $this->resolveAsOfId($request);
@@ -120,6 +120,26 @@ final class VodStreamController extends Controller
         ]);
     }
 
+    /**
+     * Display the specified resource.
+     */
+    public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
+    {
+        $vod = $client->send(new GetVodInfoRequest($model->stream_id));
+
+        if ($vod->status() === 404) {
+            abort(404);
+        }
+
+        $inWatchlist = $user->inMyWatchlist($model->stream_id, VodStream::class);
+
+        return Inertia::render('movies/show', [
+            'info' => $vod->dtoOrFail(),
+            'in_watchlist' => $inWatchlist,
+            'category_context' => app(ResolveDetailPageCategories::class)->forMovie($model),
+        ]);
+    }
+
     private function resolveAsOf(Request $request): ?string
     {
         $asOf = $request->query('as_of');
@@ -128,7 +148,7 @@ final class VodStreamController extends Controller
             return null;
         }
 
-        $trimmed = trim($asOf);
+        $trimmed = mb_trim($asOf);
 
         return $trimmed === '' ? null : $trimmed;
     }
@@ -210,25 +230,5 @@ final class VodStreamController extends Controller
         return VodStream::query()
             ->whereIn('category_id', $categoryIds)
             ->exists();
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(#[CurrentUser] User $user, XtreamCodesConnector $client, VodStream $model): Response
-    {
-        $vod = $client->send(new GetVodInfoRequest($model->stream_id));
-
-        if ($vod->status() === 404) {
-            abort(404);
-        }
-
-        $inWatchlist = $user->inMyWatchlist($model->stream_id, VodStream::class);
-
-        return Inertia::render('movies/show', [
-            'info' => $vod->dtoOrFail(),
-            'in_watchlist' => $inWatchlist,
-            'category_context' => app(ResolveDetailPageCategories::class)->forMovie($model),
-        ]);
     }
 }

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
+use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;

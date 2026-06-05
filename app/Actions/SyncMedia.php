@@ -96,7 +96,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $series
+     * @param  array<int, array<string, mixed>>  $series
      */
     private function syncSeries(array $series): void
     {
@@ -127,7 +127,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $vodStreams
+     * @param  array<int, array<string, mixed>>  $vodStreams
      */
     private function syncVodStreams(array $vodStreams): void
     {
@@ -166,7 +166,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $records
+     * @param  array<int, array<string, mixed>>  $records
      */
     private function pruneMissingRows(string $modelClass, string $key, string $mediaType, array $records): void
     {
@@ -213,7 +213,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $chunk
+     * @param  array<int, array<string, mixed>>  $chunk
      * @return array<int, array<string, mixed>>
      */
     private function sanitizeSeriesChunk(array $chunk): array
@@ -239,7 +239,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $chunk
+     * @param  array<int, array<string, mixed>>  $chunk
      * @return array<int, array<string, mixed>>
      */
     private function sanitizeVodChunk(array $chunk): array
@@ -262,7 +262,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<int, array<string, mixed>> $chunk
+     * @param  array<int, array<string, mixed>>  $chunk
      * @return array<string, list<array<string, mixed>>>
      */
     private function buildAssignmentsForChunk(array $chunk, string $mediaType, string $providerKey): array
@@ -295,7 +295,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<string, list<array<string, mixed>>> $assignmentsByMedia
+     * @param  array<string, list<array<string, mixed>>>  $assignmentsByMedia
      */
     private function syncAssignments(array $assignmentsByMedia, string $mediaType): void
     {
@@ -324,7 +324,7 @@ final readonly class SyncMedia
     }
 
     /**
-     * @param array<string, mixed> $row
+     * @param  array<string, mixed>  $row
      * @return list<array{category_provider_id:string,source_order:int}>
      */
     private function resolveAssignedCategoryIds(array $row): array
@@ -335,7 +335,7 @@ final readonly class SyncMedia
             return $richCategoryIds;
         }
 
-        $fallbackCategoryId = trim($this->stringify($row['category_id'] ?? null));
+        $fallbackCategoryId = mb_trim($this->stringify($row['category_id'] ?? null));
 
         if ($fallbackCategoryId === '') {
             return [];
@@ -361,7 +361,7 @@ final readonly class SyncMedia
 
             if (is_array($decoded)) {
                 $rawCategoryIds = $decoded;
-            } elseif (trim($value) !== '') {
+            } elseif (mb_trim($value) !== '') {
                 $rawCategoryIds = explode(',', $value);
             }
         }
@@ -374,7 +374,7 @@ final readonly class SyncMedia
         $seen = [];
 
         foreach ($rawCategoryIds as $rawCategoryId) {
-            $categoryProviderId = trim($this->stringify($rawCategoryId));
+            $categoryProviderId = mb_trim($this->stringify($rawCategoryId));
 
             if ($categoryProviderId === '' || isset($seen[$categoryProviderId])) {
                 continue;

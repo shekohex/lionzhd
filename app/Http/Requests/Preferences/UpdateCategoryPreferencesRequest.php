@@ -32,16 +32,6 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
-    {
-        $this->merge([
-            'pinned_ids' => $this->input('pinned_ids', []),
-            'visible_ids' => $this->input('visible_ids', []),
-            'hidden_ids' => $this->input('hidden_ids', []),
-            'ignored_ids' => $this->input('ignored_ids', []),
-        ]);
-    }
-
     public function messages(): array
     {
         return [
@@ -86,6 +76,16 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
         });
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'pinned_ids' => $this->input('pinned_ids', []),
+            'visible_ids' => $this->input('visible_ids', []),
+            'hidden_ids' => $this->input('hidden_ids', []),
+            'ignored_ids' => $this->input('ignored_ids', []),
+        ]);
+    }
+
     private function resolvedMediaType(): ?MediaType
     {
         $mediaType = $this->route('mediaType');
@@ -109,7 +109,7 @@ final class UpdateCategoryPreferencesRequest extends FormRequest
             return [];
         }
 
-        return array_values(array_map(static fn (mixed $value): string => trim((string) $value), $values));
+        return array_values(array_map(static fn (mixed $value): string => mb_trim((string) $value), $values));
     }
 
     private function editableCategoryIds(MediaType $mediaType): array

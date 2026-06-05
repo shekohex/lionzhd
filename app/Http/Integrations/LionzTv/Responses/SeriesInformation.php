@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Integrations\LionzTv\Responses;
 
 use Illuminate\Support\Arr;
-use Spatie\TypeScriptTransformer\Attributes\RecordTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+use Spatie\TypeScriptTransformer\Attributes\TypeScriptType;
 
 #[TypeScript]
 final readonly class SeriesInformation
@@ -31,7 +31,7 @@ final readonly class SeriesInformation
         public string $episodeRunTime,
         public string $categoryId,
         /** @var array<array-key, Episode[]> */
-        #[RecordTypeScriptType('string', Episode::class, array: true)]
+        #[TypeScriptType('array<string, array<'.Episode::class.'>>')]
         public array $seasonsWithEpisodes
     ) {}
 

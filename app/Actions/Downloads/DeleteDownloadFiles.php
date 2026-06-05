@@ -61,7 +61,7 @@ final readonly class DeleteDownloadFiles
             return false;
         }
 
-        $normalizedRoot = rtrim($allowlistedRootRealPath, DIRECTORY_SEPARATOR);
+        $normalizedRoot = mb_rtrim($allowlistedRootRealPath, DIRECTORY_SEPARATOR);
 
         return $resolvedPath === $normalizedRoot || str_starts_with($resolvedPath, $normalizedRoot.DIRECTORY_SEPARATOR);
     }

@@ -13,6 +13,7 @@ use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\Watchlist;
+use Carbon\CarbonImmutable;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -191,7 +192,7 @@ final class SeriesMonitoringController extends Controller
         return back()->with('success', 'Series monitoring disabled.');
     }
 
-    private function computeNextRunAt(array $schedule): \Carbon\CarbonImmutable
+    private function computeNextRunAt(array $schedule): CarbonImmutable
     {
         return ComputeNextRunAt::run(
             nowUtc: now()->toImmutable(),

@@ -285,7 +285,7 @@ function movieBrowseCategoryItem($response, string $id): array
     $item = collect($response->json('props.categories.visibleItems'))->firstWhere('id', $id);
 
     if (! is_array($item)) {
-        throw new \RuntimeException(sprintf('Category %s not found in response.', $id));
+        throw new RuntimeException(sprintf('Category %s not found in response.', $id));
     }
 
     return $item;

@@ -28,6 +28,11 @@ final readonly class QueueEpisodeDownload
 
     private const int UNSIGNED_INT32_MAX = 4294967295;
 
+    public static function lockKey(int $userId, int $seriesId, int $downloadableId): string
+    {
+        return sprintf('auto:episodes:queue:user:%d:series:%d:episode:%d', $userId, $seriesId, $downloadableId);
+    }
+
     public function handle(SeriesMonitor $monitor, Episode $episode, SeriesInformation $seriesInfo): array
     {
         $downloadableId = $this->normalizeEpisodeId($episode->id);
@@ -97,28 +102,23 @@ final readonly class QueueEpisodeDownload
         }
     }
 
-    public static function lockKey(int $userId, int $seriesId, int $downloadableId): string
-    {
-        return sprintf('auto:episodes:queue:user:%d:series:%d:episode:%d', $userId, $seriesId, $downloadableId);
-    }
-
     private function normalizeEpisodeId(string $episodeId): ?int
     {
         if (! preg_match('/^\d+$/', $episodeId)) {
             return null;
         }
 
-        $normalized = ltrim($episodeId, '0');
+        $normalized = mb_ltrim($episodeId, '0');
 
         if ($normalized === '') {
             return null;
         }
 
-        if (strlen($normalized) > 10) {
+        if (mb_strlen($normalized) > 10) {
             return null;
         }
 
-        if (strlen($normalized) === 10 && strcmp($normalized, (string) self::UNSIGNED_INT32_MAX) > 0) {
+        if (mb_strlen($normalized) === 10 && strcmp($normalized, (string) self::UNSIGNED_INT32_MAX) > 0) {
             return null;
         }
 

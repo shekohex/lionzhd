@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Integrations\LionzTv\Requests;
 
-use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Http\Integrations\LionzTv\Responses\VodInformation;
+use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\CachePlugin\Contracts\Driver;

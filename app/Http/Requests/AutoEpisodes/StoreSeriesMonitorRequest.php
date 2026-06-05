@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Requests\AutoEpisodes;
 
 use App\Enums\AutoEpisodes\MonitorScheduleType;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;

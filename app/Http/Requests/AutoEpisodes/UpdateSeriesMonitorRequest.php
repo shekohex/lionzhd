@@ -8,7 +8,6 @@ use App\Enums\AutoEpisodes\MonitorScheduleType;
 use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Series;
 use App\Models\User;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;

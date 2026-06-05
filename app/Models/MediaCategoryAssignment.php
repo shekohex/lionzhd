@@ -6,6 +6,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @mixin IdeHelperMediaCategoryAssignment
+ */
 final class MediaCategoryAssignment extends Model
 {
     protected $fillable = [

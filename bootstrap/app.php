@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         Integration::handles($exceptions);
 
-        $exceptions->respond(function (SymfonyResponse $response, \Throwable $exception, Request $request): SymfonyResponse {
+        $exceptions->respond(function (SymfonyResponse $response, Throwable $exception, Request $request): SymfonyResponse {
             if ($response->getStatusCode() === 404 && ! $request->expectsJson()) {
                 return Inertia::render('errors/not-found', [
                     'message' => 'The page you requested could not be found.',

@@ -147,7 +147,7 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $issues
+     * @param  list<string>  $issues
      * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
      */
     private function fetchAndNormalizeVodCategories(bool $forceEmptyVod, array &$issues): array
@@ -169,7 +169,7 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $issues
+     * @param  list<string>  $issues
      * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
      */
     private function fetchAndNormalizeSeriesCategories(bool $forceEmptySeries, array &$issues): array
@@ -191,16 +191,16 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param array<int, array<string, mixed>> $payload
-     * @param list<string> $issues
+     * @param  array<int, array<string, mixed>>  $payload
+     * @param  list<string>  $issues
      * @return array{succeeded:bool,can_apply:bool,categories:array<string,array{name:string,sync_order:int}>}
-    */
+     */
     private function normalizeSourceCategories(array $payload, string $sourceName, bool $forceEmpty, array &$issues): array
     {
         $categories = [];
 
         foreach ($payload as $index => $row) {
-            $providerId = trim($this->stringify($row['category_id'] ?? null));
+            $providerId = mb_trim($this->stringify($row['category_id'] ?? null));
 
             if ($providerId === '') {
                 $this->addIssue($issues, sprintf('%s row #%d skipped: missing category_id', $sourceName, $index + 1));
@@ -210,7 +210,7 @@ final readonly class SyncCategories
 
             $name = $this->stringify($row['category_name'] ?? $row['name'] ?? '');
 
-            if (trim($name) === '') {
+            if (mb_trim($name) === '') {
                 $this->addIssue($issues, sprintf('%s category %s has empty name', $sourceName, $providerId));
             }
 
@@ -232,8 +232,8 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param array<string,array{name:string,sync_order:int}> $categories
-     * @param array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int} $summary
+     * @param  array<string,array{name:string,sync_order:int}>  $categories
+     * @param  array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int}  $summary
      */
     private function applySourceCategories(array $categories, string $source, array &$summary): void
     {
@@ -280,8 +280,8 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $providerIds
-     * @param array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int} $summary
+     * @param  list<string>  $providerIds
+     * @param  array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int}  $summary
      */
     private function clearMissingSourceFlag(array $providerIds, string $source, array &$summary): void
     {
@@ -303,8 +303,8 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $unionProviderIds
-     * @param array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int} $summary
+     * @param  list<string>  $unionProviderIds
+     * @param  array{created:int,updated:int,removed:int,moved_to_uncategorized_vod:int,moved_to_uncategorized_series:int,remapped_from_uncategorized_vod:int,remapped_from_uncategorized_series:int}  $summary
      */
     private function cleanupMissingCategories(array $unionProviderIds, array &$summary): void
     {
@@ -318,8 +318,8 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param class-string<Series|VodStream> $modelClass
-     * @param list<string> $validProviderIds
+     * @param  class-string<Series|VodStream>  $modelClass
+     * @param  list<string>  $validProviderIds
      */
     private function moveToUncategorized(string $modelClass, string $idColumn, string $uncategorizedProviderId, array $validProviderIds): int
     {
@@ -371,8 +371,8 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param class-string<Series|VodStream> $modelClass
-     * @param list<string> $validProviderIds
+     * @param  class-string<Series|VodStream>  $modelClass
+     * @param  list<string>  $validProviderIds
      */
     private function remapFromUncategorized(string $modelClass, string $idColumn, string $uncategorizedProviderId, array $validProviderIds): int
     {
@@ -403,7 +403,7 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $issues
+     * @param  list<string>  $issues
      */
     private function resolveStatus(array $issues, bool $vodSucceeded, bool $seriesSucceeded): CategorySyncRunStatus
     {
@@ -419,7 +419,7 @@ final readonly class SyncCategories
     }
 
     /**
-     * @param list<string> $issues
+     * @param  list<string>  $issues
      */
     private function addIssue(array &$issues, string $issue): void
     {

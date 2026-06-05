@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Testing\TestResponse;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -125,11 +126,9 @@ it('does not auto-dispatch backfill on enable or update and dispatches only via 
         'backfill_count' => $backfillCount,
     ])->assertStatus(302);
 
-    Queue::assertPushed(RunMonitorScan::class, function (RunMonitorScan $scanJob) use ($monitor, $backfillCount): bool {
-        return $scanJob->monitorId === $monitor->id
+    Queue::assertPushed(RunMonitorScan::class, fn (RunMonitorScan $scanJob): bool => $scanJob->monitorId === $monitor->id
             && $scanJob->trigger === SeriesMonitorRunTrigger::Backfill
-            && ($scanJob->options['backfill_count'] ?? null) === $backfillCount;
-    });
+            && ($scanJob->options['backfill_count'] ?? null) === $backfillCount);
 })->with(['internal', 'admin']);
 
 it('applies can auto download schedules middleware to all monitoring mutation routes', function (string $routeName): void {
@@ -166,7 +165,7 @@ function sendAutoEpisodesMutationRequest(
     string $method,
     string $routeName,
     int $seriesId,
-): \Illuminate\Testing\TestResponse {
+): TestResponse {
     $url = str_starts_with($routeName, 'series.')
         ? route($routeName, ['model' => $seriesId])
         : route($routeName);

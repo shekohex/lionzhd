@@ -19,6 +19,8 @@ use App\Http\Integrations\LionzTv\Responses\Episode;
 use App\Http\Integrations\LionzTv\Responses\SeriesInformation;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Models\MediaDownloadRef;
+use League\Uri\Uri;
+use RuntimeException;
 use Throwable;
 
 /**
@@ -131,7 +133,7 @@ final readonly class RetryDownload
     }
 
     /**
-     * @return array{0: \League\Uri\Uri, 1: string}
+     * @return array{0: Uri, 1: string}
      */
     private function buildRetryTarget(MediaDownloadRef $download): array
     {
@@ -153,7 +155,7 @@ final readonly class RetryDownload
         $episode = $this->resolveEpisode($download, $seriesInfo);
 
         if (! $episode instanceof Episode) {
-            throw new \RuntimeException('Unable to locate the selected episode for retry.');
+            throw new RuntimeException('Unable to locate the selected episode for retry.');
         }
 
         return [
@@ -184,7 +186,6 @@ final readonly class RetryDownload
     }
 
     /**
-     * @param  mixed  $rawDownloadFiles
      * @return list<string>
      */
     private function normalizeDownloadFiles(mixed $rawDownloadFiles): array

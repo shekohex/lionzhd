@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Jobs\AutoEpisodes\DispatchDueMonitors;
-use App\Jobs\RefreshMediaContents;
 use App\Jobs\MonitorDownloads;
+use App\Jobs\RefreshMediaContents;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 

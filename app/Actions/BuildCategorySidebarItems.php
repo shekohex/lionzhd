@@ -75,7 +75,7 @@ final class BuildCategorySidebarItems
 
     private function normalizeCategoryId(?string $selectedCategoryId): ?string
     {
-        $normalized = trim((string) $selectedCategoryId);
+        $normalized = mb_trim((string) $selectedCategoryId);
 
         return $normalized === '' ? null : $normalized;
     }

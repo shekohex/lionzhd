@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AutoEpisodes\AutoEpisodesPauseController;
+use App\Http\Controllers\AutoEpisodes\BulkApplySeriesMonitoringPresetController;
+use App\Http\Controllers\AutoEpisodes\MonitoringPageController;
 use App\Http\Controllers\Settings\Aria2ConfigController;
 use App\Http\Controllers\Settings\CategorySyncRunsController;
 use App\Http\Controllers\Settings\PasswordController;
@@ -10,9 +13,6 @@ use App\Http\Controllers\Settings\SyncCategoriesController;
 use App\Http\Controllers\Settings\SyncMediaController;
 use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\Settings\XtreamCodeConfigController;
-use App\Http\Controllers\AutoEpisodes\AutoEpisodesPauseController;
-use App\Http\Controllers\AutoEpisodes\BulkApplySeriesMonitoringPresetController;
-use App\Http\Controllers\AutoEpisodes\MonitoringPageController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 

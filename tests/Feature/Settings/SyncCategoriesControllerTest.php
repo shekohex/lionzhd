@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Actions\BuildCategorySidebarItems;
 use App\Enums\CategorySyncRunStatus;
 use App\Enums\MediaType;
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesCategoriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodCategoriesRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Jobs\SyncCategories as SyncCategoriesJob;
 use App\Models\Category;
 use App\Models\CategorySyncRun;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
-use App\Actions\BuildCategorySidebarItems;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,11 +59,9 @@ it('requires explicit confirmation when vod preflight is empty and dispatches af
 
     $forcedResponse->assertRedirect();
     $forcedResponse->assertSessionHas('success', 'Category sync queued successfully.');
-    Queue::assertPushed(SyncCategoriesJob::class, function (SyncCategoriesJob $job) use ($admin): bool {
-        return $job->forceEmptyVod === true
+    Queue::assertPushed(SyncCategoriesJob::class, fn (SyncCategoriesJob $job): bool => $job->forceEmptyVod === true
             && $job->forceEmptySeries === false
-            && $job->requestedByUserId === $admin->id;
-    });
+            && $job->requestedByUserId === $admin->id);
     Queue::assertPushed(SyncCategoriesJob::class, 1);
 });
 
@@ -94,11 +92,9 @@ it('requires explicit confirmation when series preflight is empty and dispatches
 
     $forcedResponse->assertRedirect();
     $forcedResponse->assertSessionHas('success', 'Category sync queued successfully.');
-    Queue::assertPushed(SyncCategoriesJob::class, function (SyncCategoriesJob $job) use ($admin): bool {
-        return $job->forceEmptyVod === false
+    Queue::assertPushed(SyncCategoriesJob::class, fn (SyncCategoriesJob $job): bool => $job->forceEmptyVod === false
             && $job->forceEmptySeries === true
-            && $job->requestedByUserId === $admin->id;
-    });
+            && $job->requestedByUserId === $admin->id);
     Queue::assertPushed(SyncCategoriesJob::class, 1);
 });
 
@@ -116,11 +112,9 @@ it('dispatches sync immediately when both preflight sources are non-empty', func
 
     $response->assertRedirect();
     $response->assertSessionHas('success', 'Category sync queued successfully.');
-    Queue::assertPushed(SyncCategoriesJob::class, function (SyncCategoriesJob $job) use ($admin): bool {
-        return $job->forceEmptyVod === false
+    Queue::assertPushed(SyncCategoriesJob::class, fn (SyncCategoriesJob $job): bool => $job->forceEmptyVod === false
             && $job->forceEmptySeries === false
-            && $job->requestedByUserId === $admin->id;
-    });
+            && $job->requestedByUserId === $admin->id);
 });
 
 it('renders sync history page with run summaries and issues', function (): void {
@@ -367,5 +361,5 @@ function sidebarItem(array $items, string $id): mixed
         }
     }
 
-    throw new \RuntimeException(sprintf('Sidebar item %s not found.', $id));
+    throw new RuntimeException(sprintf('Sidebar item %s not found.', $id));
 }

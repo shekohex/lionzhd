@@ -107,11 +107,11 @@ namespace {
         JS));
     }
 
-function browserWaitForPaths(object $page, array $paths): ?string
-{
-    $pathsJson = json_encode($paths, JSON_THROW_ON_ERROR);
+    function browserWaitForPaths(object $page, array $paths): ?string
+    {
+        $pathsJson = json_encode($paths, JSON_THROW_ON_ERROR);
 
-    return $page->script(str_replace('__PATHS__', $pathsJson, <<<'JS'
+        return $page->script(str_replace('__PATHS__', $pathsJson, <<<'JS'
         async () => {
             const normalizePath = (path) => {
                 if (path.length > 1 && path.endsWith('/')) {

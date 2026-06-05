@@ -8,6 +8,9 @@ use App\Enums\MediaType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @mixin IdeHelperUserCategoryPreference
+ */
 final class UserCategoryPreference extends Model
 {
     protected $fillable = [
@@ -20,6 +23,11 @@ final class UserCategoryPreference extends Model
         'is_ignored',
     ];
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -29,10 +37,5 @@ final class UserCategoryPreference extends Model
             'is_hidden' => 'boolean',
             'is_ignored' => 'boolean',
         ];
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
     }
 }

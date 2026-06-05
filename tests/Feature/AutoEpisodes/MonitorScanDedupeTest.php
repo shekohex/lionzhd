@@ -28,6 +28,7 @@ use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -291,7 +292,7 @@ function firstSeriesEpisode(SeriesInformation $seriesInfo): Episode
         }
     }
 
-    throw new \RuntimeException('Expected at least one episode.');
+    throw new RuntimeException('Expected at least one episode.');
 }
 
 function episodePayload(string $id, int $season, int $episodeNum): array

@@ -29,7 +29,7 @@ final class SearchMediaData extends Data
     {
         $query = preg_replace(self::TOKEN_PATTERN, ' ', $this->q ?? '');
         $query = preg_replace('/\s+/', ' ', $query ?? '');
-        $query = trim($query ?? '');
+        $query = mb_trim($query ?? '');
 
         return $query === '' ? null : $query;
     }
@@ -111,8 +111,8 @@ final class SearchMediaData extends Data
         ];
 
         foreach ($matches as $match) {
-            $filter = strtolower($match[1] ?? '');
-            $value = strtolower($match[2] ?? '');
+            $filter = mb_strtolower($match[1] ?? '');
+            $value = mb_strtolower($match[2] ?? '');
 
             if ($filter === 'type') {
                 $parsed['media_type'] = MediaType::tryFrom($value);

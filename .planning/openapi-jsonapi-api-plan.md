@@ -198,12 +198,12 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 - Direct link returns a signed URL that the consumer follows directly (no API resolution needed)
 
 **Acceptance Criteria**
-- [ ] Reuses existing `VodStreamController` / `VodStreamCacheController` logic
-- [ ] Watchlist endpoints use existing `AddToWatchlist` / `RemoveFromWatchlist` actions
-- [ ] Download endpoint respects `can:server-download` gate
-- [ ] Cache clearing respects `can:admin` gate
-- [ ] Error responses are JSON:API compliant
-- [ ] All endpoints tested with Pest
+- [x] Reuses existing `VodStreamController` / `VodStreamCacheController` logic
+- [x] Watchlist endpoints use existing `AddToWatchlist` / `RemoveFromWatchlist` actions
+- [x] Download endpoint respects `can:server-download` gate
+- [x] Cache clearing respects `can:admin` gate
+- [x] Error responses are JSON:API compliant
+- [x] All endpoints tested with Pest
 
 ---
 

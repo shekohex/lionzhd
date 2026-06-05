@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\OpenApi;
 
 use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\Response;
 use Dedoc\Scramble\Support\Generator\Schema;
 use Dedoc\Scramble\Support\Generator\Types\ArrayType;
 use Dedoc\Scramble\Support\Generator\Types\BooleanType;
@@ -25,10 +26,15 @@ final class JsonApiSchemas
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\SeriesResource', Schema::fromType($series));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\ApiActionResource', Schema::fromType(self::apiActionResource()));
         $openApi->components->addSchema('MovieResource', Schema::fromType($movie));
         $openApi->components->addSchema('SeriesResource', Schema::fromType($series));
         $openApi->components->addSchema('DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
         $openApi->components->addSchema('SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
+        $openApi->components->addSchema('ApiActionResource', Schema::fromType(self::apiActionResource()));
+        $openApi->components->addSchema('JsonApiErrorDocument', Schema::fromType(self::errorDocument()));
+
+        self::forceJsonApiErrorContent($openApi);
     }
 
     /**
@@ -49,6 +55,60 @@ final class JsonApiSchemas
             'movies' => self::resourceDocument($movie, $paginated),
             'series' => self::resourceDocument($series, $paginated),
         ]);
+    }
+
+    private static function apiActionResource(): ObjectType
+    {
+        return self::resource('download-requests', [
+            'gid' => (new StringType)->nullable(true),
+            'existing' => new BooleanType,
+            'url' => (new StringType)->nullable(true),
+            'expires_in_seconds' => (new IntegerType)->nullable(true),
+            'status' => (new StringType)->nullable(true),
+        ])->addProperty('type', new StringType);
+    }
+
+    private static function errorDocument(): ObjectType
+    {
+        return (new ObjectType)
+            ->addProperty('errors', (new ArrayType)->setItems(
+                (new ObjectType)
+                    ->addProperty('status', new StringType)
+                    ->addProperty('title', new StringType)
+                    ->addProperty('detail', new StringType)
+                    ->addProperty('source', (new ObjectType)
+                        ->addProperty('parameter', new StringType)
+                        ->addProperty('pointer', new StringType))
+                    ->setRequired(['status', 'title', 'detail'])
+            ))
+            ->setRequired(['errors']);
+    }
+
+    private static function forceJsonApiErrorContent(OpenApi $openApi): void
+    {
+        $schema = Schema::fromType(self::errorDocument());
+
+        foreach ($openApi->components->responses as $response) {
+            if (! is_numeric($response->code) || (int) $response->code < 400) {
+                continue;
+            }
+
+            $response->content = [];
+            $response->setContent('application/vnd.api+json', $schema);
+        }
+
+        foreach ($openApi->paths as $path) {
+            foreach ($path->operations as $operation) {
+                foreach ($operation->responses ?? [] as $response) {
+                    if (! $response instanceof Response || ! is_numeric($response->code) || (int) $response->code < 400) {
+                        continue;
+                    }
+
+                    $response->content = [];
+                    $response->setContent('application/vnd.api+json', $schema);
+                }
+            }
+        }
     }
 
     private static function resourceDocument(ObjectType $resource, bool $paginated): ObjectType

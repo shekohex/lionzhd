@@ -37,7 +37,8 @@ final class MovieResource extends JsonApiResource
      *     custom_sid: string|null,
      *     direct_source: string|null,
      *     created_at: CarbonImmutable,
-     *     updated_at: CarbonImmutable
+     *     updated_at: CarbonImmutable,
+     *     vod_info?: array<string, mixed>
      * }
      */
     public function toAttributes(Request $request): array
@@ -60,7 +61,29 @@ final class MovieResource extends JsonApiResource
             'direct_source' => $data->direct_source,
             'created_at' => $data->created_at,
             'updated_at' => $data->updated_at,
+            ...$this->vodInfoAttribute(),
         ];
+    }
+
+    /**
+     * @return array{vod_info: array<string, mixed>}|array{}
+     */
+    private function vodInfoAttribute(): array
+    {
+        $attributes = $this->movie()->getAttributes();
+
+        if (! array_key_exists('api_vod_info', $attributes)) {
+            return [];
+        }
+
+        $vodInfo = $attributes['api_vod_info'];
+
+        if (! is_array($vodInfo)) {
+            return [];
+        }
+
+        /** @var array<string, mixed> $vodInfo */
+        return ['vod_info' => $vodInfo];
     }
 
     private function movie(): VodStream

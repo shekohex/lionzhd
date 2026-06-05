@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -32,10 +33,23 @@ final class JsonApiErrorResponse
     {
         $fallback = Response::$statusTexts[$status] ?? 'Error';
 
-        if ($status >= 400 && ! config('app.debug')) {
+        if ($status >= 500 && ! config('app.debug')) {
+            return $fallback;
+        }
+
+        if ($status === 404 && ! config('app.debug') && self::isUnsafeNotFoundDetail($exception)) {
             return $fallback;
         }
 
         return $exception->getMessage() !== '' ? $exception->getMessage() : $fallback;
+    }
+
+    private static function isUnsafeNotFoundDetail(Throwable $exception): bool
+    {
+        if ($exception instanceof ModelNotFoundException || $exception->getPrevious() instanceof ModelNotFoundException) {
+            return true;
+        }
+
+        return str_contains($exception->getMessage(), 'No query results for model');
     }
 }

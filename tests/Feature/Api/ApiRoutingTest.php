@@ -54,6 +54,42 @@ it('does not expose raw exception details for production api server errors', fun
         ->assertJsonMissing(['detail' => 'secret database path /tmp/lionz.sqlite']);
 });
 
+it('preserves intentional production api client error details', function (): void {
+    config(['app.debug' => false]);
+
+    Route::middleware('AcceptJsonApi')->get('/api/v1/__conflict', static function (): never {
+        abort(409, 'Download is already being prepared. Please try again.');
+    });
+
+    Route::middleware('AcceptJsonApi')->get('/api/v1/__forbidden', static function (): never {
+        abort(403, 'External accounts cannot use server downloads. Use Direct Download instead.');
+    });
+
+    $this->getJson('/api/v1/__conflict', ['Accept' => 'application/vnd.api+json'])
+        ->assertConflict()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.detail', 'Download is already being prepared. Please try again.');
+
+    $this->getJson('/api/v1/__forbidden', ['Accept' => 'application/vnd.api+json'])
+        ->assertForbidden()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.detail', 'External accounts cannot use server downloads. Use Direct Download instead.');
+});
+
+it('redacts production model binding not found details only', function (): void {
+    config(['app.debug' => false]);
+
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies/404404', ['Accept' => 'application/vnd.api+json'])
+        ->assertNotFound()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.detail', 'Not Found')
+        ->assertJsonMissing(['detail' => 'No query results for model']);
+});
+
 it('serves openapi docs json outside local environments', function (): void {
     app()->detectEnvironment(static fn (): string => 'production');
 
@@ -75,4 +111,17 @@ it('documents movie json api resource attributes in openapi', function (): void 
         ->assertJsonPath('components.schemas.SeriesResource.properties.attributes.properties.series_id.type', 'integer')
         ->assertJsonPath('components.schemas.DiscoverResource.properties.attributes.properties.movies.properties.data.items.properties.attributes.properties.name.type', 'string')
         ->assertJsonPath('components.schemas.SearchResultResource.properties.attributes.properties.series.properties.data.items.properties.attributes.properties.name.type', 'string');
+});
+
+it('documents action resources and json api error media types in openapi', function (): void {
+    $response = $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath('components.schemas.ApiActionResource.properties.attributes.type', 'object')
+        ->assertJsonPath('components.schemas.ApiActionResource.properties.attributes.properties.gid.type', ['string', 'null'])
+        ->assertJsonPath('components.schemas.JsonApiErrorDocument.properties.errors.type', 'array');
+
+    $document = $response->json();
+
+    expect($document['components']['responses']['AuthorizationException']['content']['application/vnd.api+json']['schema']['properties']['errors']['type'])->toBe('array')
+        ->and($document['components']['responses']['ModelNotFoundException']['content']['application/vnd.api+json']['schema']['properties']['errors']['type'])->toBe('array');
 });

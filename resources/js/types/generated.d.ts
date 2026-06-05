@@ -96,7 +96,7 @@ declare namespace App {
             last_error_message: string | null;
             retry_attempt: number;
             retry_next_at: string | null;
-            download_files: string[];
+            download_files: string[] | null;
             created_at: string;
             updated_at: string;
             media: App.Data.VodStreamData | App.Data.SeriesData;

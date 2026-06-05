@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 
 uses(RefreshDatabase::class);
 
@@ -16,7 +17,7 @@ it('requires sanctum authentication for api v1 routes', function (): void {
 
 it('returns json api content for authenticated api v1 routes', function (): void {
     $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['profile:read'])->plainTextToken;
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
 
     $this->withToken($token)
         ->getJson('/api/v1/me', ['Accept' => 'application/vnd.api+json'])
@@ -27,13 +28,45 @@ it('returns json api content for authenticated api v1 routes', function (): void
         ->assertJsonPath('data.attributes.email', $user->email);
 });
 
-it('requires the profile read ability for the profile endpoint', function (): void {
+it('requires the read ability for the profile endpoint', function (): void {
     $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['movies:read'])->plainTextToken;
+    $token = $user->createToken('external-api', ['server-download'])->plainTextToken;
 
     $this->withToken($token)
         ->getJson('/api/v1/me', ['Accept' => 'application/vnd.api+json'])
         ->assertForbidden()
         ->assertHeader('Content-Type', 'application/vnd.api+json')
         ->assertJsonPath('errors.0.status', '403');
+});
+
+it('does not expose raw exception details for production api server errors', function (): void {
+    config(['app.debug' => false]);
+
+    Route::middleware('AcceptJsonApi')->get('/api/v1/__boom', static function (): never {
+        throw new RuntimeException('secret database path /tmp/lionz.sqlite');
+    });
+
+    $this->getJson('/api/v1/__boom', ['Accept' => 'application/vnd.api+json'])
+        ->assertInternalServerError()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '500')
+        ->assertJsonPath('errors.0.detail', 'Internal Server Error')
+        ->assertJsonMissing(['detail' => 'secret database path /tmp/lionz.sqlite']);
+});
+
+it('serves openapi docs json outside local environments', function (): void {
+    app()->detectEnvironment(static fn (): string => 'production');
+
+    $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath('openapi', '3.1.0');
+});
+
+it('documents movie json api resource attributes in openapi', function (): void {
+    $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath('components.schemas.MovieResource.type', 'object')
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.type', 'object')
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.name.type', 'string')
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.stream_id.type', 'string');
 });

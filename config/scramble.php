@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dedoc\Scramble\Http\Middleware\RestrictedDocsAccess;
+use App\OpenApi\JsonApiResponseExtension;
 use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
 use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
@@ -136,10 +136,11 @@ return [
 
     'middleware' => [
         'web',
-        RestrictedDocsAccess::class,
     ],
 
-    'extensions' => [],
+    'extensions' => [
+        JsonApiResponseExtension::class,
+    ],
 
     /*
      * Automatically document API security (OpenAPI `security` / `securitySchemes`) based on route

@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Resources\Api;
+
+use App\Models\Series;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\JsonApi\JsonApiResource;
+
+final class SeriesResource extends JsonApiResource
+{
+    public function toId(Request $request): string
+    {
+        return (string) $this->series()->getKey();
+    }
+
+    public function toType(Request $request): string
+    {
+        return 'series';
+    }
+
+    /**
+     * @return array{
+     *     num: int,
+     *     name: string,
+     *     series_id: int,
+     *     cover: string|null,
+     *     plot: string|null,
+     *     cast: string|null,
+     *     director: string|null,
+     *     genre: string|null,
+     *     backdrop_path: mixed,
+     *     releaseDate: string|null,
+     *     last_modified: mixed,
+     *     category_id: string|null,
+     *     rating: mixed,
+     *     rating_5based: mixed,
+     *     created_at: mixed,
+     *     updated_at: mixed
+     * }
+     */
+    public function toAttributes(Request $request): array
+    {
+        $series = $this->series();
+
+        return [
+            'num' => (int) $series->num,
+            'name' => (string) $series->name,
+            'series_id' => (int) $series->series_id,
+            'cover' => $series->cover,
+            'plot' => $series->plot,
+            'cast' => $series->cast,
+            'director' => $series->director,
+            'genre' => $series->genre,
+            'backdrop_path' => $series->backdrop_path,
+            'releaseDate' => $series->releaseDate,
+            'last_modified' => $series->last_modified,
+            'category_id' => $series->category_id,
+            'rating' => $series->rating,
+            'rating_5based' => $series->rating_5based,
+            'created_at' => $series->created_at,
+            'updated_at' => $series->updated_at,
+        ];
+    }
+
+    private function series(): Series
+    {
+        /** @var Series $series */
+        $series = $this->resource;
+
+        return $series;
+    }
+}

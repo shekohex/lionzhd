@@ -30,7 +30,7 @@ final class MediaDownloadRefData extends Data
         public ?string $last_error_message,
         public int $retry_attempt,
         public ?CarbonImmutable $retry_next_at,
-        #[LiteralTypeScriptType('string[]')]
+        #[LiteralTypeScriptType('string[] | null')]
         public ?array $download_files,
         public CarbonImmutable $created_at,
         public CarbonImmutable $updated_at,

@@ -61,7 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
                 return JsonApiErrorResponse::make(
                     $response->getStatusCode(),
-                    $exception->getMessage() !== '' ? $exception->getMessage() : (SymfonyResponse::$statusTexts[$response->getStatusCode()] ?? 'Error'),
+                    JsonApiErrorResponse::safeDetail($response->getStatusCode(), $exception),
                 );
             }
 

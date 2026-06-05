@@ -11,7 +11,7 @@ uses(RefreshDatabase::class);
 
 it('lists movies as paginated json api resources', function (): void {
     $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['movies:read'])->plainTextToken;
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
 
     createMovie(['stream_id' => 10, 'num' => 1, 'name' => 'First Movie']);
     createMovie(['stream_id' => 20, 'num' => 2, 'name' => 'Second Movie']);
@@ -44,9 +44,9 @@ it('lists movies as paginated json api resources', function (): void {
     ]);
 });
 
-it('requires the movies read ability for movie list routes', function (): void {
+it('requires the read ability for movie list routes', function (): void {
     $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['profile:read'])->plainTextToken;
+    $token = $user->createToken('external-api', ['server-download'])->plainTextToken;
 
     $this->withToken($token)
         ->getJson('/api/v1/movies', ['Accept' => 'application/vnd.api+json'])
@@ -57,7 +57,7 @@ it('requires the movies read ability for movie list routes', function (): void {
 
 it('formats movie list validation errors as json api errors', function (): void {
     $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['movies:read'])->plainTextToken;
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
 
     $this->withToken($token)
         ->getJson('/api/v1/movies?page[size]=101', ['Accept' => 'application/vnd.api+json'])

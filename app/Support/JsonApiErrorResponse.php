@@ -6,6 +6,7 @@ namespace App\Support;
 
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 final class JsonApiErrorResponse
 {
@@ -25,5 +26,16 @@ final class JsonApiErrorResponse
         $decoded = json_decode((string) $response->getContent(), true);
 
         return is_array($decoded) && array_key_exists('errors', $decoded);
+    }
+
+    public static function safeDetail(int $status, Throwable $exception): string
+    {
+        $fallback = Response::$statusTexts[$status] ?? 'Error';
+
+        if ($status >= 500 && ! config('app.debug')) {
+            return $fallback;
+        }
+
+        return $exception->getMessage() !== '' ? $exception->getMessage() : $fallback;
     }
 }

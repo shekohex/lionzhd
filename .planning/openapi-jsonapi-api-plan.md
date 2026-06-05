@@ -165,11 +165,11 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 - Categories endpoint powers the browse sidebar equivalent for API consumers
 
 **Acceptance Criteria**
-- [ ] All endpoints return proper `JsonApiResource` / `JsonApiResourceCollection`
-- [ ] Search supports pagination, filters, and sorting
-- [ ] Categories respect user preferences (hidden/ignored)
-- [ ] Scramble generates correct OpenAPI schemas for request/response
-- [ ] Pest feature tests cover happy path + validation errors
+- [x] All endpoints return proper `JsonApiResource` / `JsonApiResourceCollection`
+- [x] Search supports pagination, filters, and sorting
+- [x] Categories respect user preferences (hidden/ignored)
+- [x] Scramble generates correct OpenAPI schemas for request/response
+- [x] Pest feature tests cover happy path + validation errors
 
 ---
 

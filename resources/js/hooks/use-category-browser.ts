@@ -1,19 +1,25 @@
-import { scrollToTop } from '@/lib/scroll-utils';
-import type { PendingVisit } from '@inertiajs/core';
-import { router } from '@inertiajs/react';
-import { useEffect, useRef, useState } from 'react';
 import {
     type CategorySidebarData,
     type CategorySidebarItem,
     type CategorySidebarMutationOptions,
     type CategorySidebarPreferencesSnapshot,
 } from '@/components/category-sidebar';
+import { scrollToTop } from '@/lib/scroll-utils';
+import type { PendingVisit } from '@inertiajs/core';
+import { router } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 
 export const CATEGORY_LOAD_ERROR_MESSAGE = 'Unable to load categories right now. Please try again.';
 export const CATEGORY_PREFERENCE_ERROR_MESSAGE = 'Unable to save your category changes right now. Please try again.';
 
 function firstCategoryPreferenceError(errors: Record<string, string>) {
-    return errors.pinned_ids ?? errors.visible_ids ?? errors.hidden_ids ?? errors.ignored_ids ?? CATEGORY_PREFERENCE_ERROR_MESSAGE;
+    return (
+        errors.pinned_ids ??
+        errors.visible_ids ??
+        errors.hidden_ids ??
+        errors.ignored_ids ??
+        CATEGORY_PREFERENCE_ERROR_MESSAGE
+    );
 }
 
 function orderBySortOrder(items: CategorySidebarItem[]) {
@@ -43,11 +49,15 @@ function orderByPinRank(items: CategorySidebarItem[]) {
 }
 
 function buildPreferenceSnapshot(categories: CategorySidebarData | null | undefined) {
-    const editableVisibleItems = (categories?.visibleItems ?? []).filter((item) => item.canEdit && !item.isUncategorized);
+    const editableVisibleItems = (categories?.visibleItems ?? []).filter(
+        (item) => item.canEdit && !item.isUncategorized,
+    );
     const pinnedItems = orderByPinRank(editableVisibleItems.filter((item) => item.isPinned && !item.isIgnored));
     const visibleItems = orderBySortOrder(editableVisibleItems.filter((item) => !item.isPinned && !item.isIgnored));
     const ignoredItems = orderBySortOrder(editableVisibleItems.filter((item) => item.isIgnored));
-    const hiddenItems = orderBySortOrder((categories?.hiddenItems ?? []).filter((item) => item.canEdit && !item.isUncategorized));
+    const hiddenItems = orderBySortOrder(
+        (categories?.hiddenItems ?? []).filter((item) => item.canEdit && !item.isUncategorized),
+    );
 
     return {
         pinnedItems,

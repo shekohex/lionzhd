@@ -78,12 +78,12 @@ Upgrade the Laravel framework to v13.x to unlock native `JsonApiResource` suppor
 Install Laravel Sanctum for API token authentication.
 
 **Acceptance Criteria**
-- [ ] `composer require laravel/sanctum` installed
-- [ ] Config published (`vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`)
-- [ ] Migration run (`personal_access_tokens` table exists)
-- [ ] Sanctum middleware registered in `bootstrap/app.php` or kernel
-- [ ] `config/sanctum.php` configured for stateless API usage
-- [ ] `User` model uses `HasApiTokens` trait
+- [x] `composer require laravel/sanctum` installed
+- [x] Config published (`vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"`)
+- [x] Migration run (`personal_access_tokens` table exists)
+- [x] Sanctum middleware registered in `bootstrap/app.php` or kernel
+- [x] `config/sanctum.php` configured for stateless API usage
+- [x] `User` model uses `HasApiTokens` trait
 
 ---
 
@@ -96,11 +96,11 @@ Install Laravel Sanctum for API token authentication.
 Install `dedoc/scramble` for automatic OpenAPI 3.1 spec generation.
 
 **Acceptance Criteria**
-- [ ] `composer require dedoc/scramble` installed
-- [ ] Config published (`vendor:publish --tag="scramble-config"`)
-- [ ] Scramble routes registered (`/docs/api` and `/docs/api.json` respond)
-- [ ] Bearer token security scheme configured in OpenAPI spec
-- [ ] `JsonApiResponseExtension` registered to wrap responses in JSON:API envelope
+- [x] `composer require dedoc/scramble` installed
+- [x] Config published (`vendor:publish --tag="scramble-config"`)
+- [x] Scramble routes registered (`/docs/api` and `/docs/api.json` respond)
+- [x] Bearer token security scheme configured in OpenAPI spec
+- [x] `JsonApiResponseExtension` registered to wrap responses in JSON:API envelope
 
 ---
 
@@ -113,12 +113,12 @@ Install `dedoc/scramble` for automatic OpenAPI 3.1 spec generation.
 Create the API route file and middleware pipeline for v1.
 
 **Acceptance Criteria**
-- [ ] `routes/api.php` created and loaded in bootstrap
-- [ ] All API routes prefixed with `/api/v1/`
-- [ ] Route group uses `['auth:sanctum', 'throttle:api', 'AcceptJsonApi']`
-- [ ] `RateLimiter::for('api')` registered (120 req/min per user)
-- [ ] API route returns 401 for unauthenticated requests
-- [ ] API route returns JSON:API `Content-Type` header
+- [x] `routes/api.php` created and loaded in bootstrap
+- [x] All API routes prefixed with `/api/v1/`
+- [x] Route group uses `['auth:sanctum', 'throttle:api', 'AcceptJsonApi']`
+- [x] `RateLimiter::for('api')` registered (120 req/min per user)
+- [x] API route returns 401 for unauthenticated requests
+- [x] API route returns JSON:API `Content-Type` header
 
 ---
 
@@ -131,12 +131,12 @@ Create the API route file and middleware pipeline for v1.
 Establish the patterns for native `JsonApiResource` classes and API `FormRequest` validation that all endpoints will follow.
 
 **Acceptance Criteria**
-- [ ] Example `MovieResource` extends native `JsonApiResource`
-- [ ] `toAttributes()` delegates to `$model->getData()->toArray()`
-- [ ] `toId()` and `toType()` implemented correctly
-- [ ] `JsonApiResourceCollection` pattern defined for paginated lists
-- [ ] Base API `FormRequest` with JSON:API error formatting established
-- [ ] One test endpoint working end-to-end (`GET /api/v1/movies`)
+- [x] Example `MovieResource` extends native `JsonApiResource`
+- [x] `toAttributes()` delegates to `$model->getData()->toArray()`
+- [x] `toId()` and `toType()` implemented correctly
+- [x] `JsonApiResourceCollection` pattern defined for paginated lists
+- [x] Base API `FormRequest` with JSON:API error formatting established
+- [x] One test endpoint working end-to-end (`GET /api/v1/movies`)
 
 ---
 

@@ -121,7 +121,10 @@ export default function ScheduleEditorDialog({
     onSubmit,
 }: ScheduleEditorDialogProps) {
     const browserTimezone = useMemo(() => resolveBrowserTimezone(), []);
-    const normalizedSeasons = useMemo(() => uniqueSorted(availableSeasons.filter((season) => season > 0)), [availableSeasons]);
+    const normalizedSeasons = useMemo(
+        () => uniqueSorted(availableSeasons.filter((season) => season > 0)),
+        [availableSeasons],
+    );
     const normalizedPresetTimes = useMemo(() => {
         const filtered = presetTimes.filter((time) => time.trim() !== '');
         return filtered.length > 0 ? filtered : ['00:00'];
@@ -161,15 +164,7 @@ export default function ScheduleEditorDialog({
         );
         setShowAdvanced((monitor?.per_run_cap ?? null) !== null);
         setSubmitError(null);
-    }, [
-        open,
-        monitor,
-        mode,
-        normalizedSeasons,
-        defaultPresetTime,
-        defaultBackfillCount,
-        browserTimezone,
-    ]);
+    }, [open, monitor, mode, normalizedSeasons, defaultPresetTime, defaultBackfillCount, browserTimezone]);
 
     const toggleWeeklyDay = (day: number) => {
         setDraft((current) => ({
@@ -245,7 +240,9 @@ export default function ScheduleEditorDialog({
 
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     {disabledReason ? (
-                        <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">{disabledReason}</p>
+                        <p className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
+                            {disabledReason}
+                        </p>
                     ) : null}
 
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -274,7 +271,9 @@ export default function ScheduleEditorDialog({
                             <Input
                                 id="monitor-timezone"
                                 value={draft.timezone}
-                                onChange={(event) => setDraft((current) => ({ ...current, timezone: event.target.value }))}
+                                onChange={(event) =>
+                                    setDraft((current) => ({ ...current, timezone: event.target.value }))
+                                }
                                 placeholder="Africa/Cairo"
                                 disabled={formLocked}
                             />
@@ -335,7 +334,9 @@ export default function ScheduleEditorDialog({
                                 <Label htmlFor="monitor-weekly-time">Weekly preset time</Label>
                                 <Select
                                     value={draft.weeklyTime}
-                                    onValueChange={(value) => setDraft((current) => ({ ...current, weeklyTime: value }))}
+                                    onValueChange={(value) =>
+                                        setDraft((current) => ({ ...current, weeklyTime: value }))
+                                    }
                                     disabled={formLocked}
                                 >
                                     <SelectTrigger id="monitor-weekly-time">
@@ -363,7 +364,9 @@ export default function ScheduleEditorDialog({
                                         type="button"
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => setDraft((current) => ({ ...current, monitoredSeasons: normalizedSeasons }))}
+                                        onClick={() =>
+                                            setDraft((current) => ({ ...current, monitoredSeasons: normalizedSeasons }))
+                                        }
                                         disabled={formLocked}
                                     >
                                         Select all
@@ -382,7 +385,7 @@ export default function ScheduleEditorDialog({
                         </div>
 
                         {normalizedSeasons.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No season metadata available yet.</p>
+                            <p className="text-muted-foreground text-sm">No season metadata available yet.</p>
                         ) : (
                             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                 {normalizedSeasons.map((season) => {
@@ -408,7 +411,9 @@ export default function ScheduleEditorDialog({
                             </div>
                         )}
 
-                        <p className="text-xs text-muted-foreground">No season selected means all seasons are monitored.</p>
+                        <p className="text-muted-foreground text-xs">
+                            No season selected means all seasons are monitored.
+                        </p>
                     </div>
 
                     <div className="space-y-2">
@@ -496,10 +501,15 @@ export default function ScheduleEditorDialog({
                         </div>
                     ) : null}
 
-                    {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
+                    {submitError ? <p className="text-destructive text-sm">{submitError}</p> : null}
 
                     <DialogFooter>
-                        <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={submitting}>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => onOpenChange(false)}
+                            disabled={submitting}
+                        >
                             Cancel
                         </Button>
                         <Button type="submit" disabled={formLocked}>

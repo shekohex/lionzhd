@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import type Pagination from '@/types/pagination';
 import { type BreadcrumbItem, type SharedData } from '@/types';
+import type Pagination from '@/types/pagination';
 import { Head, Link, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -111,7 +111,9 @@ export default function SyncCategoriesHistoryPage() {
 
                     <div className="space-y-3">
                         {runs.data.length === 0 && (
-                            <div className="rounded-lg border p-4 text-sm text-muted-foreground">No category sync runs yet.</div>
+                            <div className="text-muted-foreground rounded-lg border p-4 text-sm">
+                                No category sync runs yet.
+                            </div>
                         )}
 
                         {runs.data.map((run) => (
@@ -119,14 +121,16 @@ export default function SyncCategoriesHistoryPage() {
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div className="space-y-1">
                                         <p className="text-sm font-medium">Run #{run.id}</p>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-muted-foreground text-xs">
                                             Started: {formatDateTime(run.started_at)}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-muted-foreground text-xs">
                                             Finished: {formatDateTime(run.finished_at)}
                                         </p>
                                         {run.requested_by !== null && (
-                                            <p className="text-xs text-muted-foreground">Requested by: {run.requested_by.name}</p>
+                                            <p className="text-muted-foreground text-xs">
+                                                Requested by: {run.requested_by.name}
+                                            </p>
                                         )}
                                     </div>
 
@@ -135,7 +139,7 @@ export default function SyncCategoriesHistoryPage() {
                                     </Badge>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground md:grid-cols-4">
+                                <div className="text-muted-foreground grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
                                     <p>Created: {toCount(run.summary.created)}</p>
                                     <p>Updated: {toCount(run.summary.updated)}</p>
                                     <p>Removed: {toCount(run.summary.removed)}</p>
@@ -146,14 +150,14 @@ export default function SyncCategoriesHistoryPage() {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <p className="text-xs font-medium uppercase text-muted-foreground">Top issues</p>
+                                    <p className="text-muted-foreground text-xs font-medium uppercase">Top issues</p>
 
                                     {run.top_issues.length === 0 && (
-                                        <p className="text-sm text-muted-foreground">None</p>
+                                        <p className="text-muted-foreground text-sm">None</p>
                                     )}
 
                                     {run.top_issues.length > 0 && (
-                                        <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                                        <ul className="text-muted-foreground list-disc space-y-1 pl-5 text-sm">
                                             {run.top_issues.map((issue, index) => (
                                                 <li key={`${run.id}-${index}`}>{issue}</li>
                                             ))}
@@ -164,7 +168,7 @@ export default function SyncCategoriesHistoryPage() {
                         ))}
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                    <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 text-xs">
                         <p>
                             Page {runs.current_page} of {runs.last_page}
                         </p>

@@ -111,9 +111,7 @@ const DownloadInformation = ({
     const completedLength = Math.max(0, status?.completedLength ?? 0);
     const downloadSpeed = Math.max(0, status?.downloadSpeed ?? 0);
     const hasReliableTotal = totalLength > 0;
-    const percentValue = hasReliableTotal
-        ? clamp((completedLength / Math.max(totalLength, 1)) * 100, 0, 100)
-        : null;
+    const percentValue = hasReliableTotal ? clamp((completedLength / Math.max(totalLength, 1)) * 100, 0, 100) : null;
     const percentLabel = percentValue === null ? null : `${percentValue.toFixed(1)}%`;
     const speedLabel = downloadSpeed > 0 ? `${formatBytes(downloadSpeed)}/s` : null;
 
@@ -227,9 +225,12 @@ const DownloadInformation = ({
     const backdropUrl = movie?.stream_icon || series?.cover;
     const posterUrl = movie?.stream_icon || series?.cover;
     const additionalBackdrops = series?.backdrop_path || [];
-    const buttonClassName = isReadOnly ? 'cursor-not-allowed rounded-md p-1 opacity-50' : 'hover:bg-muted rounded-md p-1';
+    const buttonClassName = isReadOnly
+        ? 'cursor-not-allowed rounded-md p-1 opacity-50'
+        : 'hover:bg-muted rounded-md p-1';
 
-    const statusBadgeVariant = isCanceled || isTerminalFailed ? 'destructive' : statusLabel === 'Complete' ? 'default' : 'secondary';
+    const statusBadgeVariant =
+        isCanceled || isTerminalFailed ? 'destructive' : statusLabel === 'Complete' ? 'default' : 'secondary';
     const cancelCheckboxId = `cancel-delete-partial-${download.id}`;
     const showPauseAction = !isCanceled && status?.status === 'active' && !download.desired_paused;
     const showResumeAction = !isCanceled && (status?.status === 'paused' || download.desired_paused);

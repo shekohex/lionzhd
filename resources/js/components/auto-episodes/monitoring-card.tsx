@@ -74,9 +74,7 @@ const scheduleSummary = (monitor: SeriesMonitorData | null): string => {
         return `Daily at ${monitor.schedule_daily_time ?? 'preset'} · ${monitor.timezone}`;
     }
 
-    const days = monitor.schedule_weekly_days
-        .map((day) => WEEKDAY_LABELS[day] ?? String(day))
-        .join(', ');
+    const days = monitor.schedule_weekly_days.map((day) => WEEKDAY_LABELS[day] ?? String(day)).join(', ');
 
     return `Weekly on ${days || 'selected days'} at ${monitor.schedule_weekly_time ?? 'preset'} · ${monitor.timezone}`;
 };
@@ -161,15 +159,19 @@ export default function MonitoringCard({
 
             <CardContent className="space-y-4">
                 {!canManage && disabledReason ? (
-                    <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">{disabledReason}</p>
+                    <p className="text-muted-foreground rounded-md border border-dashed p-3 text-sm">
+                        {disabledReason}
+                    </p>
                 ) : null}
 
                 {!isEnabled && inWatchlist ? (
-                    <p className="text-sm text-muted-foreground">Enable monitoring to start automatic episode scans for this series.</p>
+                    <p className="text-muted-foreground text-sm">
+                        Enable monitoring to start automatic episode scans for this series.
+                    </p>
                 ) : null}
 
                 {!isEnabled && !inWatchlist ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                         Add this series to your watchlist first, then enable monitoring with a schedule.
                     </p>
                 ) : null}
@@ -178,19 +180,19 @@ export default function MonitoringCard({
                     <>
                         <div className="grid gap-3 text-sm sm:grid-cols-2">
                             <div className="space-y-1">
-                                <p className="text-xs font-medium uppercase text-muted-foreground">Last run</p>
+                                <p className="text-muted-foreground text-xs font-medium uppercase">Last run</p>
                                 <p>{formatDateTime(monitor?.last_attempt_at)}</p>
                             </div>
 
                             <div className="space-y-1">
-                                <p className="text-xs font-medium uppercase text-muted-foreground">Next run</p>
+                                <p className="text-muted-foreground text-xs font-medium uppercase">Next run</p>
                                 <p>{formatDateTime(monitor?.next_run_at)}</p>
                             </div>
                         </div>
 
                         {monitor?.last_attempt_status ? (
                             <div className="space-y-1">
-                                <p className="text-xs font-medium uppercase text-muted-foreground">Last run status</p>
+                                <p className="text-muted-foreground text-xs font-medium uppercase">Last run status</p>
                                 <Badge variant={statusVariant(monitor.last_attempt_status)} className="capitalize">
                                     {monitor.last_attempt_status.replaceAll('_', ' ')}
                                 </Badge>
@@ -198,7 +200,9 @@ export default function MonitoringCard({
                         ) : null}
 
                         {runNowCoolingDown ? (
-                            <p className="text-sm text-muted-foreground">Run now available in {formatCooldown(runNowRemainingMs)}.</p>
+                            <p className="text-muted-foreground text-sm">
+                                Run now available in {formatCooldown(runNowRemainingMs)}.
+                            </p>
                         ) : null}
                     </>
                 ) : null}
@@ -240,7 +244,9 @@ export default function MonitoringCard({
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Disable monitoring?</DialogTitle>
-                        <DialogDescription>Choose whether to only disable monitoring or also remove this series from watchlist.</DialogDescription>
+                        <DialogDescription>
+                            Choose whether to only disable monitoring or also remove this series from watchlist.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <label className="flex items-center gap-2 rounded-md border p-2 text-sm">

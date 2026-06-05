@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\AcceptJsonApi;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,15 +19,20 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance']);
+        $middleware->statefulApi();
         $middleware->web(append: [
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+        $middleware->alias([
+            'AcceptJsonApi' => AcceptJsonApi::class,
         ]);
 
         $middleware->trustProxies(
@@ -43,6 +49,12 @@ return Application::configure(basePath: dirname(__DIR__))
         Integration::handles($exceptions);
 
         $exceptions->respond(function (SymfonyResponse $response, Throwable $exception, Request $request): SymfonyResponse {
+            if ($request->is('api/v1') || $request->is('api/v1/*')) {
+                $response->headers->set('Content-Type', 'application/vnd.api+json');
+
+                return $response;
+            }
+
             if ($response->getStatusCode() === 404 && ! $request->expectsJson()) {
                 return Inertia::render('errors/not-found', [
                     'message' => 'The page you requested could not be found.',

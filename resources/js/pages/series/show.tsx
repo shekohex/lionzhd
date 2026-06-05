@@ -35,7 +35,16 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
 export default function SeriesInformation() {
     const { props } = usePage<SeriesInformationPageProps>();
-    const { info, in_watchlist, auth, monitor, category_context, preset_times, backfill_preset_counts, run_now_cooldown_seconds } = props;
+    const {
+        info,
+        in_watchlist,
+        auth,
+        monitor,
+        category_context,
+        preset_times,
+        backfill_preset_counts,
+        run_now_cooldown_seconds,
+    } = props;
     const isAdmin = auth.user.role === 'admin';
     const isInternalMember = auth.user.role === 'member' && auth.user.subtype === 'internal';
     const isExternalMember = auth.user.role === 'member' && auth.user.subtype === 'external';
@@ -278,13 +287,7 @@ export default function SeriesInformation() {
                 },
             });
         },
-        [
-            canManageMonitoring,
-            handleBlockedMonitoringAction,
-            info.seriesId,
-            monitoringProcessing,
-            scheduleEditorMode,
-        ],
+        [canManageMonitoring, handleBlockedMonitoringAction, info.seriesId, monitoringProcessing, scheduleEditorMode],
     );
 
     const handleDisableMonitoring = useCallback(
@@ -414,7 +417,9 @@ export default function SeriesInformation() {
                                         onRunNow={handleRunNow}
                                         onDisable={handleDisableMonitoring}
                                     />
-                                    <p className="text-xs text-muted-foreground">Run now cooldown: {runNowCooldownLabel}</p>
+                                    <p className="text-muted-foreground text-xs">
+                                        Run now cooldown: {runNowCooldownLabel}
+                                    </p>
                                 </motion.div>
                             </AnimatePresence>
 

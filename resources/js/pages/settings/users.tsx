@@ -98,7 +98,7 @@ export default function UsersSettings() {
                                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                                     <div className="space-y-1">
                                         <p className="font-medium">{user.name}</p>
-                                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                                        <p className="text-muted-foreground text-sm">{user.email}</p>
                                         <div className="flex flex-wrap items-center gap-2 pt-1">
                                             <Badge variant="outline">
                                                 {user.role === 'admin' ? 'Admin' : 'Member'}
@@ -131,11 +131,19 @@ export default function UsersSettings() {
 
                                         {can_manage_admin_roles && user.role === 'admin' && !user.is_super_admin && (
                                             <>
-                                                <Button size="sm" variant="outline" onClick={() => transferSuperAdmin(user)}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => transferSuperAdmin(user)}
+                                                >
                                                     Make Super-admin
                                                 </Button>
 
-                                                <Button size="sm" variant="destructive" onClick={() => updateRole(user, 'member')}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    onClick={() => updateRole(user, 'member')}
+                                                >
                                                     Demote to Member
                                                 </Button>
                                             </>

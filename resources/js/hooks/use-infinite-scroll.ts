@@ -67,9 +67,7 @@ export function useInfiniteScroll<T = unknown>({
     scrollDebounce = 100,
     replace = true,
 }: UseInfiniteScrollOptions<T>): UseInfiniteScrollReturn<T> {
-    const restoredState = rememberKey
-        ? (router.restore(rememberKey) as RememberedInfiniteScrollState<T> | null)
-        : null;
+    const restoredState = rememberKey ? (router.restore(rememberKey) as RememberedInfiniteScrollState<T> | null) : null;
 
     const normalizedInitialPage = normalizePage(restoredState?.currentPage ?? currentPage);
     const initialPages = restoredState?.pages?.length
@@ -84,7 +82,9 @@ export function useInfiniteScroll<T = unknown>({
     const inFlightRef = useRef(false);
     const retryPendingRef = useRef(false);
     const previousNearBottomRef = useRef(false);
-    const pendingScrollRestoreRef = useRef<number | null>(restoreScroll && typeof restoredState?.scrollY === 'number' ? restoredState.scrollY : null);
+    const pendingScrollRestoreRef = useRef<number | null>(
+        restoreScroll && typeof restoredState?.scrollY === 'number' ? restoredState.scrollY : null,
+    );
     const pagesRef = useRef<Map<number, T[]>>(initialPages);
 
     const hasMore = !!nextPageUrl;
@@ -223,7 +223,10 @@ export function useInfiniteScroll<T = unknown>({
             return {
                 data: payload.data,
                 current_page: payload.current_page,
-                next_page_url: typeof payload.next_page_url === 'string' || payload.next_page_url === null ? payload.next_page_url : null,
+                next_page_url:
+                    typeof payload.next_page_url === 'string' || payload.next_page_url === null
+                        ? payload.next_page_url
+                        : null,
             };
         },
         [only],
@@ -292,7 +295,18 @@ export function useInfiniteScroll<T = unknown>({
                 },
             });
         },
-        [enabled, error, extractPayload, isAutoPaused, mergePages, nextPageUrl, only, preserveScroll, preserveState, replace],
+        [
+            enabled,
+            error,
+            extractPayload,
+            isAutoPaused,
+            mergePages,
+            nextPageUrl,
+            only,
+            preserveScroll,
+            preserveState,
+            replace,
+        ],
     );
 
     useEffect(() => {

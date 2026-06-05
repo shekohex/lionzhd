@@ -15,8 +15,12 @@ import {
     CategorySidebarProps,
 } from './category-sidebar/types';
 
-export { type CategorySidebarMutationOptions, type CategorySidebarPreferencesSnapshot };
-export { type CategorySidebarData, type CategorySidebarItem };
+export {
+    type CategorySidebarData,
+    type CategorySidebarItem,
+    type CategorySidebarMutationOptions,
+    type CategorySidebarPreferencesSnapshot,
+};
 
 const ALL_CATEGORIES_ID = 'all-categories';
 
@@ -40,8 +44,12 @@ function buildEditableGroups(categories: CategorySidebarData | null | undefined)
                 isUncategorized: false,
             } satisfies CategorySidebarItem),
         uncategorizedItem: visibleItems.find((item) => item.isUncategorized) ?? null,
-        pinnedItems: visibleItems.filter((item) => item.canEdit && item.isPinned && !item.isIgnored && !item.isUncategorized),
-        visibleItems: visibleItems.filter((item) => item.canEdit && !item.isPinned && !item.isIgnored && !item.isUncategorized),
+        pinnedItems: visibleItems.filter(
+            (item) => item.canEdit && item.isPinned && !item.isIgnored && !item.isUncategorized,
+        ),
+        visibleItems: visibleItems.filter(
+            (item) => item.canEdit && !item.isPinned && !item.isIgnored && !item.isUncategorized,
+        ),
         ignoredVisibleItems: visibleItems.filter((item) => item.canEdit && item.isIgnored && !item.isUncategorized),
         hiddenItems: (categories?.hiddenItems ?? []).filter((item) => item.canEdit && !item.isUncategorized),
     };
@@ -183,7 +191,10 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
         if (item.isPinned) {
             const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
-            const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isPinned: false, pinRank: undefined }]);
+            const nextVisibleItems = orderBySortOrder([
+                ...visibleItems,
+                { ...item, isPinned: false, pinRank: undefined },
+            ]);
             runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, hiddenItems);
             return;
         }
@@ -216,7 +227,10 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         if (isSaving) return;
 
         const nextHiddenItems = hiddenItems.filter((entry) => entry.id !== item.id);
-        const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isHidden: false, isPinned: false, pinRank: undefined }]);
+        const nextVisibleItems = orderBySortOrder([
+            ...visibleItems,
+            { ...item, isHidden: false, isPinned: false, pinRank: undefined },
+        ]);
 
         runSave(pinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);
     };
@@ -343,13 +357,19 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         <>
             <aside className={cn('hidden self-stretch md:flex', className)}>
                 <div
-                    className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border bg-card shadow-sm"
+                    className="bg-card flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-sm"
                     style={desktopHeight ? { height: `${desktopHeight}px` } : undefined}
                 >
                     <div className="flex items-center justify-between p-4 pb-2">
-                        <h2 className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">{title}</h2>
+                        <h2 className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                            {title}
+                        </h2>
                         {view === 'manage' && (
-                            <button type="button" onClick={() => setView('browse')} className="inline-flex h-8 items-center rounded-md px-2 text-[10px] font-bold hover:bg-accent transition-colors">
+                            <button
+                                type="button"
+                                onClick={() => setView('browse')}
+                                className="hover:bg-accent inline-flex h-8 items-center rounded-md px-2 text-[10px] font-bold transition-colors"
+                            >
                                 <ArrowLeft className="mr-1 h-3 w-3" />
                                 Back
                             </button>
@@ -370,7 +390,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         </div>
                     )}
 
-                    <ScrollArea className="min-h-0 h-full flex-1">
+                    <ScrollArea className="h-full min-h-0 flex-1">
                         <div className="space-y-4 p-4 pt-2">
                             {view === 'manage' ? (
                                 <CategorySidebarManage {...manageProps} />
@@ -383,15 +403,22 @@ export default function CategorySidebar(props: CategorySidebarProps) {
             </aside>
 
             <div className="md:hidden">
-                <Sheet open={isMobileSheetOpen} onOpenChange={(open) => {
-                    setIsMobileSheetOpen(open);
-                    if (!open) {
-                        setView('browse');
-                        setQuery('');
-                    }
-                }}>
+                <Sheet
+                    open={isMobileSheetOpen}
+                    onOpenChange={(open) => {
+                        setIsMobileSheetOpen(open);
+                        if (!open) {
+                            setView('browse');
+                            setQuery('');
+                        }
+                    }}
+                >
                     <SheetTrigger asChild>
-                        <Button type="button" variant="outline" className="w-full justify-start gap-2 h-11 font-semibold shadow-sm border-muted-foreground/20">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="border-muted-foreground/20 h-11 w-full justify-start gap-2 font-semibold shadow-sm"
+                        >
                             <ListFilterIcon className="h-4 w-4" />
                             {title}
                         </Button>
@@ -400,10 +427,12 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         side="bottom"
                         role="dialog"
                         onOpenAutoFocus={(event) => event.preventDefault()}
-                        className="flex flex-col h-[90vh] w-full max-w-none rounded-t-2xl p-0 outline-none"
+                        className="flex h-[90vh] w-full max-w-none flex-col rounded-t-2xl p-0 outline-none"
                     >
-                        <SheetHeader className="px-6 py-4 border-b">
-                            <SheetTitle className="text-left font-bold">{view === 'manage' ? `${title} Manager` : title}</SheetTitle>
+                        <SheetHeader className="border-b px-6 py-4">
+                            <SheetTitle className="text-left font-bold">
+                                {view === 'manage' ? `${title} Manager` : title}
+                            </SheetTitle>
                         </SheetHeader>
 
                         <div className="flex-1 overflow-y-auto px-6 py-6">
@@ -427,8 +456,12 @@ export default function CategorySidebar(props: CategorySidebarProps) {
                         </div>
 
                         {view === 'manage' && (
-                            <div className="p-6 border-t bg-muted/20">
-                                <Button type="button" className="w-full h-12 font-bold shadow-lg" onClick={() => setView('browse')}>
+                            <div className="bg-muted/20 border-t p-6">
+                                <Button
+                                    type="button"
+                                    className="h-12 w-full font-bold shadow-lg"
+                                    onClick={() => setView('browse')}
+                                >
                                     Done Managing
                                 </Button>
                             </div>

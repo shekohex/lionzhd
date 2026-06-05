@@ -50,7 +50,7 @@ export function SearchInput({
         per_page: autocompleteData.filters?.per_page ?? defaultPerPage,
         sort_by: 'latest',
     });
-    const query = isControlled ? value ?? '' : (data.q ?? '');
+    const query = isControlled ? (value ?? '') : (data.q ?? '');
     const shouldAutocomplete = !isControlled;
     const debouncedQuery = useDebounce(query, 500);
 

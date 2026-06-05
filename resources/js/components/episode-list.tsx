@@ -103,7 +103,8 @@ export default function EpisodeList({
 
     const [selectedSeason, setSelectedSeason] = useState<number>(seasonNumbers.length > 0 ? seasonNumbers[0] : 0);
     const [selectedEpisodes, setSelectedEpisodes] = useState<SelectedEpisodes>(new SelectedEpisodes());
-    const showServerDownload = serverDownloadVisibility !== 'hidden' && Boolean(onDownloadEpisode || onDownloadSelected);
+    const showServerDownload =
+        serverDownloadVisibility !== 'hidden' && Boolean(onDownloadEpisode || onDownloadSelected);
     const isServerDownloadDisabled = serverDownloadVisibility === 'disabled';
     const showDirectDownload = Boolean(onDirectDownloadEpisode || onDirectDownloadSelected);
 

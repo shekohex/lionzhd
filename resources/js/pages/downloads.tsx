@@ -29,14 +29,16 @@ const parseOwners = (owners: string | null): number[] => {
         return [];
     }
 
-    return [...new Set(
-        owners
-            .split(',')
-            .map((ownerId) => ownerId.trim())
-            .filter((ownerId) => /^\d+$/.test(ownerId))
-            .map((ownerId) => Number(ownerId))
-            .filter((ownerId) => ownerId > 0),
-    )].sort((a, b) => a - b);
+    return [
+        ...new Set(
+            owners
+                .split(',')
+                .map((ownerId) => ownerId.trim())
+                .filter((ownerId) => /^\d+$/.test(ownerId))
+                .map((ownerId) => Number(ownerId))
+                .filter((ownerId) => ownerId > 0),
+        ),
+    ].sort((a, b) => a - b);
 };
 
 const stringifyOwners = (ownerIds: number[]): string | null => {
@@ -225,14 +227,10 @@ export default function Downloads() {
                 payload.return_to = `${DOWNLOADS_PATH}${window.location.search}`;
             }
 
-            router.patch(
-                route('downloads.edit', { model: download.id }),
-                payload,
-                {
-                    preserveScroll: true,
-                    preserveUrl: true,
-                },
-            );
+            router.patch(route('downloads.edit', { model: download.id }), payload, {
+                preserveScroll: true,
+                preserveUrl: true,
+            });
         },
         [canOperate, showReadOnlyToast],
     );
@@ -362,7 +360,7 @@ export default function Downloads() {
                     </div>
                 ) : null}
 
-                <div className="mx-6 mt-3 text-sm text-muted-foreground">
+                <div className="text-muted-foreground mx-6 mt-3 text-sm">
                     Showing {summaryFrom}-{summaryTo} of {downloads.total}
                 </div>
 

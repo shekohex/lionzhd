@@ -73,23 +73,23 @@ export default function Search() {
     const { props } = usePage<FullSearchResult>();
     const [draftQuery, setDraftQuery] = useState(props.filters.q ?? '');
     const [isCommitting, setIsCommitting] = useState(false);
-    const activeMode = props.filters.media_type === 'movie' || props.filters.media_type === 'series' ? props.filters.media_type : 'all';
+    const activeMode =
+        props.filters.media_type === 'movie' || props.filters.media_type === 'series'
+            ? props.filters.media_type
+            : 'all';
 
     useEffect(() => {
         setDraftQuery(props.filters.q ?? '');
     }, [props.filters.q]);
 
     const performSearch = useCallback(
-        (
-            overrides: SearchVisitOverrides = {},
-            options: { preserveScroll?: boolean } = {},
-        ) => {
+        (overrides: SearchVisitOverrides = {}, options: { preserveScroll?: boolean } = {}) => {
             const hasQueryOverride = Object.prototype.hasOwnProperty.call(overrides, 'q');
             const hasMediaTypeOverride = Object.prototype.hasOwnProperty.call(overrides, 'media_type');
             const hasSortByOverride = Object.prototype.hasOwnProperty.call(overrides, 'sort_by');
             const rawQuery = hasQueryOverride ? (overrides.q ?? '') : draftQuery;
             const searchUrl = route('search.full', {
-                q: hasQueryOverride ? rawQuery : (rawQuery.trim() ? rawQuery : undefined),
+                q: hasQueryOverride ? rawQuery : rawQuery.trim() ? rawQuery : undefined,
                 page: overrides.page ?? props.filters.page ?? 1,
                 per_page: props.filters.per_page,
                 media_type: hasMediaTypeOverride ? overrides.media_type : props.filters.media_type,
@@ -215,7 +215,10 @@ export default function Search() {
                                     size="icon"
                                     className="h-4 w-4"
                                     onClick={() =>
-                                        performSearch({ sort_by: 'latest' as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false })
+                                        performSearch(
+                                            { sort_by: 'latest' as App.Enums.SearchSortby, page: 1 },
+                                            { preserveScroll: false },
+                                        )
                                     }
                                 >
                                     <XIcon className="h-3 w-3" />
@@ -240,7 +243,10 @@ export default function Search() {
                                     variant={props.filters.sort_by === 'latest' ? 'default' : 'ghost'}
                                     className="w-full justify-start"
                                     onClick={() =>
-                                        performSearch({ sort_by: 'latest' as App.Enums.SearchSortby, page: 1 }, { preserveScroll: false })
+                                        performSearch(
+                                            { sort_by: 'latest' as App.Enums.SearchSortby, page: 1 },
+                                            { preserveScroll: false },
+                                        )
                                     }
                                 >
                                     Default
@@ -289,25 +295,30 @@ export default function Search() {
                 >
                     <ScrollArea className="h-[calc(100vh-240px)]">
                         <div className="flex flex-col gap-12 pt-4 pb-20">
-                            <div className="mx-auto w-full max-w-7xl" data-search-layout={isFilteredMode ? 'filtered' : 'all'}>
+                            <div
+                                className="mx-auto w-full max-w-7xl"
+                                data-search-layout={isFilteredMode ? 'filtered' : 'all'}
+                            >
                                 {!hasResults && !isCommitting && (
                                     <EmptyState
                                         icon={<SearchIcon className="h-12 w-12" />}
                                         title={
                                             isFilteredMode
-                                                ? (props.filters.q ? filteredEmptyTitle : filteredEntryTitle)
-                                                : (props.filters.q ? 'No results found' : 'Enter a search term')
+                                                ? props.filters.q
+                                                    ? filteredEmptyTitle
+                                                    : filteredEntryTitle
+                                                : props.filters.q
+                                                  ? 'No results found'
+                                                  : 'Enter a search term'
                                         }
                                         description={
                                             isFilteredMode
-                                                ? (
-                                                      props.filters.q
-                                                          ? 'Try editing or clearing your search query.'
-                                                          : 'Enter a search query to search this media type.'
-                                                  )
-                                                : (props.filters.q
-                                                      ? 'Try using different keywords or removing filters'
-                                                      : 'Type something to start searching')
+                                                ? props.filters.q
+                                                    ? 'Try editing or clearing your search query.'
+                                                    : 'Enter a search query to search this media type.'
+                                                : props.filters.q
+                                                  ? 'Try using different keywords or removing filters'
+                                                  : 'Type something to start searching'
                                         }
                                         className="bg-muted/30 py-16"
                                     />
@@ -338,67 +349,81 @@ export default function Search() {
                                                     </p>
                                                     <div className="flex flex-wrap gap-2 text-sm">
                                                         <Badge variant="secondary">Movies: {movieSectionCount}</Badge>
-                                                        <Badge variant="secondary">TV Series: {seriesSectionCount}</Badge>
+                                                        <Badge variant="secondary">
+                                                            TV Series: {seriesSectionCount}
+                                                        </Badge>
                                                     </div>
                                                 </div>
                                             )}
                                         </div>
 
-                                        {(activeMode === 'all' || activeMode === 'movie') && props.movies?.total > 0 && (
-                                            <MediaSection title={isFilteredMode ? filteredModeLabel : 'Movies'}>
-                                                <motion.div
-                                                    className={isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS}
-                                                    variants={container}
-                                                    initial="hidden"
-                                                    animate="show"
-                                                >
-                                                    {props.movies?.data?.map((movie) => (
-                                                        <motion.div key={movie.stream_id} variants={item}>
-                                                            <Link
-                                                                href={route('movies.show', { model: movie.stream_id })}
-                                                            >
-                                                                <MediaCard
-                                                                    title={movie.name}
-                                                                    posterUrl={movie.stream_icon}
-                                                                    rating={movie.rating_5based}
-                                                                />
-                                                            </Link>
-                                                        </motion.div>
-                                                    ))}
-                                                </motion.div>
+                                        {(activeMode === 'all' || activeMode === 'movie') &&
+                                            props.movies?.total > 0 && (
+                                                <MediaSection title={isFilteredMode ? filteredModeLabel : 'Movies'}>
+                                                    <motion.div
+                                                        className={
+                                                            isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS
+                                                        }
+                                                        variants={container}
+                                                        initial="hidden"
+                                                        animate="show"
+                                                    >
+                                                        {props.movies?.data?.map((movie) => (
+                                                            <motion.div key={movie.stream_id} variants={item}>
+                                                                <Link
+                                                                    href={route('movies.show', {
+                                                                        model: movie.stream_id,
+                                                                    })}
+                                                                >
+                                                                    <MediaCard
+                                                                        title={movie.name}
+                                                                        posterUrl={movie.stream_icon}
+                                                                        rating={movie.rating_5based}
+                                                                    />
+                                                                </Link>
+                                                            </motion.div>
+                                                        ))}
+                                                    </motion.div>
+                                                </MediaSection>
+                                            )}
 
-                                            </MediaSection>
-                                        )}
-
-                                        {(activeMode === 'all' || activeMode === 'series') && props.series?.total > 0 && (
-                                            <MediaSection title={isFilteredMode ? filteredModeLabel : 'TV Series'}>
-                                                <motion.div
-                                                    className={isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS}
-                                                    variants={container}
-                                                    initial="hidden"
-                                                    animate="show"
-                                                >
-                                                    {props.series?.data?.map((series) => (
-                                                        <motion.div key={series.series_id} variants={item}>
-                                                            <Link
-                                                                href={route('series.show', { model: series.series_id })}
-                                                            >
-                                                                <MediaCard
-                                                                    title={series.name}
-                                                                    posterUrl={series.cover}
-                                                                    rating={series.rating_5based}
-                                                                />
-                                                            </Link>
-                                                        </motion.div>
-                                                    ))}
-                                                </motion.div>
-
-                                            </MediaSection>
-                                        )}
+                                        {(activeMode === 'all' || activeMode === 'series') &&
+                                            props.series?.total > 0 && (
+                                                <MediaSection title={isFilteredMode ? filteredModeLabel : 'TV Series'}>
+                                                    <motion.div
+                                                        className={
+                                                            isFilteredMode ? FILTERED_GRID_CLASS : MIXED_GRID_CLASS
+                                                        }
+                                                        variants={container}
+                                                        initial="hidden"
+                                                        animate="show"
+                                                    >
+                                                        {props.series?.data?.map((series) => (
+                                                            <motion.div key={series.series_id} variants={item}>
+                                                                <Link
+                                                                    href={route('series.show', {
+                                                                        model: series.series_id,
+                                                                    })}
+                                                                >
+                                                                    <MediaCard
+                                                                        title={series.name}
+                                                                        posterUrl={series.cover}
+                                                                        rating={series.rating_5based}
+                                                                    />
+                                                                </Link>
+                                                            </motion.div>
+                                                        ))}
+                                                    </motion.div>
+                                                </MediaSection>
+                                            )}
 
                                         {sharedPaginationLinks.length > 0 && (
                                             <div className="mt-10 flex justify-center">
-                                                <Pagination links={sharedPaginationLinks} preserveState={true} prefetch={true} />
+                                                <Pagination
+                                                    links={sharedPaginationLinks}
+                                                    preserveState={true}
+                                                    prefetch={true}
+                                                />
                                             </div>
                                         )}
                                     </>

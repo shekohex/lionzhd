@@ -2,7 +2,9 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 
-import ScheduleEditorDialog, { type ScheduleEditorSubmitPayload } from '@/components/auto-episodes/schedule-editor-dialog';
+import ScheduleEditorDialog, {
+    type ScheduleEditorSubmitPayload,
+} from '@/components/auto-episodes/schedule-editor-dialog';
 import HeadingSmall from '@/components/heading-small';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +14,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import type { MonitoringEventFilter, MonitoringSchedulePreset, MonitoringSettingsPageProps } from '@/types/auto-episodes';
+import type {
+    MonitoringEventFilter,
+    MonitoringSchedulePreset,
+    MonitoringSettingsPageProps,
+} from '@/types/auto-episodes';
 import { AlertCircle, CalendarClock, PauseCircle, PlayCircle } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -228,11 +234,13 @@ export default function SchedulesSettings() {
                                         Pause or resume all scheduled monitor runs for your account.
                                     </CardDescription>
                                 </div>
-                                <Badge variant={is_paused ? 'secondary' : 'default'}>{is_paused ? 'Paused' : 'Active'}</Badge>
+                                <Badge variant={is_paused ? 'secondary' : 'default'}>
+                                    {is_paused ? 'Paused' : 'Active'}
+                                </Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-muted-foreground text-sm">
                                 {is_paused
                                     ? `Paused since ${formatDateTime(auto_episodes_paused_at)}`
                                     : 'Automation is active. Scheduled monitor runs continue automatically.'}
@@ -311,7 +319,9 @@ export default function SchedulesSettings() {
                         </CardHeader>
                         <CardContent className="space-y-3">
                             {monitors.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No series monitors yet. Enable monitoring from a series details page.</p>
+                                <p className="text-muted-foreground text-sm">
+                                    No series monitors yet. Enable monitoring from a series details page.
+                                </p>
                             ) : (
                                 monitors.map((monitor) => {
                                     const selected = selectedSeriesIds.includes(monitor.series_id);
@@ -329,18 +339,28 @@ export default function SchedulesSettings() {
                                                 />
                                                 <div className="space-y-1">
                                                     <div className="flex flex-wrap items-center gap-2">
-                                                        <p className="font-medium">{monitor.series_name ?? `Series #${monitor.series_id}`}</p>
+                                                        <p className="font-medium">
+                                                            {monitor.series_name ?? `Series #${monitor.series_id}`}
+                                                        </p>
                                                         <Badge variant={monitor.enabled ? 'default' : 'secondary'}>
                                                             {monitor.enabled ? 'Enabled' : 'Disabled'}
                                                         </Badge>
                                                         {monitor.last_attempt_status ? (
-                                                            <Badge variant={monitor.last_attempt_status === 'failed' ? 'destructive' : 'outline'}>
+                                                            <Badge
+                                                                variant={
+                                                                    monitor.last_attempt_status === 'failed'
+                                                                        ? 'destructive'
+                                                                        : 'outline'
+                                                                }
+                                                            >
                                                                 {monitor.last_attempt_status.replaceAll('_', ' ')}
                                                             </Badge>
                                                         ) : null}
                                                     </div>
-                                                    <p className="text-sm text-muted-foreground">{scheduleSummary(monitor)}</p>
-                                                    <div className="grid gap-1 text-xs text-muted-foreground sm:grid-cols-2 sm:gap-x-4">
+                                                    <p className="text-muted-foreground text-sm">
+                                                        {scheduleSummary(monitor)}
+                                                    </p>
+                                                    <div className="text-muted-foreground grid gap-1 text-xs sm:grid-cols-2 sm:gap-x-4">
                                                         <p>Last run: {formatDateTime(monitor.last_attempt_at)}</p>
                                                         <p>Next run: {formatDateTime(monitor.next_run_at)}</p>
                                                     </div>
@@ -349,7 +369,9 @@ export default function SchedulesSettings() {
 
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <Button type="button" variant="outline" size="sm" asChild>
-                                                    <Link href={route('series.show', { model: monitor.series_id })}>Open series</Link>
+                                                    <Link href={route('series.show', { model: monitor.series_id })}>
+                                                        Open series
+                                                    </Link>
                                                 </Button>
                                                 <Button
                                                     type="button"
@@ -372,7 +394,9 @@ export default function SchedulesSettings() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Recent activity</CardTitle>
-                            <CardDescription>Filter monitor events by result type to inspect queue behavior and errors.</CardDescription>
+                            <CardDescription>
+                                Filter monitor events by result type to inspect queue behavior and errors.
+                            </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex flex-wrap gap-2">
@@ -390,7 +414,7 @@ export default function SchedulesSettings() {
                             </div>
 
                             {filteredEvents.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No events found for this filter.</p>
+                                <p className="text-muted-foreground text-sm">No events found for this filter.</p>
                             ) : (
                                 <div className="space-y-2">
                                     {filteredEvents.map((event) => (
@@ -399,10 +423,14 @@ export default function SchedulesSettings() {
                                                 <Badge variant={event.type === 'error' ? 'destructive' : 'outline'}>
                                                     {event.type}
                                                 </Badge>
-                                                <p className="text-sm font-medium">{event.series_name ?? `Series #${event.series_id ?? 'n/a'}`}</p>
-                                                <p className="text-xs text-muted-foreground">{formatDateTime(event.created_at)}</p>
+                                                <p className="text-sm font-medium">
+                                                    {event.series_name ?? `Series #${event.series_id ?? 'n/a'}`}
+                                                </p>
+                                                <p className="text-muted-foreground text-xs">
+                                                    {formatDateTime(event.created_at)}
+                                                </p>
                                             </div>
-                                            <p className="mt-1 text-sm text-muted-foreground">
+                                            <p className="text-muted-foreground mt-1 text-sm">
                                                 {event.reason ??
                                                     (event.season && event.episode_num
                                                         ? `Season ${event.season}, Episode ${event.episode_num}`

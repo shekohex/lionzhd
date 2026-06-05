@@ -4,8 +4,8 @@ import { cn } from '@/lib/utils';
 import {
     closestCenter,
     DndContext,
-    DragOverlay,
     DragEndEvent,
+    DragOverlay,
     DragStartEvent,
     KeyboardSensor,
     PointerSensor,
@@ -79,8 +79,10 @@ function SortableManageCategoryRow({
                     <button
                         type="button"
                         className={cn(
-                            'rounded-md border p-2 text-muted-foreground transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary',
-                            disabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted hover:text-foreground cursor-grab active:cursor-grabbing',
+                            'text-muted-foreground focus-visible:ring-primary rounded-md border p-2 transition-all duration-200 focus-visible:ring-2',
+                            disabled
+                                ? 'cursor-not-allowed opacity-50'
+                                : 'hover:bg-muted hover:text-foreground cursor-grab active:cursor-grabbing',
                         )}
                         aria-label={`Reorder ${item.name}`}
                         disabled={disabled}
@@ -120,7 +122,9 @@ export function CategorySidebarManage({
 }: CategorySidebarManageProps) {
     const [activeDragItem, setActiveDragItem] = useState<CategorySidebarItem | null>(null);
     const [activeGroup, setActiveGroup] = useState<'pinned' | 'visible' | null>(null);
-    const [isHiddenSectionOpen, setIsHiddenSectionOpen] = useState(hiddenItems.some((item) => item.id === selectedCategory));
+    const [isHiddenSectionOpen, setIsHiddenSectionOpen] = useState(
+        hiddenItems.some((item) => item.id === selectedCategory),
+    );
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -233,13 +237,15 @@ export function CategorySidebarManage({
         return (
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">{title}</p>
-                    <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{items.length}</span>
+                    <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">{title}</p>
+                    <span className="text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 text-[10px] font-medium">
+                        {items.length}
+                    </span>
                 </div>
                 <SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-2">
                         {items.length === 0 ? (
-                            <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+                            <div className="text-muted-foreground rounded-lg border border-dashed p-4 text-center text-xs">
                                 No {title.toLowerCase()} categories
                             </div>
                         ) : (
@@ -267,8 +273,10 @@ export function CategorySidebarManage({
         return (
             <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
-                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Ignored</p>
-                    <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">{ignoredVisibleItems.length}</span>
+                    <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">Ignored</p>
+                    <span className="text-muted-foreground bg-muted rounded-full px-1.5 py-0.5 text-[10px] font-medium">
+                        {ignoredVisibleItems.length}
+                    </span>
                 </div>
                 <div className="space-y-2">
                     {ignoredVisibleItems.map((item) => (
@@ -299,23 +307,24 @@ export function CategorySidebarManage({
             <div className="space-y-6">
                 <div className="space-y-3">
                     {feedback && (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-medium text-amber-800 shadow-sm animate-in fade-in slide-in-from-top-1">
+                        <div className="animate-in fade-in slide-in-from-top-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs font-medium text-amber-800 shadow-sm">
                             {feedback}
                         </div>
                     )}
 
-                    <div className="rounded-xl border bg-gradient-to-b from-muted/30 to-muted/10 p-4 shadow-sm">
+                    <div className="from-muted/30 to-muted/10 rounded-xl border bg-gradient-to-b p-4 shadow-sm">
                         <div className="mb-4 space-y-1">
                             <p className="text-sm font-bold">Preferences</p>
-                            <p className="text-xs leading-relaxed text-muted-foreground">
-                                Pin up to {pinLimit} favorites, hide categories from navigation, or ignore categories from results.
+                            <p className="text-muted-foreground text-xs leading-relaxed">
+                                Pin up to {pinLimit} favorites, hide categories from navigation, or ignore categories
+                                from results.
                             </p>
                         </div>
                         <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="w-full bg-background font-medium h-9"
+                            className="bg-background h-9 w-full font-medium"
                             onClick={onReset}
                             disabled={!categories?.canReset || isSaving}
                         >
@@ -326,8 +335,12 @@ export function CategorySidebarManage({
                 </div>
 
                 <div className="space-y-2 px-1">
-                    <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Fixed Rows</p>
-                    <ManageCategoryRow item={allCategoriesItem} fixedLabel="Always first" active={selectedCategory === null || selectedCategory === allCategoriesItem.id} />
+                    <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">Fixed Rows</p>
+                    <ManageCategoryRow
+                        item={allCategoriesItem}
+                        fixedLabel="Always first"
+                        active={selectedCategory === null || selectedCategory === allCategoriesItem.id}
+                    />
                 </div>
 
                 <div className="space-y-5">
@@ -338,7 +351,9 @@ export function CategorySidebarManage({
 
                 {uncategorizedItem && (
                     <div className="space-y-2 px-1">
-                        <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">Fixed Footer</p>
+                        <p className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
+                            Fixed Footer
+                        </p>
                         <ManageCategoryRow
                             item={uncategorizedItem}
                             fixedLabel="Always last"
@@ -348,8 +363,12 @@ export function CategorySidebarManage({
                     </div>
                 )}
 
-                <Collapsible open={isHiddenSectionOpen} onOpenChange={setIsHiddenSectionOpen} className="group/collapsible">
-                    <div className="rounded-xl border transition-colors hover:border-muted-foreground/20">
+                <Collapsible
+                    open={isHiddenSectionOpen}
+                    onOpenChange={setIsHiddenSectionOpen}
+                    className="group/collapsible"
+                >
+                    <div className="hover:border-muted-foreground/20 rounded-xl border transition-colors">
                         <CollapsibleTrigger asChild>
                             <button
                                 type="button"
@@ -357,15 +376,23 @@ export function CategorySidebarManage({
                             >
                                 <span className="flex items-center gap-2">
                                     Hidden Categories
-                                    <span className="bg-muted px-2 py-0.5 rounded-full text-[10px] font-medium text-muted-foreground">{hiddenItems.length}</span>
+                                    <span className="bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-[10px] font-medium">
+                                        {hiddenItems.length}
+                                    </span>
                                 </span>
-                                {isHiddenSectionOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                                {isHiddenSectionOpen ? (
+                                    <ChevronUp className="text-muted-foreground h-4 w-4" />
+                                ) : (
+                                    <ChevronDown className="text-muted-foreground h-4 w-4" />
+                                )}
                             </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                            <div className="space-y-2 border-t bg-muted/5 px-3 py-3 animate-in fade-in slide-in-from-top-1">
+                            <div className="bg-muted/5 animate-in fade-in slide-in-from-top-1 space-y-2 border-t px-3 py-3">
                                 {hiddenItems.length === 0 ? (
-                                    <p className="py-2 text-center text-xs text-muted-foreground italic">No hidden categories.</p>
+                                    <p className="text-muted-foreground py-2 text-center text-xs italic">
+                                        No hidden categories.
+                                    </p>
                                 ) : (
                                     hiddenItems.map((item) => (
                                         <ManageCategoryRow
@@ -383,7 +410,7 @@ export function CategorySidebarManage({
                 </Collapsible>
 
                 {!isMobile && (
-                    <Button type="button" className="w-full h-10 font-bold shadow-md" onClick={onDone}>
+                    <Button type="button" className="h-10 w-full font-bold shadow-md" onClick={onDone}>
                         Save & Exit
                     </Button>
                 )}
@@ -391,7 +418,7 @@ export function CategorySidebarManage({
 
             <DragOverlay>
                 {activeDragItem ? (
-                    <div className="w-64 rounded-md opacity-90 shadow-2xl ring-2 ring-primary/20">
+                    <div className="ring-primary/20 w-64 rounded-md opacity-90 shadow-2xl ring-2">
                         <ManageCategoryRow item={activeDragItem} active />
                     </div>
                 ) : null}

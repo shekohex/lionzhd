@@ -99,7 +99,11 @@ export default function Welcome() {
 
                             <nav className="relative z-50 space-x-2 rounded-full bg-black/30 p-1 backdrop-blur-md">
                                 {isAuthenticated ? (
-                                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
+                                    <Button
+                                        asChild
+                                        size="lg"
+                                        className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40"
+                                    >
                                         <Link href={route('discover')} className="text-primary-foreground">
                                             Discover
                                         </Link>
@@ -110,13 +114,17 @@ export default function Welcome() {
                                             asChild
                                             size="lg"
                                             variant="secondary"
-                                            className="gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:border-border dark:bg-white/10 dark:text-primary dark:hover:bg-white/20"
+                                            className="dark:border-border dark:text-primary gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:bg-white/10 dark:hover:bg-white/20"
                                         >
-                                            <Link href={route('login')} className="text-white dark:text-primary">
+                                            <Link href={route('login')} className="dark:text-primary text-white">
                                                 Log in
                                             </Link>
                                         </Button>
-                                        <Button asChild size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
+                                        <Button
+                                            asChild
+                                            size="lg"
+                                            className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40"
+                                        >
                                             <Link href={route('register')} className="text-primary-foreground">
                                                 Register
                                             </Link>
@@ -136,7 +144,7 @@ export default function Welcome() {
                                 transition={{ delay: 0.2, duration: 0.8 }}
                             >
                                 <TextScramble
-                                    className="mb-2 font-mono text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] dark:text-primary"
+                                    className="dark:text-primary mb-2 font-mono text-lg tracking-widest text-white uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
                                     as="p"
                                     speed={0.01}
                                     trigger={isTrigger}
@@ -146,11 +154,11 @@ export default function Welcome() {
                                     Unlimited Entertainment
                                 </TextScramble>
 
-                                <h1 className="mb-6 text-4xl leading-tight font-bold text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)] md:text-5xl lg:text-6xl dark:text-primary">
+                                <h1 className="dark:text-primary mb-6 text-4xl leading-tight font-bold text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.75)] md:text-5xl lg:text-6xl">
                                     {featuredMedia[activeBg].name}
                                 </h1>
 
-                                <div className="mb-4 flex items-center gap-4 text-sm text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)] dark:text-muted-foreground">
+                                <div className="dark:text-muted-foreground mb-4 flex items-center gap-4 text-sm text-white/85 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)]">
                                     <span>{featuredMedia[activeBg].year ?? 'N/A'}</span>
                                     <span className="flex items-center">
                                         <Star className="mr-1 h-4 w-4 text-yellow-500" />
@@ -158,12 +166,15 @@ export default function Welcome() {
                                     </span>
                                 </div>
 
-                                <p className="mb-8 max-w-lg text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)] dark:text-muted-foreground">
+                                <p className="dark:text-muted-foreground mb-8 max-w-lg text-white/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)]">
                                     {featuredMedia[activeBg].description}
                                 </p>
 
                                 <div className="flex flex-wrap gap-4">
-                                    <Button size="lg" className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40">
+                                    <Button
+                                        size="lg"
+                                        className="bg-primary hover:bg-primary/90 gap-2 shadow-lg shadow-black/40"
+                                    >
                                         <PlayCircle className="h-5 w-5" />
                                         <Link
                                             href={
@@ -180,10 +191,10 @@ export default function Welcome() {
                                     <Button
                                         size="lg"
                                         variant="outline"
-                                        className="gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:border-border dark:bg-white/10 dark:text-primary dark:hover:bg-white/20"
+                                        className="dark:border-border dark:text-primary gap-2 border-white/40 bg-black/40 text-white shadow-lg shadow-black/40 backdrop-blur-md hover:bg-black/55 dark:bg-white/10 dark:hover:bg-white/20"
                                     >
                                         <SearchIcon className="h-5 w-5" />
-                                        <Link href={route('discover')} className="text-white dark:text-primary">
+                                        <Link href={route('discover')} className="dark:text-primary text-white">
                                             Explore Library
                                         </Link>
                                     </Button>

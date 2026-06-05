@@ -12,11 +12,14 @@ use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\Response;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -65,6 +68,10 @@ final class AppServiceProvider extends ServiceProvider
 
         // Better to disable destructive commands in production
         DB::prohibitDestructiveCommands(app()->isProduction());
+
+        RateLimiter::for('api', static fn (Request $request): Limit => Limit::perMinute(120)->by(
+            $request->user()?->getAuthIdentifier() ?: $request->ip()
+        ));
 
         Gate::define('admin', static fn (User $user): Response => $user->role === UserRole::Admin
             ? Response::allow()

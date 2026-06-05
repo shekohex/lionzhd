@@ -28,11 +28,11 @@ export default function Forbidden({ reason = 'Forbidden', message = 'Forbidden' 
                 </div>
 
                 <div className="rounded-lg border p-4">
-                    <p className="text-sm text-muted-foreground">Reason</p>
+                    <p className="text-muted-foreground text-sm">Reason</p>
                     <p className="mt-2 font-medium">{reason}</p>
                 </div>
 
-                <p className="text-sm text-muted-foreground">Contact your super-admin to request access.</p>
+                <p className="text-muted-foreground text-sm">Contact your super-admin to request access.</p>
 
                 <div className="flex items-center gap-3">
                     <Button type="button" variant="outline" onClick={() => window.history.back()}>

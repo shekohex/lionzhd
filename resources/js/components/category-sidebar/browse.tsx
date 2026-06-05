@@ -50,11 +50,11 @@ export function CategorySidebarBrowse({
         const buttonClassName = cn(
             'group flex w-full items-start gap-2 rounded-md border px-3 py-2 text-left text-sm transition-all duration-200',
             isSelected
-                ? 'border-primary/50 bg-primary/5 text-primary ring-1 ring-primary/20'
+                ? 'border-primary/50 bg-primary/5 text-primary ring-primary/20 ring-1'
                 : item.isIgnored
-                    ? 'border-border/70 bg-muted/25 text-muted-foreground hover:border-border hover:bg-muted/40'
-                    : 'border-transparent hover:border-border hover:bg-muted/80',
-            !item.canNavigate && 'cursor-not-allowed text-muted-foreground opacity-60',
+                  ? 'border-border/70 bg-muted/25 text-muted-foreground hover:border-border hover:bg-muted/40'
+                  : 'hover:border-border hover:bg-muted/80 border-transparent',
+            !item.canNavigate && 'text-muted-foreground cursor-not-allowed opacity-60',
         );
 
         if (item.canNavigate) {
@@ -62,7 +62,7 @@ export function CategorySidebarBrowse({
                 <button type="button" className={buttonClassName} onClick={onSelect}>
                     <span
                         className={cn(
-                            'block whitespace-normal break-words font-medium leading-5',
+                            'block leading-5 font-medium break-words whitespace-normal',
                             item.isIgnored && !isSelected && 'text-muted-foreground',
                         )}
                     >
@@ -77,7 +77,9 @@ export function CategorySidebarBrowse({
                 <TooltipTrigger asChild>
                     <span className="block" tabIndex={0}>
                         <button type="button" className={buttonClassName} disabled>
-                            <span className="block whitespace-normal break-words font-medium leading-5">{item.name}</span>
+                            <span className="block leading-5 font-medium break-words whitespace-normal">
+                                {item.name}
+                            </span>
                         </button>
                     </span>
                 </TooltipTrigger>
@@ -95,7 +97,7 @@ export function CategorySidebarBrowse({
                     {renderNavigationButton(item, () => onSelectCategory(isSelected ? null : item.id))}
                 </div>
                 {item.canEdit && !isMobile && (
-                    <div className="flex items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/row:opacity-100 pt-0.5">
+                    <div className="flex items-center gap-1 pt-0.5 opacity-0 transition-opacity group-hover/row:opacity-100 focus-within:opacity-100">
                         {item.isIgnored ? (
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -122,7 +124,11 @@ export function CategorySidebarBrowse({
                                             disabled={isSaving}
                                             aria-label={item.isPinned ? `Unpin ${item.name}` : `Pin ${item.name}`}
                                         >
-                                            {item.isPinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
+                                            {item.isPinned ? (
+                                                <PinOff className="h-3.5 w-3.5" />
+                                            ) : (
+                                                <Pin className="h-3.5 w-3.5" />
+                                            )}
                                         </button>
                                     </TooltipTrigger>
                                     <TooltipContent>{item.isPinned ? 'Unpin category' : 'Pin category'}</TooltipContent>
@@ -165,8 +171,8 @@ export function CategorySidebarBrowse({
 
     if (error) {
         return (
-            <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-center">
-                <p className="mb-3 text-sm font-medium text-destructive">{error}</p>
+            <div className="border-destructive/20 bg-destructive/5 rounded-lg border p-4 text-center">
+                <p className="text-destructive mb-3 text-sm font-medium">{error}</p>
                 <Button type="button" size="sm" variant="outline" className="w-full" onClick={onRetryCategories}>
                     Retry categories
                 </Button>
@@ -192,10 +198,10 @@ export function CategorySidebarBrowse({
     return (
         <div className="space-y-4">
             {canManage && (
-                <div className="group relative flex items-center justify-between rounded-lg border bg-muted/30 p-3 transition-colors hover:bg-muted/50">
+                <div className="group bg-muted/30 hover:bg-muted/50 relative flex items-center justify-between rounded-lg border p-3 transition-colors">
                     <div className="min-w-0 flex-1 pr-2">
                         <p className="text-sm font-semibold">Custom View</p>
-                        <p className="text-xs text-muted-foreground">Adjust categories to your preference.</p>
+                        <p className="text-muted-foreground text-xs">Adjust categories to your preference.</p>
                     </div>
                     <Button
                         type="button"

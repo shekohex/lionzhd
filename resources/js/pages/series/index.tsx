@@ -1,13 +1,13 @@
+import CategorySidebar from '@/components/category-sidebar';
 import EmptyState from '@/components/empty-state';
 import MediaCard from '@/components/media-card';
-import CategorySidebar from '@/components/category-sidebar';
 import MediaSection from '@/components/media-section';
 import { Button } from '@/components/ui/button';
 import { DualPagination } from '@/components/ui/enhanced-pagination';
+import { useCategoryBrowser } from '@/hooks/use-category-browser';
 import { useElementHeight } from '@/hooks/use-element-height';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useCategoryBrowser } from '@/hooks/use-category-browser';
 import { useResizableSidebar } from '@/hooks/use-resizable-sidebar';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
@@ -15,8 +15,8 @@ import { SeriesPageProps } from '@/types/series';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { GripVertical, TvIcon } from 'lucide-react';
-import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 import { useRef } from 'react';
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary';
 
 const container = {
     hidden: { opacity: 0 },
@@ -284,8 +284,8 @@ export default function Series() {
     };
 
     const categoryHiddenBanner = categories.selectedCategoryIsHidden ? (
-        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3.5 text-sm text-amber-900 shadow-sm backdrop-blur-sm animate-in fade-in slide-in-from-top-2">
-            <p className="font-semibold mb-0.5">Hidden Category Active</p>
+        <div className="animate-in fade-in slide-in-from-top-2 mb-4 rounded-xl border border-amber-200 bg-amber-50/50 px-4 py-3.5 text-sm text-amber-900 shadow-sm backdrop-blur-sm">
+            <p className="mb-0.5 font-semibold">Hidden Category Active</p>
             <p className="opacity-80">
                 {categories.selectedCategoryName
                     ? `"${categories.selectedCategoryName}" is currently hidden. Results stay visible until you switch categories or unhide it.`
@@ -359,17 +359,17 @@ export default function Series() {
                                 aria-orientation="vertical"
                                 onPointerDown={startResizing}
                                 onDoubleClick={resetWidth}
-                                className="group relative flex w-6 shrink-0 cursor-col-resize touch-none select-none self-stretch items-center justify-center"
+                                className="group relative flex w-6 shrink-0 cursor-col-resize touch-none items-center justify-center self-stretch select-none"
                             >
                                 <div
                                     className={
                                         isResizing
-                                            ? 'absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full bg-primary/80'
-                                            : 'absolute inset-y-0 left-1/2 w-px -translate-x-1/2 rounded-full bg-border/80 transition-colors group-hover:w-1 group-hover:bg-primary/70'
+                                            ? 'bg-primary/80 absolute inset-y-0 left-1/2 w-1 -translate-x-1/2 rounded-full'
+                                            : 'bg-border/80 group-hover:bg-primary/70 absolute inset-y-0 left-1/2 w-px -translate-x-1/2 rounded-full transition-colors group-hover:w-1'
                                     }
                                 />
-                                <div className="z-10 flex h-12 w-5 items-center justify-center rounded-full border bg-background shadow-md ring-1 ring-border/70 transition-all group-hover:scale-110 group-hover:bg-accent group-active:scale-95">
-                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                <div className="bg-background ring-border/70 group-hover:bg-accent z-10 flex h-12 w-5 items-center justify-center rounded-full border shadow-md ring-1 transition-all group-hover:scale-110 group-active:scale-95">
+                                    <GripVertical className="text-muted-foreground h-4 w-4" />
                                 </div>
                             </div>
                             <div className="min-w-0 flex-1 self-stretch pl-2">

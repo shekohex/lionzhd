@@ -90,7 +90,13 @@ export function buildCategorySearchResults(args: {
                 return [];
             }
 
-            return [{ item, score, segments: buildCategorySearchSegments(item.name, normalizedQuery) } satisfies CategorySidebarSearchResult];
+            return [
+                {
+                    item,
+                    score,
+                    segments: buildCategorySearchSegments(item.name, normalizedQuery),
+                } satisfies CategorySidebarSearchResult,
+            ];
         });
 
     return results.sort((left, right) => {
@@ -123,7 +129,7 @@ export function CategorySidebarSearchResults({
     onClear,
 }: CategorySidebarSearchResultsProps) {
     return (
-        <Command loop shouldFilter={false} className={cn('rounded-lg border bg-background', className)}>
+        <Command loop shouldFilter={false} className={cn('bg-background rounded-lg border', className)}>
             <CommandInput value={query} onValueChange={onQueryChange} placeholder={placeholder} />
             {showResults && (
                 <CommandList>
@@ -131,7 +137,7 @@ export function CategorySidebarSearchResults({
                         <div className="space-y-3 px-4 py-6 text-center">
                             <div className="space-y-1">
                                 <p className="text-sm font-semibold">{emptyTitle}</p>
-                                <p className="text-xs text-muted-foreground">{emptyDescription}</p>
+                                <p className="text-muted-foreground text-xs">{emptyDescription}</p>
                             </div>
                             <Button type="button" variant="outline" size="sm" onClick={onClear}>
                                 Clear search
@@ -139,16 +145,29 @@ export function CategorySidebarSearchResults({
                         </div>
                     </CommandEmpty>
                     {results.map((result) => (
-                        <CommandItem key={result.item.id} value={result.item.id} keywords={[normalizeCategorySearchQuery(result.item.name)]} onSelect={() => onSelectCategory(result.item.id)}>
+                        <CommandItem
+                            key={result.item.id}
+                            value={result.item.id}
+                            keywords={[normalizeCategorySearchQuery(result.item.name)]}
+                            onSelect={() => onSelectCategory(result.item.id)}
+                        >
                             <div className="flex w-full items-start justify-between gap-3">
                                 <div className="min-w-0 text-left text-sm leading-5">
                                     {result.segments.map((segment, index) => (
                                         <Fragment key={`${result.item.id}-${index}`}>
-                                            {segment.matched ? <span className="font-semibold text-foreground">{segment.text}</span> : <span className="text-muted-foreground">{segment.text}</span>}
+                                            {segment.matched ? (
+                                                <span className="text-foreground font-semibold">{segment.text}</span>
+                                            ) : (
+                                                <span className="text-muted-foreground">{segment.text}</span>
+                                            )}
                                         </Fragment>
                                     ))}
                                 </div>
-                                {result.item.isIgnored && <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Ignored</span>}
+                                {result.item.isIgnored && (
+                                    <span className="bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase">
+                                        Ignored
+                                    </span>
+                                )}
                             </div>
                         </CommandItem>
                     ))}
@@ -249,7 +268,10 @@ function scoreCategorySearchResult(normalizedQuery: string, label: string): numb
         }
     }
 
-    const subsequenceScore = scoreSubsequenceMatch(normalizedQuery.replaceAll(' ', ''), normalizedLabel.replaceAll(' ', ''));
+    const subsequenceScore = scoreSubsequenceMatch(
+        normalizedQuery.replaceAll(' ', ''),
+        normalizedLabel.replaceAll(' ', ''),
+    );
 
     if (subsequenceScore === null && score === 0) {
         return null;

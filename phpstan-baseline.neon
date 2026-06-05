@@ -1,0 +1,181 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Result of method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:handle\(\) \(void\) is used\.$#'
+			identifier: method.void
+			count: 2
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_hidden" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/BuildPersonalizedCategorySidebar.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_ignored" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/BuildPersonalizedCategorySidebar.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sort_order" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/BuildPersonalizedCategorySidebar.php
+
+		-
+			message: '#^Anonymous function never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Actions/Downloads/CancelDownload.php
+
+		-
+			message: '#^Anonymous function never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Actions/Downloads/RetryDownload.php
+
+		-
+			message: '#^Result of callable \$this\(App\\Actions\\SaveUserCategoryPreferences\) \(void\) is used\.$#'
+			identifier: callable.void
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>created_at" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Parameter &\$summary by\-ref type of method App\\Actions\\SyncCategories\:\:cleanupMissingCategories\(\) expects array\{created\: int, updated\: int, removed\: int, moved_to_uncategorized_vod\: int, moved_to_uncategorized_series\: int, remapped_from_uncategorized_vod\: int, remapped_from_uncategorized_series\: int\}, array\{created\: int, updated\: int, removed\: \(float\|int\), moved_to_uncategorized_vod\: int, moved_to_uncategorized_series\: int, remapped_from_uncategorized_vod\: int, remapped_from_uncategorized_series\: int\} given\.$#'
+			identifier: parameterByRef.type
+			count: 1
+			path: app/Actions/SyncCategories.php
+
+		-
+			message: '#^Result of callable \$this\(App\\Actions\\SyncMedia\) \(void\) is used\.$#'
+			identifier: callable.void
+			count: 1
+			path: app/Actions/SyncMedia.php
+
+		-
+			message: '#^Result of static method App\\Actions\\SyncMedia\:\:run\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 1
+			path: app/Actions/SyncMedia.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Series\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Data/AutoEpisodes/SeriesMonitorData.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\AutoEpisodes\\SeriesMonitor\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Data/AutoEpisodes/SeriesMonitorEventData.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Series\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Data/AutoEpisodes/SeriesMonitorEventData.php
+
+		-
+			message: '#^Offset 1 on array\{string, non\-falsy\-string, non\-empty\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Data/SearchMediaData.php
+
+		-
+			message: '#^Offset 2 on array\{string, non\-falsy\-string, non\-empty\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Data/SearchMediaData.php
+
+		-
+			message: '#^Parameter \#1 of closure expects Illuminate\\Pagination\\LengthAwarePaginator&iterable\<TModel of Illuminate\\Database\\Eloquent\\Model\>, Illuminate\\Pagination\\LengthAwarePaginator\<\(int\|string\), array\<string, mixed\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filters/LightweightSearchFilter.php
+
+		-
+			message: '#^Parameter \#1 of closure expects Illuminate\\Pagination\\LengthAwarePaginator&iterable\<TModel of Illuminate\\Database\\Eloquent\\Model\>, Illuminate\\Contracts\\Pagination\\LengthAwarePaginator given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Filters/PaginatorFilter.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/AutoEpisodes/BulkApplySeriesMonitoringPresetController.php
+
+		-
+			message: '#^Parameter \#1 \$movies of class App\\Data\\LightweightSearchData constructor expects Illuminate\\Pagination\\LengthAwarePaginator&iterable\<App\\Data\\VodStreamData\>, array\<App\\Data\\VodStreamData\>\|Illuminate\\Contracts\\Pagination\\CursorPaginator\|Illuminate\\Contracts\\Pagination\\Paginator\|Illuminate\\Pagination\\AbstractCursorPaginator\|Illuminate\\Pagination\\AbstractPaginator\|Illuminate\\Support\\Enumerable\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\CursorPaginatedDataCollection\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\DataCollection\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\PaginatedDataCollection\<\(int\|string\), App\\Data\\VodStreamData\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/LightweightSearchController.php
+
+		-
+			message: '#^Parameter \#2 \$series of class App\\Data\\LightweightSearchData constructor expects Illuminate\\Pagination\\LengthAwarePaginator&iterable\<App\\Data\\SeriesData\>, array\<App\\Data\\SeriesData\>\|Illuminate\\Contracts\\Pagination\\CursorPaginator\|Illuminate\\Contracts\\Pagination\\Paginator\|Illuminate\\Pagination\\AbstractCursorPaginator\|Illuminate\\Pagination\\AbstractPaginator\|Illuminate\\Support\\Enumerable\<\(int\|string\), App\\Data\\SeriesData\>\|Spatie\\LaravelData\\CursorPaginatedDataCollection\<\(int\|string\), App\\Data\\SeriesData\>\|Spatie\\LaravelData\\DataCollection\<\(int\|string\), App\\Data\\SeriesData\>\|Spatie\\LaravelData\\PaginatedDataCollection\<\(int\|string\), App\\Data\\SeriesData\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/LightweightSearchController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\CarbonImmutable\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Settings/CategorySyncRunsController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_super_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Settings/UsersController.php
+
+		-
+			message: '#^Property App\\Http\\Integrations\\Aria2\\Requests\\JsonRpcRequest\:\:\$params on left side of \?\? is not nullable nor uninitialized\.$#'
+			identifier: nullCoalesce.initializedProperty
+			count: 1
+			path: app/Http/Integrations/Aria2/Requests/JsonRpcRequest.php
+
+		-
+			message: '#^Method App\\Models\\Aria2Config\:\:firstOrFromEnv\(\) should return App\\Models\\Aria2Config but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Aria2Config.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type ''App\\\\Models\\\\Aria2Config''\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Models/Aria2Config.php
+
+		-
+			message: '#^Method App\\Models\\XtreamCodesConfig\:\:firstOrFromEnv\(\) should return App\\Models\\XtreamCodesConfig but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/XtreamCodesConfig.php
+
+		-
+			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type ''App\\\\Models\\\\XtreamCodesConfig''\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: app/Models/XtreamCodesConfig.php
+
+		-
+			message: '#^Return type \(array\<string, mixed\>\) of method Database\\Factories\\UserFactory\:\:definition\(\) should be compatible with return type \(array\<model property of App\\Models\\User, mixed\>\) of method Illuminate\\Database\\Eloquent\\Factories\\Factory\<App\\Models\\User\>\:\:definition\(\)$#'
+			identifier: method.childReturnType
+			count: 1
+			path: database/factories/UserFactory.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: string$#'
+			identifier: match.unhandled
+			count: 3
+			path: database/migrations/2025_04_07_223007_create_pulse_tables.php

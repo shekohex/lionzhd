@@ -235,12 +235,12 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 - Cache clearing reuses existing `SeriesCacheController::destroy` logic
 
 **Acceptance Criteria**
-- [ ] Series detail includes episodes/seasons via `?include=episodes`
-- [ ] Batch download accepts episode selection payload
-- [ ] Direct link endpoints return signed URLs
-- [ ] Cache clearing respects `can:admin` gate
-- [ ] All endpoints reuse existing Actions/Policies
-- [ ] Pest tests for all paths
+- [x] Series detail includes episodes/seasons via `?include=episodes`
+- [x] Batch download accepts episode selection payload
+- [x] Direct link endpoints return signed URLs
+- [x] Cache clearing respects `can:admin` gate
+- [x] All endpoints reuse existing Actions/Policies
+- [x] Pest tests for all paths
 
 ---
 
@@ -260,10 +260,10 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 | DELETE | `/api/v1/watchlist/{id}` | Remove item |
 
 **Acceptance Criteria**
-- [ ] Watchlist entries include polymorphic relationship to movie/series
-- [ ] POST validates `media_type` (`movie` or `series`) and `media_id`
-- [ ] Returns proper JSON:API relationship data
-- [ ] Pest tests
+- [x] Watchlist entries include polymorphic relationship to movie/series
+- [x] POST validates `media_type` (`movie` or `series`) and `media_id`
+- [x] Returns proper JSON:API relationship data
+- [x] Pest tests
 
 ---
 
@@ -290,11 +290,11 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 - `cancel` supports optional `delete_partial` flag
 
 **Acceptance Criteria**
-- [ ] List returns `MediaDownloadRefData` via `JsonApiResource` with real-time aria2 status
-- [ ] Admin sees `ownerOptions` and can filter by `?owners=`
-- [ ] Update supports all action types with proper validation
-- [ ] Destroy respects `can:download-operations` with model binding
-- [ ] Pest tests
+- [x] List returns `MediaDownloadRefData` via `JsonApiResource` with real-time aria2 status
+- [x] Admin sees `ownerOptions` and can filter by `?owners=`
+- [x] Update supports all action types with proper validation
+- [x] Destroy respects `can:download-operations` with model binding
+- [x] Pest tests
 
 ---
 

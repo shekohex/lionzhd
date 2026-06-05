@@ -125,3 +125,20 @@ it('documents action resources and json api error media types in openapi', funct
     expect($document['components']['responses']['AuthorizationException']['content']['application/vnd.api+json']['schema']['properties']['errors']['type'])->toBe('array')
         ->and($document['components']['responses']['ModelNotFoundException']['content']['application/vnd.api+json']['schema']['properties']['errors']['type'])->toBe('array');
 });
+
+it('documents movie detail include contract and vod info response schema', function (): void {
+    $document = $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.vod_info.type', ['object', 'null'])
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.vod_info.properties.vodId.type', 'integer')
+        ->json();
+
+    $parameters = collect($document['paths']['/movies/{movie}']['get']['parameters']);
+
+    expect($parameters->pluck('name')->all())->toContain('include')
+        ->not->toContain('category')
+        ->not->toContain('page[number]')
+        ->not->toContain('page[size]');
+
+    expect($parameters->firstWhere('name', 'include')['schema']['enum'])->toBe(['vod-info']);
+});

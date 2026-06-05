@@ -24,7 +24,10 @@ final class AcceptJsonApi
         }
 
         $response = $next($request);
-        $response->headers->set('Content-Type', 'application/vnd.api+json');
+
+        if ($response->headers->get('Content-Type') === null || str_starts_with((string) $response->headers->get('Content-Type'), 'application/json')) {
+            $response->headers->set('Content-Type', 'application/vnd.api+json');
+        }
 
         return $response;
     }

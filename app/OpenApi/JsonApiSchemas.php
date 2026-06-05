@@ -65,6 +65,12 @@ final class JsonApiSchemas
             'url' => (new StringType)->nullable(true),
             'expires_in_seconds' => (new IntegerType)->nullable(true),
             'status' => (new StringType)->nullable(true),
+            'gids' => (new ArrayType)->setItems(new StringType),
+            'count' => (new IntegerType)->nullable(true),
+            'series_id' => (new IntegerType)->nullable(true),
+            'season' => (new IntegerType)->nullable(true),
+            'episode' => (new IntegerType)->nullable(true),
+            'episode_id' => (new StringType)->nullable(true),
         ])->addProperty('type', new StringType);
     }
 
@@ -171,7 +177,38 @@ final class JsonApiSchemas
             'direct_source' => (new StringType)->nullable(true),
             'created_at' => (new StringType)->format('date-time'),
             'updated_at' => (new StringType)->format('date-time'),
+            'vod_info' => self::vodInfoAttributes()->nullable(true),
         ];
+    }
+
+    private static function vodInfoAttributes(): ObjectType
+    {
+        return (new ObjectType)
+            ->addProperty('vodId', new IntegerType)
+            ->addProperty('movieImage', new StringType)
+            ->addProperty('tmdbId', new StringType)
+            ->addProperty('backdrop', new StringType)
+            ->addProperty('youtubeTrailer', new StringType)
+            ->addProperty('genre', new StringType)
+            ->addProperty('plot', new StringType)
+            ->addProperty('cast', new StringType)
+            ->addProperty('rating', new StringType)
+            ->addProperty('director', new StringType)
+            ->addProperty('releaseDate', new StringType)
+            ->addProperty('backdropPath', (new ArrayType)->setItems(new StringType))
+            ->addProperty('durationSecs', new IntegerType)
+            ->addProperty('duration', new StringType)
+            ->addProperty('video', new ObjectType)
+            ->addProperty('audio', new ObjectType)
+            ->addProperty('bitrate', new IntegerType)
+            ->addProperty('movie', (new ObjectType)
+                ->addProperty('streamId', new IntegerType)
+                ->addProperty('name', new StringType)
+                ->addProperty('added', new StringType)
+                ->addProperty('categoryId', new StringType)
+                ->addProperty('containerExtension', new StringType)
+                ->addProperty('customSid', new StringType)
+                ->addProperty('directSource', new StringType));
     }
 
     /**
@@ -196,6 +233,8 @@ final class JsonApiSchemas
             'rating_5based' => (new NumberType)->nullable(true),
             'created_at' => (new StringType)->format('date-time'),
             'updated_at' => (new StringType)->format('date-time'),
+            'seasons' => (new ArrayType)->setItems(new StringType)->nullable(true),
+            'episodes' => (new ObjectType)->nullable(true),
         ];
     }
 }

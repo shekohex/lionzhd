@@ -162,6 +162,26 @@ it('includes vod info for movie detail when requested', function (): void {
         ->assertJsonPath('data.attributes.vod_info.movie.name', 'Extended Movie');
 });
 
+it('validates movie detail include without inheriting list query validation', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    createMovie(['stream_id' => 71, 'name' => 'Contract Movie']);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies/71?category=missing&page[size]=not-a-number', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'movies')
+        ->assertJsonPath('data.id', '71');
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies/71?include=episodes', ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '422')
+        ->assertJsonPath('errors.0.source.parameter', 'include');
+});
+
 it('adds and removes a movie from the authenticated users watchlist', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

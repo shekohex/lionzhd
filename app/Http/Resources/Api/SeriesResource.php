@@ -37,7 +37,9 @@ final class SeriesResource extends JsonApiResource
      *     rating: mixed,
      *     rating_5based: mixed,
      *     created_at: mixed,
-     *     updated_at: mixed
+     *     updated_at: mixed,
+     *     seasons?: array<string>,
+     *     episodes?: array<string, mixed>
      * }
      */
     public function toAttributes(Request $request): array
@@ -61,6 +63,33 @@ final class SeriesResource extends JsonApiResource
             'rating_5based' => $series->rating_5based,
             'created_at' => $series->created_at,
             'updated_at' => $series->updated_at,
+            ...$this->episodesAttributes(),
+        ];
+    }
+
+    /**
+     * @return array{seasons: array<int, string>, episodes: array<string, mixed>}|array{}
+     */
+    private function episodesAttributes(): array
+    {
+        $attributes = $this->series()->getAttributes();
+
+        if (! array_key_exists('api_series_seasons', $attributes) || ! array_key_exists('api_series_episodes', $attributes)) {
+            return [];
+        }
+
+        $seasons = $attributes['api_series_seasons'];
+        $episodes = $attributes['api_series_episodes'];
+
+        if (! is_array($seasons) || ! is_array($episodes)) {
+            return [];
+        }
+
+        /** @var array<int, string> $seasons */
+        /** @var array<string, mixed> $episodes */
+        return [
+            'seasons' => $seasons,
+            'episodes' => $episodes,
         ];
     }
 

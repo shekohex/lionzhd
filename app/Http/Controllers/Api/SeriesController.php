@@ -6,29 +6,29 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\MediaType;
 use App\Http\Controllers\Controller;
-use App\Http\Integrations\LionzTv\Requests\GetVodInfoRequest;
+use App\Http\Integrations\LionzTv\Requests\GetSeriesInfoRequest;
 use App\Http\Integrations\LionzTv\XtreamCodesConnector;
-use App\Http\Requests\Api\ListMoviesRequest;
-use App\Http\Requests\Api\ShowMovieRequest;
-use App\Http\Resources\Api\MovieResource;
+use App\Http\Requests\Api\ListSeriesRequest;
+use App\Http\Requests\Api\ShowSeriesRequest;
+use App\Http\Resources\Api\SeriesResource;
 use App\Models\Category;
+use App\Models\Series;
 use App\Models\User;
 use App\Models\UserCategoryPreference;
-use App\Models\VodStream;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
 
-final class MoviesController extends Controller
+final class SeriesController extends Controller
 {
-    public function index(ListMoviesRequest $request, #[CurrentUser] User $user): AnonymousResourceCollection
+    public function index(ListSeriesRequest $request, #[CurrentUser] User $user): AnonymousResourceCollection
     {
         $categoryId = $request->categoryId();
-        $preferenceCategoryIds = $this->moviePreferenceCategoryIds($user);
+        $preferenceCategoryIds = $this->seriesPreferenceCategoryIds($user);
 
         /** @var AnonymousResourceCollection $collection */
-        $collection = MovieResource::collection(
-            VodStream::query()
+        $collection = SeriesResource::collection(
+            Series::query()
                 ->when($categoryId === null && $preferenceCategoryIds['hidden'] !== [], static function (Builder $query) use ($preferenceCategoryIds): void {
                     self::whereCategoryNotInPreservingUncategorized($query, $preferenceCategoryIds['hidden']);
                 })
@@ -36,7 +36,7 @@ final class MoviesController extends Controller
                     self::whereCategoryNotInPreservingUncategorized($query, $preferenceCategoryIds['ignored']);
                 })
                 ->when($categoryId !== null, static function (Builder $query) use ($categoryId): void {
-                    if ($categoryId === Category::UNCATEGORIZED_VOD_PROVIDER_ID) {
+                    if ($categoryId === Category::UNCATEGORIZED_SERIES_PROVIDER_ID) {
                         $query->where(static function (Builder $innerQuery) use ($categoryId): void {
                             $innerQuery
                                 ->whereNull('category_id')
@@ -49,7 +49,7 @@ final class MoviesController extends Controller
 
                     $query->where('category_id', $categoryId);
                 })
-                ->orderBy('stream_id')
+                ->orderBy('series_id')
                 ->paginate(
                     perPage: $request->pageSize(),
                     pageName: 'page[number]',
@@ -64,19 +64,21 @@ final class MoviesController extends Controller
         return $collection;
     }
 
-    public function show(ShowMovieRequest $request, XtreamCodesConnector $client, VodStream $movie): MovieResource
+    public function show(ShowSeriesRequest $request, XtreamCodesConnector $client, Series $series): SeriesResource
     {
-        if ($request->includesVodInfo()) {
-            $response = $client->send(new GetVodInfoRequest($movie->stream_id));
+        if ($request->includesEpisodes()) {
+            $response = $client->send(new GetSeriesInfoRequest($series->series_id));
 
             if ($response->status() === 404) {
                 abort(404);
             }
 
-            $movie->setAttribute('api_vod_info', json_decode((string) json_encode($response->dtoOrFail(), JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR));
+            $dto = $response->dtoOrFail();
+            $series->setAttribute('api_series_seasons', $dto->seasons);
+            $series->setAttribute('api_series_episodes', json_decode((string) json_encode($dto->seasonsWithEpisodes, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR));
         }
 
-        return new MovieResource($movie);
+        return new SeriesResource($series);
     }
 
     /**
@@ -95,11 +97,11 @@ final class MoviesController extends Controller
     /**
      * @return array{hidden: list<string>, ignored: list<string>}
      */
-    private function moviePreferenceCategoryIds(User $user): array
+    private function seriesPreferenceCategoryIds(User $user): array
     {
         $preferences = UserCategoryPreference::query()
             ->where('user_id', $user->getKey())
-            ->where('media_type', MediaType::Movie->value)
+            ->where('media_type', MediaType::Series->value)
             ->get(['category_provider_id', 'is_hidden', 'is_ignored']);
 
         $resolveIds = static fn (string $column): array => $preferences

@@ -13,6 +13,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\JsonRpcException;
+use App\Http\Requests\Api\DestroyDownloadRequest;
 use App\Http\Requests\Api\ListDownloadsRequest;
 use App\Http\Requests\Api\UpdateDownloadRequest;
 use App\Http\Resources\Api\MediaDownloadResource;
@@ -123,11 +124,11 @@ final class DownloadsController extends Controller
         return new MediaDownloadResource($download->refresh()->load('media'));
     }
 
-    public function destroy(MediaDownloadRef $download): MediaDownloadResource
+    public function destroy(DestroyDownloadRequest $request, MediaDownloadRef $download): MediaDownloadResource
     {
         Gate::authorize('download-operations', $download);
 
-        $this->cancel($download, false);
+        $this->cancel($download, $request->deletePartial());
 
         return new MediaDownloadResource($download->refresh()->load('media'));
     }
@@ -155,7 +156,7 @@ final class DownloadsController extends Controller
      */
     private function ownerOptions(): array
     {
-        return User::query()
+        $owners = User::query()
             ->select(['id', 'name', 'email'])
             ->whereIn('id', MediaDownloadRef::query()->select('user_id')->whereNotNull('user_id')->distinct())
             ->orderBy('name')
@@ -168,5 +169,7 @@ final class DownloadsController extends Controller
             ])
             ->values()
             ->all();
+
+        return array_values($owners);
     }
 }

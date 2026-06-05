@@ -23,12 +23,17 @@ final class SeriesEpisodesSelectionRequest extends ApiRequest
      */
     public function selectedEpisodes(): array
     {
-        return collect($this->input('episodes', []))
+        /** @var array<int, array{season: int|string, episode: int|string}> $episodes */
+        $episodes = $this->input('episodes', []);
+
+        $selectedEpisodes = collect($episodes)
             ->map(static fn (array $episode): array => [
                 'season' => (int) $episode['season'],
                 'episode' => (int) $episode['episode'],
             ])
             ->values()
             ->all();
+
+        return array_values($selectedEpisodes);
     }
 }

@@ -1,0 +1,1009 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ComputeNextRunAt\:\:__invoke\(\) has parameter \$weeklyDays0Sun with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ComputeNextRunAt.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ComputeNextRunAt\:\:computeWeeklyNextRunAt\(\) has parameter \$days0Sun with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ComputeNextRunAt.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ComputeNextRunAt\:\:parseTime\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ComputeNextRunAt.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ComputeNextRunAt\:\:resolveWeeklyDays\(\) has parameter \$weeklyDays0Sun with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ComputeNextRunAt.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ComputeNextRunAt\:\:resolveWeeklyDays\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ComputeNextRunAt.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ManageSeriesMonitoring\:\:watchlistQuery\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Actions/AutoEpisodes/ManageSeriesMonitoring.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\QueueEpisodeDownload\:\:handle\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/QueueEpisodeDownload.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:collectEpisodes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:handle\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:markBaselineAsSkipped\(\) has parameter \$syncedEpisodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:normalizeWeeklyDays\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:queueCandidates\(\) has parameter \$syncedEpisodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:queueCandidates\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:resolvePerRunCap\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:syncEpisodes\(\) has parameter \$episodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\AutoEpisodes\\ScanSeriesForNewEpisodes\:\:syncEpisodes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/AutoEpisodes/ScanSeriesForNewEpisodes.php
+
+		-
+			message: '#^Method App\\Actions\\BatchCreateSignedDirectLinks\:\:__invoke\(\) has parameter \$episodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/BatchCreateSignedDirectLinks.php
+
+		-
+			message: '#^Method App\\Actions\\BatchCreateSignedDirectLinks\:\:__invoke\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Actions/BatchCreateSignedDirectLinks.php
+
+		-
+			message: '#^Method App\\Actions\\BuildCategorySidebarItems\:\:__invoke\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/BuildCategorySidebarItems.php
+
+		-
+			message: '#^Method App\\Actions\\BuildCategorySidebarItems\:\:resolveContext\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/BuildCategorySidebarItems.php
+
+		-
+			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orWhere\(\) expects array\<int\|model property of Illuminate\\Database\\Eloquent\\Model, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: void\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|model property of Illuminate\\Database\\Eloquent\\Model, ''category_id'' given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Actions/BuildCategorySidebarItems.php
+
+		-
+			message: '#^Method App\\Actions\\BuildPersonalizedCategorySidebar\:\:resolveContext\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/BuildPersonalizedCategorySidebar.php
+
+		-
+			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orWhere\(\) expects array\<int\|model property of Illuminate\\Database\\Eloquent\\Model, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: void\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|model property of Illuminate\\Database\\Eloquent\\Model, ''category_id'' given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Actions/BuildPersonalizedCategorySidebar.php
+
+		-
+			message: '#^Method App\\Actions\\CreateDownloadDir\:\:__invoke\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Actions/CreateDownloadDir.php
+
+		-
+			message: '#^Method App\\Actions\\CreateDownloadOut\:\:__invoke\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Actions/CreateDownloadOut.php
+
+		-
+			message: '#^Class App\\Actions\\DownloadMedia has PHPDoc tag @method for method run\(\) parameter \#2 \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/DownloadMedia.php
+
+		-
+			message: '#^Class App\\Actions\\Downloads\\DeleteDownloadFiles has PHPDoc tag @method for method run\(\) parameter \#1 \$paths with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/Downloads/DeleteDownloadFiles.php
+
+		-
+			message: '#^Method App\\Actions\\Downloads\\RetryDownload\:\:fetchDownloadFilesSnapshot\(\) should return array\{string\|null, list\<string\>\} but returns array\{string\|null, array\<int, non\-empty\-string\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Actions/Downloads/RetryDownload.php
+
+		-
+			message: '#^Method App\\Actions\\Downloads\\RetryDownload\:\:normalizeDownloadFiles\(\) should return list\<string\> but returns array\<int, non\-empty\-string\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Actions/Downloads/RetryDownload.php
+
+		-
+			message: '#^Cannot access property \$episodeNum on App\\Http\\Integrations\\LionzTv\\Responses\\Episode\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Actions/GetActiveDownloads.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Http\\Integrations\\LionzTv\\Responses\\Episode\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Actions/GetActiveDownloads.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Actions/GetActiveDownloads.php
+
+		-
+			message: '#^Class App\\Actions\\GetDownloadStatus has PHPDoc tag @method for method run\(\) parameter \#1 \$gids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/GetDownloadStatus.php
+
+		-
+			message: '#^Class App\\Actions\\GetDownloadStatus has PHPDoc tag @method for method run\(\) parameter \#2 \$keys with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/GetDownloadStatus.php
+
+		-
+			message: '#^Binary operation "\+" between int\|string and 1 results in an error\.$#'
+			identifier: binaryOp.invalid
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:__invoke\(\) has parameter \$hiddenIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:__invoke\(\) has parameter \$ignoredIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:__invoke\(\) has parameter \$pinnedIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:__invoke\(\) has parameter \$visibleIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) has parameter \$existingPreferences with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) has parameter \$hiddenIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) has parameter \$ignoredIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) has parameter \$pinnedIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) has parameter \$visibleIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SaveUserCategoryPreferences\:\:buildSortOrderMap\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Actions/SaveUserCategoryPreferences.php
+
+		-
+			message: '#^Method App\\Actions\\SearchMovies\:\:__invoke\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Actions/SearchMovies.php
+
+		-
+			message: '#^Parameter \#1 \$query of static method App\\Models\\VodStream\:\:search\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/SearchMovies.php
+
+		-
+			message: '#^Method App\\Actions\\SearchSeries\:\:__invoke\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Actions/SearchSeries.php
+
+		-
+			message: '#^Parameter \#1 \$query of static method App\\Models\\Series\:\:search\(\) expects string, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Actions/SearchSeries.php
+
+		-
+			message: '#^Method App\\Casts\\AsSearchSortBy\:\:set\(\) should return string but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Casts/AsSearchSortBy.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\MonitoringPageData\:\:__construct\(\) has parameter \$backfill_preset_counts with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/MonitoringPageData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\MonitoringPageData\:\:__construct\(\) has parameter \$events with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/MonitoringPageData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\MonitoringPageData\:\:__construct\(\) has parameter \$monitors with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/MonitoringPageData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\MonitoringPageData\:\:__construct\(\) has parameter \$preset_times with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/MonitoringPageData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\SeriesMonitorData\:\:__construct\(\) has parameter \$monitored_seasons with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/SeriesMonitorData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\SeriesMonitorData\:\:__construct\(\) has parameter \$schedule_weekly_days with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/SeriesMonitorData.php
+
+		-
+			message: '#^Method App\\Data\\AutoEpisodes\\SeriesMonitorData\:\:normalizeIntList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/AutoEpisodes/SeriesMonitorData.php
+
+		-
+			message: '#^Method App\\Data\\BatchDownloadEpisodesData\:\:__construct\(\) has parameter \$selectedEpisodes with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/BatchDownloadEpisodesData.php
+
+		-
+			message: '#^Method App\\Data\\CategorySidebarData\:\:__construct\(\) has parameter \$hiddenItems with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/CategorySidebarData.php
+
+		-
+			message: '#^Method App\\Data\\CategorySidebarData\:\:__construct\(\) has parameter \$visibleItems with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/CategorySidebarData.php
+
+		-
+			message: '#^Method App\\Data\\DiscoverMediaData\:\:__construct\(\) has parameter \$movies with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/DiscoverMediaData.php
+
+		-
+			message: '#^Method App\\Data\\DiscoverMediaData\:\:__construct\(\) has parameter \$series with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/DiscoverMediaData.php
+
+		-
+			message: '#^Method App\\Data\\FeaturedMediaData\:\:__construct\(\) has parameter \$movies with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/FeaturedMediaData.php
+
+		-
+			message: '#^Method App\\Data\\FeaturedMediaData\:\:__construct\(\) has parameter \$series with generic class Spatie\\LaravelData\\DataCollection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/FeaturedMediaData.php
+
+		-
+			message: '#^Method App\\Data\\LightweightSearchData\:\:__construct\(\) has parameter \$movies with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/LightweightSearchData.php
+
+		-
+			message: '#^Method App\\Data\\LightweightSearchData\:\:__construct\(\) has parameter \$series with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/LightweightSearchData.php
+
+		-
+			message: '#^Method App\\Data\\MediaDownloadRefData\:\:__construct\(\) has parameter \$download_files with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/MediaDownloadRefData.php
+
+		-
+			message: '#^Method App\\Data\\SearchMediaData\:\:normalized\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/SearchMediaData.php
+
+		-
+			message: '#^Method App\\Data\\SearchMediaData\:\:parsedTokens\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Data/SearchMediaData.php
+
+		-
+			message: '#^Property App\\Data\\SeriesData\:\:\$backdrop_path with generic class Illuminate\\Database\\Eloquent\\Casts\\ArrayObject does not specify its types\: TKey, TItem$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Data/SeriesData.php
+
+		-
+			message: '#^Method App\\Filters\\LightweightSearchFilter\:\:__invoke\(\) has parameter \$next with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Filters/LightweightSearchFilter.php
+
+		-
+			message: '#^Method App\\Filters\\LightweightSearchFilter\:\:__invoke\(\) has parameter \$paginator with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Filters/LightweightSearchFilter.php
+
+		-
+			message: '#^Method App\\Filters\\PaginatorFilter\:\:__invoke\(\) has parameter \$next with generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Filters/PaginatorFilter.php
+
+		-
+			message: '#^Cannot access property \$email on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/ConfirmablePasswordController.php
+
+		-
+			message: '#^Cannot call method hasVerifiedEmail\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/EmailVerificationNotificationController.php
+
+		-
+			message: '#^Cannot call method sendEmailVerificationNotification\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/EmailVerificationNotificationController.php
+
+		-
+			message: '#^Cannot call method hasVerifiedEmail\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/EmailVerificationPromptController.php
+
+		-
+			message: '#^Cannot call method hasVerifiedEmail\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/VerifyEmailController.php
+
+		-
+			message: '#^Cannot call method markEmailAsVerified\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Auth/VerifyEmailController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\AutoEpisodes\\MonitoringPageController\:\:backfillPresetCounts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/AutoEpisodes/MonitoringPageController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\AutoEpisodes\\MonitoringPageController\:\:presetTimes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/AutoEpisodes/MonitoringPageController.php
+
+		-
+			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:where\(\) expects array\<int\|model property of Illuminate\\Database\\Eloquent\\Model, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: void\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|model property of Illuminate\\Database\\Eloquent\\Model, ''user_id'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/AutoEpisodes/MonitoringPageController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/AutoEpisodes/MonitoringPageController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/AutoEpisodes/MonitoringPageController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Pagination\\AbstractPaginator\|Illuminate\\Support\\Enumerable\<\(int\|string\), App\\Data\\MediaDownloadRefData\>\:\:through\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/MediaDownloadsController.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/MediaDownloadsController.php
+
+		-
+			message: '#^Cannot access property \$role on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Http/Controllers/MediaDownloadsController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\MediaDownloadsController\:\:ownerOptions\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/MediaDownloadsController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\MediaDownloadsController\:\:parseOwnerIds\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/MediaDownloadsController.php
+
+		-
+			message: '#^Parameter \#3 \$page of callable App\\Actions\\SearchMovies expects int, int\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/SearchController.php
+
+		-
+			message: '#^Parameter \#3 \$page of callable App\\Actions\\SearchSeries expects int, int\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/SearchController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:backfillPresetCounts\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:presetTimes\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:resolveRecoveryState\(\) has parameter \$hiddenCategoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:resolveRecoveryState\(\) has parameter \$ignoredCategoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:resolveSeriesCategoryPreferences\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:resolveSeriesPreferenceIds\(\) has parameter \$preferences with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:resolveSeriesPreferenceIds\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesController\:\:seriesExistInCategories\(\) has parameter \$categoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Controllers/Series/SeriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesDownloadController\:\:downloadsRedirect\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesDownloadController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Series\\SeriesDownloadController\:\:queueEpisodeDownload\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Series/SeriesDownloadController.php
+
+		-
+			message: '#^Cannot call method update\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/PasswordController.php
+
+		-
+			message: '#^Cannot access property \$email_verified_at on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot access property \$is_super_admin on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot access property \$role on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot call method delete\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot call method fill\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot call method isDirty\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Cannot call method save\(\) on App\\Models\\User\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/ProfileController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Settings\\SyncCategoriesController\:\:countValidCategoryRows\(\) has parameter \$payload with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Settings/SyncCategoriesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Settings\\SyncCategoriesController\:\:preflight\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/Settings/SyncCategoriesController.php
+
+		-
+			message: '#^Cannot access property \$is_super_admin on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Settings/UsersController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VodStream\\VodStreamController\:\:categoryIdsContainMovies\(\) has parameter \$categoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/VodStream/VodStreamController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VodStream\\VodStreamController\:\:resolveMoviePreferenceCategoryIds\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/VodStream/VodStreamController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VodStream\\VodStreamController\:\:resolveRecoveryState\(\) has parameter \$hiddenCategoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/VodStream/VodStreamController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VodStream\\VodStreamController\:\:resolveRecoveryState\(\) has parameter \$ignoredCategoryIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/VodStream/VodStreamController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VodStream\\VodStreamDownloadController\:\:downloadsRedirect\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/VodStream/VodStreamDownloadController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Series\|App\\Models\\VodStream\:\:\$cover\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/WatchlistController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Series\|App\\Models\\VodStream\:\:\$stream_icon\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/WatchlistController.php
+
+		-
+			message: '#^PHPDoc tag @var for variable \$watchlistItems contains generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/WatchlistController.php
+
+		-
+			message: '#^Cannot call method all\(\) on Saloon\\Contracts\\Body\\BodyRepository\|null\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Integrations/Aria2/Auth/Aria2JsonRpcAuthenticator.php
+
+		-
+			message: '#^Cannot call method set\(\) on Saloon\\Contracts\\Body\\BodyRepository\|null\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Integrations/Aria2/Auth/Aria2JsonRpcAuthenticator.php
+
+		-
+			message: '#^Cannot call method json\(\) on Saloon\\Http\\Response\|null\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Integrations/Aria2/JsonRpcException.php
+
+		-
+			message: '#^Method App\\Http\\Integrations\\Aria2\\Requests\\MulticallRequest\:\:__construct\(\) has parameter \$requests with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Integrations/Aria2/Requests/MulticallRequest.php
+
+		-
+			message: '#^Parameter \#1 \$streamId of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects int, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#2 \$name of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#3 \$added of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#4 \$categoryId of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#5 \$containerExtension of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#6 \$customSid of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Parameter \#7 \$directSource of class App\\Http\\Integrations\\LionzTv\\Responses\\Movie constructor expects string, int\|string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/Movie.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/SeriesInformation.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Http/Integrations/LionzTv/Responses/SeriesInformation.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\AutoEpisodes\\BulkUpdateSeriesMonitorsRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/AutoEpisodes/BulkUpdateSeriesMonitorsRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\AutoEpisodes\\StoreSeriesMonitorRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/AutoEpisodes/StoreSeriesMonitorRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\AutoEpisodes\\UpdateSeriesMonitorRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/AutoEpisodes/UpdateSeriesMonitorRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:editableCategoryIds\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:ensureNoOverlap\(\) has parameter \$leftIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:ensureNoOverlap\(\) has parameter \$rightIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:ensureValidIds\(\) has parameter \$disallowedIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:ensureValidIds\(\) has parameter \$editableIds with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:ensureValidIds\(\) has parameter \$ids with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:normalizedList\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\Preferences\\UpdateCategoryPreferencesRequest\:\:rules\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/Preferences/UpdateCategoryPreferencesRequest.php
+
+		-
+			message: '#^Cannot access property \$id on App\\Models\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Requests/Settings/ProfileUpdateRequest.php
+
+		-
+			message: '#^Method App\\Jobs\\AutoEpisodes\\RunMonitorScan\:\:__construct\(\) has parameter \$options with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Jobs/AutoEpisodes/RunMonitorScan.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Jobs/MonitorDownloads.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Jobs/MonitorDownloads.php
+
+		-
+			message: '#^Class App\\Models\\Aria2Config uses generic trait Spatie\\LaravelData\\WithData but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Aria2Config.php
+
+		-
+			message: '#^Property App\\Models\\Aria2Config\:\:\$dataClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Models/Aria2Config.php
+
+		-
+			message: '#^Method App\\Models\\CategorySyncRun\:\:requestedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/CategorySyncRun.php
+
+		-
+			message: '#^Method App\\Models\\MediaDownloadRef\:\:owner\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/MediaDownloadRef.php
+
+		-
+			message: '#^Class App\\Models\\Series uses generic trait Spatie\\LaravelData\\WithData but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Series.php
+
+		-
+			message: '#^Property App\\Models\\Series\:\:\$dataClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Models/Series.php
+
+		-
+			message: '#^Class App\\Models\\User uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Method App\\Models\\UserCategoryPreference\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/UserCategoryPreference.php
+
+		-
+			message: '#^Class App\\Models\\VodStream uses generic trait Spatie\\LaravelData\\WithData but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/VodStream.php
+
+		-
+			message: '#^Property App\\Models\\VodStream\:\:\$dataClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Models/VodStream.php
+
+		-
+			message: '#^Class App\\Models\\XtreamCodesConfig uses generic trait Spatie\\LaravelData\\WithData but does not specify its types\: T$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/XtreamCodesConfig.php
+
+		-
+			message: '#^Property App\\Models\\XtreamCodesConfig\:\:\$dataClass has no type specified\.$#'
+			identifier: missingType.property
+			count: 1
+			path: app/Models/XtreamCodesConfig.php
+
+		-
+			message: '#^Method App\\Support\\MediaCategoryPreferenceFilter\:\:apply\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Support/MediaCategoryPreferenceFilter.php
+
+		-
+			message: '#^Method App\\Support\\MediaCategoryPreferenceFilter\:\:apply\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Support/MediaCategoryPreferenceFilter.php
+
+		-
+			message: '#^Method App\\Support\\MediaCategoryPreferenceFilter\:\:preferenceCategoryIds\(\) should return array\{hidden\: list\<string\>, ignored\: list\<string\>\} but returns array\{hidden\: array\<int, non\-empty\-string\>, ignored\: array\<int, non\-empty\-string\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Support/MediaCategoryPreferenceFilter.php
+
+		-
+			message: '#^Method App\\Support\\MediaCategoryPreferenceFilter\:\:whereCategoryNotInPreservingUncategorized\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Support/MediaCategoryPreferenceFilter.php
+
+		-
+			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:orWhere\(\) expects array\<int\|model property of Illuminate\\Database\\Eloquent\\Model, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: void\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|model property of Illuminate\\Database\\Eloquent\\Model, ''category_id'' given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Support/MediaCategoryPreferenceFilter.php
+
+		-
+			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:where\(\) expects array\<int\|model property of Illuminate\\Database\\Eloquent\\Model, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder\)\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: void\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|model property of Illuminate\\Database\\Eloquent\\Model, ''category_id'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Support/MediaCategoryPreferenceFilter.php

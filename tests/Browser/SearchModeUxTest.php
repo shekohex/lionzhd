@@ -48,7 +48,7 @@ if (! extension_loaded('sockets')) {
 
         $initialHistoryLength = searchModeUxHistoryLength($page);
 
-        expect(searchModeUxActiveMode($page))->toBe('all');
+        expect(searchModeUxWaitForActiveMode($page, 'all'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy');
 
@@ -62,13 +62,13 @@ if (! extension_loaded('sockets')) {
         expect(searchModeUxWaitForQueryParam($page, 'media_type', 'movie'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy Draft');
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
-        expect(searchModeUxActiveMode($page))->toBe('movie');
+        expect(searchModeUxWaitForActiveMode($page, 'movie'))->toBeTrue();
 
         expect(searchModeUxClickVisibleTab($page, 'Sort By'))->toBeTrue();
         expect(searchModeUxClickVisibleTab($page, 'Rating'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'sort_by', 'rating'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Galaxy Draft');
-        expect(searchModeUxActiveMode($page))->toBe('movie');
+        expect(searchModeUxWaitForActiveMode($page, 'movie'))->toBeTrue();
 
         expect(searchModeUxClickVisibleTab($page, 'Reset search'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
@@ -89,14 +89,14 @@ if (! extension_loaded('sockets')) {
 
         searchModeUxHistoryBack($page);
         expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
+        expect(searchModeUxWaitForActiveMode($page, 'movie'))->toBeTrue();
         expect(searchModeUxSearchQueryValue($page))->toBe('');
-        expect(searchModeUxActiveMode($page))->toBe('movie');
 
         searchModeUxHistoryBack($page);
         expect(searchModeUxWaitForQueryParam($page, 'q', 'Galaxy Draft'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'sort_by', 'rating'))->toBeTrue();
+        expect(searchModeUxWaitForActiveMode($page, 'movie'))->toBeTrue();
         expect(searchModeUxSearchQueryValue($page))->toBe('Galaxy Draft');
-        expect(searchModeUxActiveMode($page))->toBe('movie');
 
         searchModeUxHistoryForward($page);
         expect(searchModeUxWaitForQueryParam($page, 'q', ''))->toBeTrue();
@@ -106,20 +106,20 @@ if (! extension_loaded('sockets')) {
 
         expect(searchModeUxClickVisibleTab($page, 'TV Series'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'media_type', 'series'))->toBeTrue();
+        expect(searchModeUxWaitForActiveMode($page, 'series'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
         expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
-        expect(searchModeUxActiveMode($page))->toBe('series');
 
         expect(searchModeUxClickVisibleTab($page, 'All'))->toBeTrue();
         expect(searchModeUxWaitForQueryParam($page, 'media_type', null))->toBeTrue();
+        expect(searchModeUxWaitForActiveMode($page, 'all'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
         expect(searchModeUxSearchQueryValue($page))->toBe('Nebula');
-        expect(searchModeUxActiveMode($page))->toBe('all');
 
         searchModeUxHistoryBack($page);
         expect(searchModeUxWaitForQueryParam($page, 'media_type', 'series'))->toBeTrue();
+        expect(searchModeUxWaitForActiveMode($page, 'series'))->toBeTrue();
         expect(searchModeUxCurrentQueryParam($page, 'q'))->toBe('Nebula');
-        expect(searchModeUxActiveMode($page))->toBe('series');
     })->group('browser');
 
     it('renders filtered full width layout', function (): void {
@@ -495,6 +495,56 @@ function searchModeUxActiveMode(object $page): ?string
     JS);
 }
 
+function searchModeUxWaitForActiveMode(object $page, string $mode): bool
+{
+    $modeJson = json_encode($mode, JSON_THROW_ON_ERROR);
+
+    return $page->script(str_replace('__MODE__', $modeJson, <<<'JS'
+        async () => {
+            const mode = __MODE__;
+            const resolveActiveMode = () => {
+                const activeTab = Array.from(document.querySelectorAll('[role="tab"]')).find((candidate) => {
+                    const selected = candidate.getAttribute('aria-selected') === 'true';
+                    const state = candidate.getAttribute('data-state') === 'active';
+
+                    return selected || state;
+                });
+
+                if (! activeTab) {
+                    return null;
+                }
+
+                const label = activeTab.textContent?.trim().toLowerCase() ?? '';
+
+                if (label === 'all') {
+                    return 'all';
+                }
+
+                if (label === 'movies') {
+                    return 'movie';
+                }
+
+                if (label === 'tv series') {
+                    return 'series';
+                }
+
+                return label;
+            };
+            const startedAt = Date.now();
+
+            while (Date.now() - startedAt < 10000) {
+                if (resolveActiveMode() === mode) {
+                    return true;
+                }
+
+                await new Promise((resolve) => window.setTimeout(resolve, 50));
+            }
+
+            return false;
+        }
+    JS));
+}
+
 function searchModeUxActiveLayout(object $page): ?string
 {
     return $page->script(<<<'JS'
@@ -669,11 +719,7 @@ function searchModeUxClickVisibleTab(object $page, string $text): bool
             }
 
             target.focus();
-            target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, composed: true, pointerType: 'mouse', isPrimary: true, button: 0 }));
-            target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, composed: true, button: 0 }));
-            target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, composed: true, pointerType: 'mouse', isPrimary: true, button: 0 }));
-            target.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, composed: true, button: 0 }));
-            target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, button: 0 }));
+            target.click();
 
             return true;
         }

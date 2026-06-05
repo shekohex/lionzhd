@@ -44,13 +44,16 @@ final class CategoriesController extends Controller
      */
     private function hiddenOrIgnoredCategoryIds(User $user, ?MediaType $mediaType): array
     {
-        return UserCategoryPreference::query()
+        $ids = UserCategoryPreference::query()
             ->where('user_id', $user->id)
             ->when($mediaType !== null, static fn (Builder $query): Builder => $query->where('media_type', $mediaType))
             ->where(static function (Builder $query): void {
                 $query->where('is_hidden', true)->orWhere('is_ignored', true);
             })
             ->pluck('category_provider_id')
+            ->values()
             ->all();
+
+        return array_values(array_map(static fn (mixed $id): string => (string) $id, $ids));
     }
 }

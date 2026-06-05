@@ -41,6 +41,9 @@ final class WatchlistResource extends JsonApiResource
         ];
     }
 
+    /**
+     * @return array<string, array{data: array{type: string, id: string}}>
+     */
     protected function resolveResourceRelationshipIdentifiers(JsonApiRequest $request): array
     {
         $watchlist = $this->watchlist();

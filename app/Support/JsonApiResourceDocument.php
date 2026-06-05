@@ -13,7 +13,7 @@ final class JsonApiResourceDocument
 {
     /**
      * @param  class-string<JsonApiResource>  $resourceClass
-     * @param  iterable<int, mixed>|LengthAwarePaginator  $items
+     * @param  iterable<int, mixed>|LengthAwarePaginator<int, mixed>  $items
      * @return array<string, mixed>
      */
     public static function collection(Request $request, string $resourceClass, iterable|LengthAwarePaginator $items): array

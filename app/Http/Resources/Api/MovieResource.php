@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api;
 
 use App\Models\VodStream;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 
@@ -22,24 +21,7 @@ final class MovieResource extends JsonApiResource
     }
 
     /**
-     * @return array{
-     *     num: int,
-     *     name: string,
-     *     stream_type: string,
-     *     stream_id: int,
-     *     stream_icon: string,
-     *     rating: string,
-     *     rating_5based: float,
-     *     added: CarbonImmutable,
-     *     is_adult: bool,
-     *     category_id: string|null,
-     *     container_extension: string,
-     *     custom_sid: string|null,
-     *     direct_source: string|null,
-     *     created_at: CarbonImmutable,
-     *     updated_at: CarbonImmutable,
-     *     vod_info?: array<string, mixed>
-     * }
+     * @return array<string, mixed>
      */
     public function toAttributes(Request $request): array
     {

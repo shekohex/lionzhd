@@ -21,26 +21,7 @@ final class SeriesResource extends JsonApiResource
     }
 
     /**
-     * @return array{
-     *     num: int,
-     *     name: string,
-     *     series_id: int,
-     *     cover: string|null,
-     *     plot: string|null,
-     *     cast: string|null,
-     *     director: string|null,
-     *     genre: string|null,
-     *     backdrop_path: mixed,
-     *     releaseDate: string|null,
-     *     last_modified: mixed,
-     *     category_id: string|null,
-     *     rating: mixed,
-     *     rating_5based: mixed,
-     *     created_at: mixed,
-     *     updated_at: mixed,
-     *     seasons?: array<string>,
-     *     episodes?: array<string, mixed>
-     * }
+     * @return array<string, mixed>
      */
     public function toAttributes(Request $request): array
     {

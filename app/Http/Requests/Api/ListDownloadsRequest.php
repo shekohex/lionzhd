@@ -30,7 +30,7 @@ final class ListDownloadsRequest extends ApiRequest
             return [];
         }
 
-        return collect(explode(',', $owners))
+        $ownerIds = collect(explode(',', $owners))
             ->map(static fn (string $id): string => mb_trim($id))
             ->filter(static fn (string $id): bool => $id !== '' && ctype_digit($id))
             ->map(static fn (string $id): int => (int) $id)
@@ -39,6 +39,8 @@ final class ListDownloadsRequest extends ApiRequest
             ->sort()
             ->values()
             ->all();
+
+        return array_values($ownerIds);
     }
 
     public function pageSize(): int

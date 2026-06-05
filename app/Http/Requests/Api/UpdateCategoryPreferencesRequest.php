@@ -105,12 +105,14 @@ final class UpdateCategoryPreferencesRequest extends ApiRequest
     {
         $scopeColumn = $mediaType->isMovie() ? 'in_vod' : 'in_series';
 
-        return Category::query()
+        $ids = Category::query()
             ->where($scopeColumn, true)
             ->pluck('provider_id')
             ->reject(static fn (string $providerId): bool => in_array($providerId, [Category::UNCATEGORIZED_VOD_PROVIDER_ID, Category::UNCATEGORIZED_SERIES_PROVIDER_ID], true))
             ->values()
             ->all();
+
+        return array_values(array_map(static fn (mixed $id): string => (string) $id, $ids));
     }
 
     /**

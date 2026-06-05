@@ -14,6 +14,7 @@ use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\VodStream;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Laravel\Sanctum\Sanctum;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -99,6 +100,75 @@ it('cancels downloads through delete and validates update actions', function ():
     expect($response->json('data.attributes.canceled_at'))->toBeString();
 
     expect($download->fresh()?->canceled_at)->not->toBeNull();
+});
+
+it('cancels downloads through delete without removing partial files by default', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 31, 'name' => 'Default Cancel Movie']);
+    $download = MediaDownloadRef::fromVodStream('gid-cancel-keep-partial', $movie, $user);
+    $download->save();
+
+    $root = apiDownloadsCreateTempDir('api-delete-keep-root');
+    config()->set('services.aria2.download_root', $root);
+
+    $file = $root.'/partial.mp4';
+    File::put($file, 'partial');
+
+    apiDownloadsBindAria2(new MockClient([
+        TellStatusRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-cancel-keep-partial', 'result' => apiDownloadsStatusWithFiles('gid-cancel-keep-partial', $root, [$file])]),
+        ForceRemoveRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-cancel-keep-partial', 'result' => 'OK']),
+    ]));
+
+    $this->withToken($token)
+        ->deleteJson("/api/v1/downloads/{$download->id}", [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.attributes.cancel_delete_partial', false);
+
+    $download->refresh();
+
+    expect($download->canceled_at)->not->toBeNull();
+    expect($download->cancel_delete_partial)->toBeFalse();
+    expect($download->download_files)->toBe([$file]);
+    expect(File::exists($file))->toBeTrue();
+
+    File::deleteDirectory($root);
+});
+
+it('cancels downloads through delete and removes partial files when requested', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 32, 'name' => 'Delete Partial Cancel Movie']);
+    $download = MediaDownloadRef::fromVodStream('gid-cancel-delete-partial', $movie, $user);
+    $download->save();
+
+    $root = apiDownloadsCreateTempDir('api-delete-partial-root');
+    config()->set('services.aria2.download_root', $root);
+
+    $file = $root.'/partial.mp4';
+    $controlFile = $file.'.aria2';
+    File::put($file, 'partial');
+    File::put($controlFile, 'control');
+
+    apiDownloadsBindAria2(new MockClient([
+        TellStatusRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-cancel-delete-partial', 'result' => apiDownloadsStatusWithFiles('gid-cancel-delete-partial', $root, [$file])]),
+        ForceRemoveRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-cancel-delete-partial', 'result' => 'OK']),
+    ]));
+
+    $this->withToken($token)
+        ->deleteJson("/api/v1/downloads/{$download->id}?delete_partial=true", [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.attributes.cancel_delete_partial', true);
+
+    $download->refresh();
+
+    expect($download->canceled_at)->not->toBeNull();
+    expect($download->cancel_delete_partial)->toBeTrue();
+    expect($download->download_files)->toBe([$file]);
+    expect(File::exists($file))->toBeFalse();
+    expect(File::exists($controlFile))->toBeFalse();
+
+    File::deleteDirectory($root);
 });
 
 it('supports resume and remove download patch actions', function (): void {
@@ -206,6 +276,28 @@ function apiDownloadsBindAria2(MockClient $mockClient): MockClient
     });
 
     return $mockClient;
+}
+
+function apiDownloadsCreateTempDir(string $prefix): string
+{
+    $path = sys_get_temp_dir().'/lionzhd-'.$prefix.'-'.bin2hex(random_bytes(8));
+
+    File::makeDirectory($path, 0755, true);
+
+    return $path;
+}
+
+/**
+ * @param  list<string>  $files
+ * @return array<string, mixed>
+ */
+function apiDownloadsStatusWithFiles(string $gid, string $dir, array $files): array
+{
+    return [
+        'gid' => $gid,
+        'dir' => $dir,
+        'files' => array_map(static fn (string $file): array => ['path' => $file], $files),
+    ];
 }
 
 /**

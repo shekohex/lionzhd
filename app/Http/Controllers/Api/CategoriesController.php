@@ -26,9 +26,7 @@ final class CategoriesController extends Controller
             Category::query()
                 ->when($mediaType === MediaType::Movie, static fn (Builder $query): Builder => $query->where('in_vod', true))
                 ->when($mediaType === MediaType::Series, static fn (Builder $query): Builder => $query->where('in_series', true))
-                ->when($mediaType !== null, function (Builder $query) use ($user, $mediaType): void {
-                    $query->whereNotIn('provider_id', $this->hiddenOrIgnoredCategoryIds($user, $mediaType));
-                })
+                ->whereNotIn('provider_id', $this->hiddenOrIgnoredCategoryIds($user, $mediaType))
                 ->orderBy('name')
                 ->get()
         );
@@ -44,11 +42,11 @@ final class CategoriesController extends Controller
     /**
      * @return list<string>
      */
-    private function hiddenOrIgnoredCategoryIds(User $user, MediaType $mediaType): array
+    private function hiddenOrIgnoredCategoryIds(User $user, ?MediaType $mediaType): array
     {
         return UserCategoryPreference::query()
             ->where('user_id', $user->id)
-            ->where('media_type', $mediaType)
+            ->when($mediaType !== null, static fn (Builder $query): Builder => $query->where('media_type', $mediaType))
             ->where(static function (Builder $query): void {
                 $query->where('is_hidden', true)->orWhere('is_ignored', true);
             })

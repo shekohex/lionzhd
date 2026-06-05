@@ -60,6 +60,66 @@ it('lists categories for a media type while respecting hidden and ignored prefer
         ->assertJsonMissing(['id' => 'series-only']);
 });
 
+it('lists unfiltered categories while respecting movie and series hidden and ignored preferences', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    createApiCategory('movie-visible', 'Movie Visible', inVod: true);
+    createApiCategory('series-visible', 'Series Visible', inSeries: true);
+    createApiCategory('movie-hidden', 'Movie Hidden', inVod: true);
+    createApiCategory('series-ignored', 'Series Ignored', inSeries: true);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie,
+        'category_provider_id' => 'movie-hidden',
+        'pin_rank' => null,
+        'sort_order' => 1,
+        'is_hidden' => true,
+        'is_ignored' => false,
+    ]);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Series,
+        'category_provider_id' => 'series-ignored',
+        'pin_rank' => null,
+        'sort_order' => 1,
+        'is_hidden' => false,
+        'is_ignored' => true,
+    ]);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/categories', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonFragment(['id' => 'movie-visible'])
+        ->assertJsonFragment(['id' => 'series-visible'])
+        ->assertJsonMissing(['id' => 'movie-hidden'])
+        ->assertJsonMissing(['id' => 'series-ignored']);
+});
+
+it('does not expose dual-use categories in unfiltered lists when hidden for one media type', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    createApiCategory('dual-hidden', 'Dual Hidden', inVod: true, inSeries: true);
+
+    UserCategoryPreference::query()->create([
+        'user_id' => $user->id,
+        'media_type' => MediaType::Movie,
+        'category_provider_id' => 'dual-hidden',
+        'pin_rank' => null,
+        'sort_order' => 1,
+        'is_hidden' => true,
+        'is_ignored' => false,
+    ]);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/categories', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonMissing(['id' => 'dual-hidden']);
+});
+
 it('returns category details by provider id', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

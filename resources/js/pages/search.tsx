@@ -100,8 +100,9 @@ export default function Search() {
                 searchUrl,
                 {},
                 {
-                    preserveState: true,
+                    preserveState: false,
                     preserveScroll: options.preserveScroll ?? false,
+                    replace: false,
                     onStart: () => setIsCommitting(true),
                     onFinish: () => setIsCommitting(false),
                 },

@@ -375,10 +375,10 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 | DELETE | `/api/v1/preferences/categories/{mediaType}` | Reset preferences |
 
 **Acceptance Criteria**
-- [ ] Reuses existing `CategoryPreferenceController` logic
-- [ ] Validates `mediaType` enum (`movie` or `series`)
-- [ ] Body accepts array of category IDs with `hidden` / `ignored` flags
-- [ ] Pest tests
+- [x] Reuses existing `CategoryPreferenceController` logic
+- [x] Validates `mediaType` enum (`movie` or `series`)
+- [x] Body accepts array of category IDs with `hidden` / `ignored` flags
+- [x] Pest tests
 
 ---
 
@@ -399,12 +399,12 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 | DELETE | `/api/v1/tokens/{id}` | Revoke token |
 
 **Acceptance Criteria**
-- [ ] `POST /tokens` accepts `name` and optional `abilities` array
-- [ ] Plain token returned only in creation response
-- [ ] `GET /tokens` shows masked/hashed info only
-- [ ] Revocation immediately invalidates token
-- [ ] Token abilities respected by Sanctum middleware
-- [ ] Pest tests
+- [x] `POST /tokens` accepts `name` and optional `abilities` array
+- [x] Plain token returned only in creation response
+- [x] `GET /tokens` shows masked/hashed info only
+- [x] Revocation immediately invalidates token
+- [x] Token abilities respected by Sanctum middleware
+- [x] Pest tests
 
 ---
 

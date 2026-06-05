@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\CategoriesController;
+use App\Http\Controllers\Api\CategoryPreferencesController;
 use App\Http\Controllers\Api\DiscoverController;
 use App\Http\Controllers\Api\DownloadsController;
 use App\Http\Controllers\Api\LightweightSearchController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Api\SeriesMonitoringBackfillController;
 use App\Http\Controllers\Api\SeriesMonitoringController;
 use App\Http\Controllers\Api\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Api\SeriesWatchlistController;
+use App\Http\Controllers\Api\TokensController;
 use App\Http\Controllers\Api\WatchlistController;
 use Illuminate\Support\Facades\Route;
 
@@ -131,6 +133,16 @@ Route::prefix('v1')
             ->middleware('abilities:read')
             ->name('api.v1.watchlist.destroy');
 
+        Route::patch('preferences/categories/{mediaType}', [CategoryPreferencesController::class, 'update'])
+            ->whereIn('mediaType', ['movie', 'series'])
+            ->middleware('abilities:read')
+            ->name('api.v1.preferences.categories.update');
+
+        Route::delete('preferences/categories/{mediaType}', [CategoryPreferencesController::class, 'destroy'])
+            ->whereIn('mediaType', ['movie', 'series'])
+            ->middleware('abilities:read')
+            ->name('api.v1.preferences.categories.destroy');
+
         Route::get('downloads', [DownloadsController::class, 'index'])
             ->middleware('abilities:read')
             ->name('api.v1.downloads.index');
@@ -166,4 +178,16 @@ Route::prefix('v1')
         Route::get('me', [ProfileController::class, 'show'])
             ->middleware('abilities:read')
             ->name('api.v1.me');
+
+        Route::get('tokens', [TokensController::class, 'index'])
+            ->middleware('abilities:read')
+            ->name('api.v1.tokens.index');
+
+        Route::post('tokens', [TokensController::class, 'store'])
+            ->middleware('abilities:read')
+            ->name('api.v1.tokens.store');
+
+        Route::delete('tokens/{token}', [TokensController::class, 'destroy'])
+            ->middleware('abilities:read')
+            ->name('api.v1.tokens.destroy');
     });

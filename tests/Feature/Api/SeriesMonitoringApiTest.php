@@ -133,6 +133,12 @@ it('enforces monitoring ability gate and json api validation', function (): void
         ], ['Accept' => 'application/vnd.api+json'])
         ->assertUnprocessable()
         ->assertJsonPath('errors.0.source.parameter', 'schedule_daily_time');
+
+    $this->flushHeaders()
+        ->postJson('/api/v1/series/30/monitoring/run-now', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.0.title', 'Unprocessable Content')
+        ->assertJsonPath('errors.0.source.parameter', 'series');
 });
 
 /**

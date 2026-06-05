@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\AutoEpisodes\SeriesMonitorRunTrigger;
+use App\Actions\AutoEpisodes\ManageSeriesMonitoring;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\SeriesMonitorResource;
-use App\Jobs\AutoEpisodes\RunMonitorScan;
-use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Series;
 use App\Models\User;
 use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 final class SeriesMonitoringRunNowController extends Controller
 {
@@ -22,32 +22,21 @@ final class SeriesMonitoringRunNowController extends Controller
     {
         Gate::authorize('auto-download-schedules');
 
-        $monitor = $this->enabledMonitorForAction($user, $series, 'Enable monitoring before running this series now.');
-
-        if ($monitor->run_now_available_at !== null && $monitor->run_now_available_at->isFuture()) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, sprintf('Run now is cooling down until %s.', $monitor->run_now_available_at->toDateTimeString()), 'run_now'));
+        try {
+            $monitor = ManageSeriesMonitoring::make()->runNow($user, $series);
+        } catch (ValidationException $exception) {
+            throw new HttpResponseException($this->validationError($exception));
         }
-
-        RunMonitorScan::dispatch($monitor->id, SeriesMonitorRunTrigger::Manual);
-
-        $monitor->forceFill([
-            'run_now_available_at' => now()->toImmutable()->addSeconds(max(0, (int) config('auto_episodes.run_now_cooldown_seconds', 300))),
-        ])->save();
 
         return new SeriesMonitorResource($monitor->refresh()->load('series'));
     }
 
-    private function enabledMonitorForAction(User $user, Series $series, string $message): SeriesMonitor
+    private function validationError(ValidationException $exception): JsonResponse
     {
-        $monitor = SeriesMonitor::query()
-            ->where('user_id', $user->id)
-            ->where('series_id', $series->series_id)
-            ->first();
+        $errors = $exception->errors();
+        $parameter = array_key_first($errors) ?? 'series';
+        $detail = (string) ($errors[$parameter][0] ?? $exception->getMessage());
 
-        if (! $monitor instanceof SeriesMonitor || ! $monitor->enabled) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, $message, 'series'));
-        }
-
-        return $monitor;
+        return JsonApiErrorResponse::make(422, $detail, sourceParameter: (string) $parameter);
     }
 }

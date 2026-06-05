@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\AutoEpisodes\SeriesMonitorRunTrigger;
+use App\Actions\AutoEpisodes\ManageSeriesMonitoring;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\BackfillSeriesMonitoringRequest;
 use App\Http\Resources\Api\SeriesMonitorResource;
-use App\Jobs\AutoEpisodes\RunMonitorScan;
-use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Series;
 use App\Models\User;
-use App\Models\Watchlist;
 use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 
 final class SeriesMonitoringBackfillController extends Controller
 {
@@ -24,34 +23,21 @@ final class SeriesMonitoringBackfillController extends Controller
     {
         Gate::authorize('auto-download-schedules');
 
-        $watchlistExists = Watchlist::query()
-            ->where('user_id', $user->id)
-            ->where('watchable_type', Series::class)
-            ->where('watchable_id', $series->series_id)
-            ->exists();
-
-        if (! $watchlistExists) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, 'Add this series to your watchlist before requesting backfill.', 'series'));
+        try {
+            $monitor = ManageSeriesMonitoring::make()->backfill($user, $series, $request->integer('backfill_count'));
+        } catch (ValidationException $exception) {
+            throw new HttpResponseException($this->validationError($exception));
         }
-
-        $monitor = $this->enabledMonitorForAction($user, $series, 'Enable monitoring before requesting backfill for this series.');
-
-        RunMonitorScan::dispatch($monitor->id, SeriesMonitorRunTrigger::Backfill, ['backfill_count' => $request->integer('backfill_count')]);
 
         return new SeriesMonitorResource($monitor->refresh()->load('series'));
     }
 
-    private function enabledMonitorForAction(User $user, Series $series, string $message): SeriesMonitor
+    private function validationError(ValidationException $exception): JsonResponse
     {
-        $monitor = SeriesMonitor::query()
-            ->where('user_id', $user->id)
-            ->where('series_id', $series->series_id)
-            ->first();
+        $errors = $exception->errors();
+        $parameter = array_key_first($errors) ?? 'series';
+        $detail = (string) ($errors[$parameter][0] ?? $exception->getMessage());
 
-        if (! $monitor instanceof SeriesMonitor || ! $monitor->enabled) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, $message, 'series'));
-        }
-
-        return $monitor;
+        return JsonApiErrorResponse::make(422, $detail, sourceParameter: (string) $parameter);
     }
 }

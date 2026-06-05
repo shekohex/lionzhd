@@ -11,15 +11,19 @@ use Throwable;
 
 final class JsonApiErrorResponse
 {
-    public static function make(int $status, string $detail, ?string $title = null): JsonResponse
+    public static function make(int $status, string $detail, ?string $title = null, ?string $sourceParameter = null): JsonResponse
     {
-        return response()->json([
-            'errors' => [[
-                'status' => (string) $status,
-                'title' => $title ?? Response::$statusTexts[$status] ?? 'Error',
-                'detail' => $detail,
-            ]],
-        ], $status)->header('Content-Type', 'application/vnd.api+json');
+        $error = [
+            'status' => (string) $status,
+            'title' => $title ?? Response::$statusTexts[$status] ?? 'Error',
+            'detail' => $detail,
+        ];
+
+        if ($sourceParameter !== null) {
+            $error['source'] = ['parameter' => $sourceParameter];
+        }
+
+        return response()->json(['errors' => [$error]], $status)->header('Content-Type', 'application/vnd.api+json');
     }
 
     public static function alreadyJsonApi(Response $response): bool

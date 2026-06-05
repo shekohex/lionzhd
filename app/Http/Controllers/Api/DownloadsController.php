@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Downloads\ApplyDownloadAction;
 use App\Actions\Downloads\CancelDownload;
 use App\Actions\Downloads\RetryDownload;
 use App\Actions\GetDownloadStatus;
 use App\Data\MediaDownloadStatusData;
-use App\Enums\MediaDownloadAction;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\JsonRpcException;
-use App\Http\Integrations\Aria2\Requests\PauseRequest;
-use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
-use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
-use App\Http\Integrations\Aria2\Responses\JsonRpcResponse;
 use App\Http\Requests\Api\ListDownloadsRequest;
 use App\Http\Requests\Api\UpdateDownloadRequest;
 use App\Http\Resources\Api\MediaDownloadResource;
@@ -110,9 +106,17 @@ final class DownloadsController extends Controller
             return new MediaDownloadResource($download->refresh()->load('media'));
         }
 
-        $removed = $this->applyAria2Action($connector, $download, $action);
+        $result = ApplyDownloadAction::run($connector, $download, $action);
 
-        if ($removed) {
+        if ($result->unavailable instanceof JsonRpcException) {
+            throw new HttpResponseException(JsonApiErrorResponse::make(503, $this->aria2UnavailableDetail($result->unavailable)));
+        }
+
+        if (! $result->ok) {
+            throw new HttpResponseException(JsonApiErrorResponse::make(422, (string) $result->error));
+        }
+
+        if ($result->removed) {
             return new MediaDownloadResource($download->load('media'));
         }
 
@@ -126,65 +130,6 @@ final class DownloadsController extends Controller
         $this->cancel($download, false);
 
         return new MediaDownloadResource($download->refresh()->load('media'));
-    }
-
-    private function applyAria2Action(JsonRpcConnector $connector, MediaDownloadRef $download, MediaDownloadAction $action): bool
-    {
-        try {
-            $result = GetDownloadStatus::run([$download->gid]);
-        } catch (JsonRpcException $exception) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(503, $this->aria2UnavailableDetail($exception)));
-        }
-
-        $errors = $result->filter(fn (mixed $response): bool => isset($response['error']))->map(fn (array $response): mixed => $response['error']);
-
-        if ($errors->isNotEmpty()) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, (string) $errors->first()));
-        }
-
-        $data = MediaDownloadStatusData::from($result->first());
-
-        if (! $data->status->canTakeAction($action)) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(409, "You cannot {$action->value} a download in {$data->status->value} status."));
-        }
-
-        $req = match ($action) {
-            MediaDownloadAction::Pause => new PauseRequest($download->gid),
-            MediaDownloadAction::Resume => new UnPauseRequest($download->gid),
-            MediaDownloadAction::Remove => new RemoveDownloadResultRequest($download->gid),
-            default => null,
-        };
-
-        if ($req === null) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, 'Unsupported download action.'));
-        }
-
-        try {
-            /** @var JsonRpcResponse $response */
-            $response = $connector->send($req)->dtoOrFail();
-        } catch (JsonRpcException $exception) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(503, $this->aria2UnavailableDetail($exception)));
-        }
-
-        if ($response->hasError()) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, $response->errorMessage()));
-        }
-
-        if ($action->isRemove()) {
-            $download->delete();
-
-            return true;
-        }
-
-        if ($action->isPause()) {
-            $download->forceFill(['desired_paused' => true])->save();
-        }
-
-        if ($action->isResume()) {
-            $download->forceFill(['desired_paused' => false])->save();
-        }
-
-        return false;
     }
 
     private function aria2UnavailableDetail(JsonRpcException $exception): string

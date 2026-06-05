@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
+use App\OpenApi\BearerAuthSecurityStrategy;
 use App\OpenApi\JsonApiResponseExtension;
-use Dedoc\Scramble\SecurityDocumentation\MiddlewareAuthSecurityStrategy;
-use Dedoc\Scramble\Support\Generator\SecurityScheme;
 
 return [
     /*
@@ -164,11 +163,5 @@ return [
      *     ],
      * ],
      */
-    'security_strategy' => [
-        MiddlewareAuthSecurityStrategy::class,
-        [
-            'middleware' => ['auth:sanctum'],
-            'scheme' => SecurityScheme::http('bearer')->as('bearerAuth'),
-        ],
-    ],
+    'security_strategy' => BearerAuthSecurityStrategy::class,
 ];

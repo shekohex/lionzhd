@@ -7,6 +7,14 @@ use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
+it('can cache configuration', function (): void {
+    try {
+        expect(Artisan::call('config:cache'))->toBe(0);
+    } finally {
+        Artisan::call('config:clear');
+    }
+});
+
 it('exports an openapi 3.1 spec with bearer auth and route specific settings schemas', function (): void {
     $path = tempnam(sys_get_temp_dir(), 'lionzhd-openapi-');
 

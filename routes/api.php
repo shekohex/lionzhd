@@ -24,10 +24,16 @@ use App\Http\Controllers\Api\SeriesMonitoringBackfillController;
 use App\Http\Controllers\Api\SeriesMonitoringController;
 use App\Http\Controllers\Api\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Api\SeriesWatchlistController;
-use App\Http\Controllers\Api\SettingsConfigController;
+use App\Http\Controllers\Api\SettingsAria2Controller;
+use App\Http\Controllers\Api\SettingsSchedulesBulkApplyController;
 use App\Http\Controllers\Api\SettingsSchedulesController;
-use App\Http\Controllers\Api\SettingsSyncController;
+use App\Http\Controllers\Api\SettingsSchedulesPauseController;
+use App\Http\Controllers\Api\SettingsSyncCategoriesController;
+use App\Http\Controllers\Api\SettingsSyncMediaController;
+use App\Http\Controllers\Api\SettingsUserRoleController;
 use App\Http\Controllers\Api\SettingsUsersController;
+use App\Http\Controllers\Api\SettingsUserSubtypeController;
+use App\Http\Controllers\Api\SettingsXtreamCodesController;
 use App\Http\Controllers\Api\TokensController;
 use App\Http\Controllers\Api\WatchlistController;
 use Illuminate\Support\Facades\Route;
@@ -195,47 +201,39 @@ Route::prefix('v1')
             ->middleware('abilities:read')
             ->name('api.v1.tokens.destroy');
 
-        Route::get('settings/aria2', [SettingsConfigController::class, 'show'])
-            ->defaults('section', 'aria2')
+        Route::get('settings/aria2', [SettingsAria2Controller::class, 'show'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.aria2.show');
 
-        Route::patch('settings/aria2', [SettingsConfigController::class, 'update'])
-            ->defaults('section', 'aria2')
+        Route::patch('settings/aria2', [SettingsAria2Controller::class, 'update'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.aria2.update');
 
-        Route::get('settings/xtreamcodes', [SettingsConfigController::class, 'show'])
-            ->defaults('section', 'xtreamcodes')
+        Route::get('settings/xtreamcodes', [SettingsXtreamCodesController::class, 'show'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.xtreamcodes.show');
 
-        Route::patch('settings/xtreamcodes', [SettingsConfigController::class, 'update'])
-            ->defaults('section', 'xtreamcodes')
+        Route::patch('settings/xtreamcodes', [SettingsXtreamCodesController::class, 'update'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.xtreamcodes.update');
 
-        Route::get('settings/sync-media', [SettingsSyncController::class, 'show'])
-            ->defaults('section', 'sync-media')
+        Route::get('settings/sync-media', [SettingsSyncMediaController::class, 'show'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.sync-media.show');
 
-        Route::patch('settings/sync-media', [SettingsSyncController::class, 'update'])
-            ->defaults('section', 'sync-media')
+        Route::patch('settings/sync-media', [SettingsSyncMediaController::class, 'update'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.sync-media.update');
 
-        Route::get('settings/sync-categories', [SettingsSyncController::class, 'show'])
-            ->defaults('section', 'sync-categories')
+        Route::get('settings/sync-categories', [SettingsSyncCategoriesController::class, 'show'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.sync-categories.show');
 
-        Route::patch('settings/sync-categories', [SettingsSyncController::class, 'update'])
-            ->defaults('section', 'sync-categories')
+        Route::patch('settings/sync-categories', [SettingsSyncCategoriesController::class, 'update'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.sync-categories.update');
 
-        Route::get('settings/sync-categories/history', [SettingsSyncController::class, 'index'])
+        Route::get('settings/sync-categories/history', [SettingsSyncCategoriesController::class, 'index'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.sync-categories.history');
 
@@ -243,13 +241,11 @@ Route::prefix('v1')
             ->middleware('abilities:admin')
             ->name('api.v1.settings.users.index');
 
-        Route::patch('settings/users/{user}/subtype', [SettingsUsersController::class, 'update'])
-            ->defaults('operation', 'subtype')
+        Route::patch('settings/users/{user}/subtype', [SettingsUserSubtypeController::class, 'update'])
             ->middleware('abilities:admin')
             ->name('api.v1.settings.users.subtype');
 
-        Route::patch('settings/users/{user}/role', [SettingsUsersController::class, 'update'])
-            ->defaults('operation', 'role')
+        Route::patch('settings/users/{user}/role', [SettingsUserRoleController::class, 'update'])
             ->middleware('abilities:super-admin')
             ->name('api.v1.settings.users.role');
 
@@ -257,13 +253,11 @@ Route::prefix('v1')
             ->middleware('abilities:monitoring:admin')
             ->name('api.v1.settings.schedules.index');
 
-        Route::patch('settings/schedules/bulk-apply', [SettingsSchedulesController::class, 'update'])
-            ->defaults('operation', 'bulk-apply')
+        Route::patch('settings/schedules/bulk-apply', [SettingsSchedulesBulkApplyController::class, 'update'])
             ->middleware('abilities:monitoring:admin')
             ->name('api.v1.settings.schedules.bulk-apply');
 
-        Route::patch('settings/schedules/pause', [SettingsSchedulesController::class, 'update'])
-            ->defaults('operation', 'pause')
+        Route::patch('settings/schedules/pause', [SettingsSchedulesPauseController::class, 'update'])
             ->middleware('abilities:monitoring:admin')
             ->name('api.v1.settings.schedules.pause');
     });

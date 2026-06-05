@@ -57,6 +57,21 @@ it('lists movies as paginated json api resources', function (): void {
     ]);
 });
 
+it('supports sparse fieldsets for movie list resources', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    createMovie(['stream_id' => 11, 'num' => 1, 'name' => 'Sparse Movie', 'rating' => '9.1']);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies?fields[movies]=name,rating', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.0.attributes.name', 'Sparse Movie')
+        ->assertJsonPath('data.0.attributes.rating', '9.1')
+        ->assertJsonMissingPath('data.0.attributes.stream_id')
+        ->assertJsonMissingPath('data.0.attributes.container_extension');
+});
+
 it('requires the read ability for movie list routes', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['server-download'])->plainTextToken;

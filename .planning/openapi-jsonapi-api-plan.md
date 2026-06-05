@@ -449,15 +449,15 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 Write Pest feature tests covering all API endpoints.
 
 **Coverage Requirements**
-- [ ] Authentication: 401 without token, 403 with insufficient scope
-- [ ] Each endpoint: happy path, validation errors, not found
-- [ ] JSON:API structure validation: `data.id`, `data.type`, `data.attributes`
-- [ ] Pagination: `links`, `meta` present on collection endpoints
-- [ ] Rate limiting: throttled after 120 req/min
-- [ ] Policy enforcement: admin-only endpoints reject non-admins
-- [ ] Token lifecycle: create, use, revoke, verify revoked token fails
-- [ ] `?include=episodes` and `?include=vod-info` relationship inclusion
-- [ ] Sparse fieldsets: `?fields[movies]=name,rating` returns only requested fields
+- [x] Authentication: 401 without token, 403 with insufficient scope
+- [x] Each endpoint: happy path, validation errors, not found
+- [x] JSON:API structure validation: `data.id`, `data.type`, `data.attributes`
+- [x] Pagination: `links`, `meta` present on collection endpoints
+- [x] Rate limiting: throttled after 120 req/min
+- [x] Policy enforcement: admin-only endpoints reject non-admins
+- [x] Token lifecycle: create, use, revoke, verify revoked token fails
+- [x] `?include=episodes` and `?include=vod-info` relationship inclusion
+- [x] Sparse fieldsets: `?fields[movies]=name,rating` returns only requested fields
 
 ---
 
@@ -470,11 +470,11 @@ Write Pest feature tests covering all API endpoints.
 Validate the generated OpenAPI spec is complete and correct.
 
 **Acceptance Criteria**
-- [ ] `GET /docs/api.json` returns valid OpenAPI 3.1 (validate with `swagger-parser` or online)
-- [ ] All endpoints documented with correct request/response schemas
-- [ ] Bearer auth security scheme present
-- [ ] JSON:API `Content-Type` documented
-- [ ] No missing schemas or broken references
+- [x] `GET /docs/api.json` returns valid OpenAPI 3.1 (validate with `swagger-parser` or online)
+- [x] All endpoints documented with correct request/response schemas
+- [x] Bearer auth security scheme present
+- [x] JSON:API `Content-Type` documented
+- [x] No missing schemas or broken references
 
 ---
 
@@ -489,12 +489,12 @@ Validate the generated OpenAPI spec is complete and correct.
 Write consumer-facing documentation for the API.
 
 **Deliverables**
-- [ ] `README.md` section: "External API" with base URL, auth header, content-type
-- [ ] Quick start: generate token → first request example (curl)
-- [ ] Endpoint summary table linking to `/docs/api` for details
-- [ ] Error codes reference (400, 401, 403, 404, 422, 429)
-- [ ] Rate limiting explanation
-- [ ] Sparse fieldsets and relationship inclusion examples
+- [x] `README.md` section: "External API" with base URL, auth header, content-type
+- [x] Quick start: generate token → first request example (curl)
+- [x] Endpoint summary table linking to `/docs/api` for details
+- [x] Error codes reference (400, 401, 403, 404, 422, 429)
+- [x] Rate limiting explanation
+- [x] Sparse fieldsets and relationship inclusion examples
 
 ---
 
@@ -507,9 +507,9 @@ Write consumer-facing documentation for the API.
 Document internal patterns for future developers.
 
 **Deliverables**
-- [ ] `docs/api-architecture.md`: How `JsonApiResource` delegates to laravel-data
-- [ ] `docs/api-auth.md`: Sanctum scopes, ability mapping, middleware flow
-- [ ] `docs/adding-endpoints.md`: Checklist for adding new API resources
+- [x] `docs/api-architecture.md`: How `JsonApiResource` delegates to laravel-data
+- [x] `docs/api-auth.md`: Sanctum scopes, ability mapping, middleware flow
+- [x] `docs/adding-endpoints.md`: Checklist for adding new API resources
 
 ---
 
@@ -595,8 +595,8 @@ The following web-only functionality is deliberately kept out of the API surface
 
 ## Definition of Done (per ticket)
 
-- [ ] Code written and type-safe (PHPStan level 8)
-- [ ] Pest tests passing
-- [ ] Scramble OpenAPI spec updated (if endpoint changes)
-- [ ] No breaking changes to existing web UI
-- [ ] Reviewed and approved
+- [x] Code written and type-safe (PHPStan level 8)
+- [x] Pest tests passing
+- [x] Scramble OpenAPI spec updated (if endpoint changes)
+- [x] No breaking changes to existing web UI
+- [x] Reviewed and approved

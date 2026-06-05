@@ -109,12 +109,6 @@ parameters:
 			path: app/Filters/PaginatorFilter.php
 
 		-
-			message: '#^Match expression does not handle remaining value\: string$#'
-			identifier: match.unhandled
-			count: 1
-			path: app/Http/Controllers/AutoEpisodes/BulkApplySeriesMonitoringPresetController.php
-
-		-
 			message: '#^Parameter \#1 \$movies of class App\\Data\\LightweightSearchData constructor expects Illuminate\\Pagination\\LengthAwarePaginator&iterable\<App\\Data\\VodStreamData\>, array\<App\\Data\\VodStreamData\>\|Illuminate\\Contracts\\Pagination\\CursorPaginator\|Illuminate\\Contracts\\Pagination\\Paginator\|Illuminate\\Pagination\\AbstractCursorPaginator\|Illuminate\\Pagination\\AbstractPaginator\|Illuminate\\Support\\Enumerable\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\CursorPaginatedDataCollection\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\DataCollection\<\(int\|string\), App\\Data\\VodStreamData\>\|Spatie\\LaravelData\\PaginatedDataCollection\<\(int\|string\), App\\Data\\VodStreamData\> given\.$#'
 			identifier: argument.type
 			count: 1

@@ -44,7 +44,12 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
     });
 
     const toggleAbility = (ability: string, checked: boolean) => {
-        setData('abilities', checked ? Array.from(new Set([...data.abilities, ability])) : data.abilities.filter((value) => value !== ability));
+        setData(
+            'abilities',
+            checked
+                ? Array.from(new Set([...data.abilities, ability]))
+                : data.abilities.filter((value) => value !== ability),
+        );
     };
 
     const submit: FormEventHandler = (event) => {
@@ -67,7 +72,10 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
 
             <SettingsLayout>
                 <div className="space-y-8">
-                    <HeadingSmall title="API tokens" description="Create scoped tokens for external API clients. New token secrets are shown once." />
+                    <HeadingSmall
+                        title="API tokens"
+                        description="Create scoped tokens for external API clients. New token secrets are shown once."
+                    />
 
                     {flash.api_token && (
                         <div className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100">
@@ -84,7 +92,12 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
                     <form onSubmit={submit} className="space-y-5 rounded-lg border p-4">
                         <div className="grid gap-2">
                             <Label htmlFor="name">Token name</Label>
-                            <Input id="name" value={data.name} onChange={(event) => setData('name', event.target.value)} placeholder="Automation client" />
+                            <Input
+                                id="name"
+                                value={data.name}
+                                onChange={(event) => setData('name', event.target.value)}
+                                placeholder="Automation client"
+                            />
                             <InputError message={errors.name} />
                         </div>
 
@@ -98,7 +111,7 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
                                     />
                                     <span className="space-y-1">
                                         <span className="block font-medium">{option.label}</span>
-                                        <span className="block text-muted-foreground">{option.description}</span>
+                                        <span className="text-muted-foreground block">{option.description}</span>
                                     </span>
                                 </label>
                             ))}
@@ -121,12 +134,17 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
                             <p className="text-muted-foreground text-sm">No API tokens created yet.</p>
                         ) : (
                             tokens.map((token) => (
-                                <div key={token.id} className="flex items-start justify-between gap-4 rounded-lg border p-4">
+                                <div
+                                    key={token.id}
+                                    className="flex items-start justify-between gap-4 rounded-lg border p-4"
+                                >
                                     <div className="space-y-2">
                                         <div className="font-medium">{token.name}</div>
                                         <div className="text-muted-foreground text-xs">
                                             Created {new Date(token.created_at).toLocaleString()}
-                                            {token.last_used_at ? ` • Last used ${new Date(token.last_used_at).toLocaleString()}` : ' • Never used'}
+                                            {token.last_used_at
+                                                ? ` • Last used ${new Date(token.last_used_at).toLocaleString()}`
+                                                : ' • Never used'}
                                         </div>
                                         <div className="flex flex-wrap gap-1">
                                             {token.abilities.map((ability) => (
@@ -142,7 +160,9 @@ export default function Tokens({ tokens, abilityOptions }: { tokens: Token[]; ab
                                         size="sm"
                                         onClick={() => {
                                             if (window.confirm(`Revoke token "${token.name}"?`)) {
-                                                router.delete(route('tokens.destroy', token.id), { preserveScroll: true });
+                                                router.delete(route('tokens.destroy', token.id), {
+                                                    preserveScroll: true,
+                                                });
                                             }
                                         }}
                                     >

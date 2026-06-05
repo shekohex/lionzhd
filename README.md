@@ -13,6 +13,7 @@ A modern, high-performance IPTV content manager built with Laravel that integrat
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
+- [External API](#external-api)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -126,6 +127,69 @@ For server-side rendering support:
 ```bash
 composer dev:ssr
 ```
+
+## External API
+
+lionz.tv exposes a versioned JSON:API external API at `/api/v1`. Interactive OpenAPI documentation is available at `/docs/api`, and the machine-readable OpenAPI 3.1 document is available at `/docs/api.json`.
+
+### Authentication
+
+Create a scoped token from **Settings → API Tokens** at `/settings/tokens`. Copy the token once when it is created; only the hashed token is stored afterward.
+
+Every API request must include:
+
+```bash
+Authorization: Bearer <token>
+Accept: application/vnd.api+json
+Content-Type: application/json
+```
+
+### Quick Start
+
+```bash
+curl -s http://localhost:8000/api/v1/me \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Accept: application/vnd.api+json'
+
+curl -s 'http://localhost:8000/api/v1/movies?page[size]=10&fields[movies]=name,rating' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Accept: application/vnd.api+json'
+
+curl -s http://localhost:8000/api/v1/search \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Accept: application/vnd.api+json' \
+  -H 'Content-Type: application/json' \
+  -d '{"q":"matrix"}'
+```
+
+### Scopes
+
+- `read`: Browse catalog, watchlists, discovery, search, profile, and token metadata.
+- `server-download`: Create movie or series episode downloads.
+- `download-operations`: Pause, resume, remove, or cancel downloads.
+- `monitoring:admin`: Manage automatic series monitoring and schedules.
+- `admin`: Manage administrative settings and cache operations.
+- `super-admin`: Perform super-admin-only user role changes.
+
+### Endpoint Summary
+
+- `GET /api/v1/discover`, `POST /api/v1/search`, `GET /api/v1/categories`
+- `GET /api/v1/movies`, `GET /api/v1/movies/{id}`, watchlist/download/direct/cache operations
+- `GET /api/v1/series`, `GET /api/v1/series/{id}`, episode download/direct, batch download/direct, monitoring operations
+- `GET|POST|DELETE /api/v1/watchlist`
+- `GET|PATCH|DELETE /api/v1/downloads`
+- `GET|POST|DELETE /api/v1/tokens`
+- `GET|PATCH /api/v1/settings/*` for admin config, sync triggers, users, and monitoring schedules
+
+### JSON:API Behavior
+
+Responses use `application/vnd.api+json` and contain JSON:API resource objects with `data.id`, `data.type`, and `data.attributes`. Collection endpoints include pagination `links` and `meta` when paginated. Validation and authorization failures return JSON:API `errors` objects with `status`, `title`, `detail`, and optional `source.parameter`.
+
+Supported relationship includes include `?include=vod-info` on movie details and `?include=episodes` on series details. Sparse fieldsets use JSON:API syntax, for example `?fields[movies]=name,rating`.
+
+The API is rate-limited to 120 requests per minute per authenticated user or token. Common error statuses are `401` unauthenticated, `403` insufficient scope or policy denial, `404` not found, `409` business action conflict, `422` validation failure, and `429` rate limited.
+
+For implementation details, see `docs/api-architecture.md`, `docs/api-auth.md`, and `docs/adding-endpoints.md`.
 
 ## Contributing
 

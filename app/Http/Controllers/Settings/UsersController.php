@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\Admin\UpdateUserSettings;
 use App\Enums\UserRole;
 use App\Enums\UserSubtype;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,14 +63,7 @@ final class UsersController extends Controller
             'subtype' => ['required', Rule::in([UserSubtype::Internal->value, UserSubtype::External->value])],
         ]);
 
-        if ($user->role !== UserRole::Member) {
-            throw ValidationException::withMessages([
-                'subtype' => 'Subtype can only be updated for members.',
-            ]);
-        }
-
-        $user->subtype = UserSubtype::from($validated['subtype']);
-        $user->save();
+        app(UpdateUserSettings::class)->subtype($user, UserSubtype::from($validated['subtype']));
 
         return back()->with('success', 'User subtype updated successfully.');
     }
@@ -83,27 +76,7 @@ final class UsersController extends Controller
             'role' => ['required', Rule::in([UserRole::Admin->value, UserRole::Member->value])],
         ]);
 
-        $role = UserRole::from($validated['role']);
-
-        if ($user->is_super_admin && $role === UserRole::Member) {
-            throw new AuthorizationException('Super-admin accounts cannot be demoted.');
-        }
-
-        if ($user->role === UserRole::Admin && $role === UserRole::Member) {
-            $adminCount = User::query()->where('role', UserRole::Admin)->count();
-
-            if ($adminCount <= 1) {
-                throw new AuthorizationException('At least one admin account must remain.');
-            }
-        }
-
-        $user->role = $role;
-
-        if ($role === UserRole::Member) {
-            $user->is_super_admin = false;
-        }
-
-        $user->save();
+        app(UpdateUserSettings::class)->role($user, UserRole::from($validated['role']));
 
         return back()->with('success', 'User role updated successfully.');
     }

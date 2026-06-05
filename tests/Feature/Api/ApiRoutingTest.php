@@ -39,6 +39,23 @@ it('requires the read ability for the profile endpoint', function (): void {
         ->assertJsonPath('errors.0.status', '403');
 });
 
+it('rate limits api requests per authenticated user', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    for ($i = 0; $i < 120; $i++) {
+        $this->withToken($token)
+            ->getJson('/api/v1/me', ['Accept' => 'application/vnd.api+json'])
+            ->assertOk();
+    }
+
+    $this->withToken($token)
+        ->getJson('/api/v1/me', ['Accept' => 'application/vnd.api+json'])
+        ->assertTooManyRequests()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '429');
+});
+
 it('does not expose raw exception details for production api server errors', function (): void {
     config(['app.debug' => false]);
 

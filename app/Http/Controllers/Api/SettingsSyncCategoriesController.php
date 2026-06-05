@@ -5,36 +5,31 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\SyncCategoriesSettingsRequest;
 use App\Http\Resources\Api\SettingsResource;
-use App\Jobs\RefreshMediaContents;
 use App\Jobs\SyncCategories;
 use App\Models\CategorySyncRun;
 use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
-final class SettingsSyncController extends Controller
+final class SettingsSyncCategoriesController extends Controller
 {
-    public function show(string $section): SettingsResource
+    public function show(): SettingsResource
     {
         Gate::authorize('admin');
 
-        return new SettingsResource(['id' => $section, 'type' => 'settings', 'attributes' => ['status' => 'available']]);
+        return new SettingsResource(['id' => 'sync-categories', 'type' => 'settings', 'attributes' => ['status' => 'available']]);
     }
 
-    public function update(Request $request, #[CurrentUser] User $user, string $section): SettingsResource
+    public function update(SyncCategoriesSettingsRequest $request, #[CurrentUser] User $user): SettingsResource
     {
         Gate::authorize('admin');
 
-        if ($section === 'sync-media') {
-            RefreshMediaContents::dispatch();
-        } else {
-            SyncCategories::dispatch($request->boolean('force_empty_vod'), $request->boolean('force_empty_series'), $user->id);
-        }
+        SyncCategories::dispatch($request->boolean('force_empty_vod'), $request->boolean('force_empty_series'), $user->id);
 
-        return new SettingsResource(['id' => $section, 'type' => 'settings-actions', 'attributes' => ['status' => 'queued']]);
+        return new SettingsResource(['id' => 'sync-categories', 'type' => 'settings-actions', 'attributes' => ['status' => 'queued']]);
     }
 
     public function index(): AnonymousResourceCollection

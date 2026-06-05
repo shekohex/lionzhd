@@ -1,0 +1,141 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\OpenApi;
+
+use Dedoc\Scramble\Support\Generator\OpenApi;
+use Dedoc\Scramble\Support\Generator\Schema;
+use Dedoc\Scramble\Support\Generator\Types\ArrayType;
+use Dedoc\Scramble\Support\Generator\Types\BooleanType;
+use Dedoc\Scramble\Support\Generator\Types\IntegerType;
+use Dedoc\Scramble\Support\Generator\Types\NumberType;
+use Dedoc\Scramble\Support\Generator\Types\ObjectType;
+use Dedoc\Scramble\Support\Generator\Types\StringType;
+use Dedoc\Scramble\Support\Generator\Types\Type;
+
+final class JsonApiSchemas
+{
+    public static function apply(OpenApi $openApi): void
+    {
+        $movie = self::resource('movies', self::movieAttributes());
+        $series = self::resource('series', self::seriesAttributes());
+
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\MovieResource', Schema::fromType($movie));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\SeriesResource', Schema::fromType($series));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
+        $openApi->components->addSchema('MovieResource', Schema::fromType($movie));
+        $openApi->components->addSchema('SeriesResource', Schema::fromType($series));
+        $openApi->components->addSchema('DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
+        $openApi->components->addSchema('SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
+    }
+
+    /**
+     * @param  array<string, Type>  $attributes
+     */
+    private static function resource(string $type, array $attributes): ObjectType
+    {
+        return (new ObjectType)
+            ->addProperty('id', new StringType)
+            ->addProperty('type', (new StringType)->const($type))
+            ->addProperty('attributes', self::attributes($attributes))
+            ->setRequired(['id', 'type', 'attributes']);
+    }
+
+    private static function groupedResource(string $type, ObjectType $movie, ObjectType $series, bool $paginated = false): ObjectType
+    {
+        return self::resource($type, [
+            'movies' => self::resourceDocument($movie, $paginated),
+            'series' => self::resourceDocument($series, $paginated),
+        ]);
+    }
+
+    private static function resourceDocument(ObjectType $resource, bool $paginated): ObjectType
+    {
+        $document = (new ObjectType)
+            ->addProperty('data', (new ArrayType)->setItems($resource))
+            ->setRequired(['data']);
+
+        if ($paginated) {
+            $document
+                ->addProperty('links', (new ObjectType)
+                    ->addProperty('first', (new StringType)->nullable(true))
+                    ->addProperty('last', (new StringType)->nullable(true))
+                    ->addProperty('prev', (new StringType)->nullable(true))
+                    ->addProperty('next', (new StringType)->nullable(true)))
+                ->addProperty('meta', (new ObjectType)
+                    ->addProperty('current_page', new IntegerType)
+                    ->addProperty('from', (new IntegerType)->nullable(true))
+                    ->addProperty('last_page', new IntegerType)
+                    ->addProperty('per_page', new IntegerType)
+                    ->addProperty('to', (new IntegerType)->nullable(true))
+                    ->addProperty('total', new IntegerType));
+        }
+
+        return $document;
+    }
+
+    /**
+     * @param  array<string, Type>  $attributes
+     */
+    private static function attributes(array $attributes): ObjectType
+    {
+        $schema = new ObjectType;
+
+        foreach ($attributes as $name => $type) {
+            $schema->addProperty($name, $type);
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @return array<string, Type>
+     */
+    private static function movieAttributes(): array
+    {
+        return [
+            'num' => new IntegerType,
+            'name' => new StringType,
+            'stream_type' => new StringType,
+            'stream_id' => new IntegerType,
+            'stream_icon' => new StringType,
+            'rating' => new StringType,
+            'rating_5based' => new NumberType,
+            'added' => (new StringType)->format('date-time'),
+            'is_adult' => new BooleanType,
+            'category_id' => (new StringType)->nullable(true),
+            'container_extension' => new StringType,
+            'custom_sid' => (new StringType)->nullable(true),
+            'direct_source' => (new StringType)->nullable(true),
+            'created_at' => (new StringType)->format('date-time'),
+            'updated_at' => (new StringType)->format('date-time'),
+        ];
+    }
+
+    /**
+     * @return array<string, Type>
+     */
+    private static function seriesAttributes(): array
+    {
+        return [
+            'num' => new IntegerType,
+            'name' => new StringType,
+            'series_id' => new IntegerType,
+            'cover' => (new StringType)->nullable(true),
+            'plot' => (new StringType)->nullable(true),
+            'cast' => (new StringType)->nullable(true),
+            'director' => (new StringType)->nullable(true),
+            'genre' => (new StringType)->nullable(true),
+            'backdrop_path' => (new ArrayType)->setItems(new StringType),
+            'releaseDate' => (new StringType)->nullable(true),
+            'last_modified' => (new StringType)->format('date-time')->nullable(true),
+            'category_id' => (new StringType)->nullable(true),
+            'rating' => (new NumberType)->nullable(true),
+            'rating_5based' => (new NumberType)->nullable(true),
+            'created_at' => (new StringType)->format('date-time'),
+            'updated_at' => (new StringType)->format('date-time'),
+        ];
+    }
+}

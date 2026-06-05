@@ -55,6 +55,44 @@ it('requires the read ability for movie list routes', function (): void {
         ->assertJsonPath('errors.0.status', '403');
 });
 
+it('shows a movie as a json api resource', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    createMovie(['stream_id' => 40, 'name' => 'Detail Movie']);
+
+    $this->withToken($token)
+        ->getJson('/api/v1/movies/40', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'movies')
+        ->assertJsonPath('data.id', '40')
+        ->assertJsonPath('data.attributes.name', 'Detail Movie');
+});
+
+it('adds and removes a movie from the authenticated users watchlist', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    createMovie(['stream_id' => 50, 'name' => 'Watchlist Movie']);
+
+    $this->withToken($token)
+        ->postJson('/api/v1/movies/50/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'movies')
+        ->assertJsonPath('data.id', '50');
+
+    expect($user->inMyWatchlist(50, VodStream::class))->toBeTrue();
+
+    $this->withToken($token)
+        ->deleteJson('/api/v1/movies/50/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'movies')
+        ->assertJsonPath('data.id', '50');
+
+    expect($user->fresh()->inMyWatchlist(50, VodStream::class))->toBeFalse();
+});
+
 it('formats movie list validation errors as json api errors', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

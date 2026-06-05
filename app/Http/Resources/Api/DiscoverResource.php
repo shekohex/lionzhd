@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api;
 
+use App\Support\JsonApiResourceDocument;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\JsonApi\JsonApiResource;
 
@@ -20,13 +21,16 @@ final class DiscoverResource extends JsonApiResource
     }
 
     /**
-     * @return array{movies: mixed, series: mixed}
+     * @return array{
+     *     movies: array<string, mixed>,
+     *     series: array<string, mixed>
+     * }
      */
     public function toAttributes(Request $request): array
     {
         return [
-            'movies' => MovieResource::collection($this->resource['movies'])->toResponse($request)->getData(true),
-            'series' => SeriesResource::collection($this->resource['series'])->toResponse($request)->getData(true),
+            'movies' => JsonApiResourceDocument::collection($request, MovieResource::class, $this->resource['movies']),
+            'series' => JsonApiResourceDocument::collection($request, SeriesResource::class, $this->resource['series']),
         ];
     }
 }

@@ -31,4 +31,9 @@ final class MoviesController extends Controller
 
         return $collection;
     }
+
+    public function show(VodStream $movie): MovieResource
+    {
+        return new MovieResource($movie);
+    }
 }

@@ -68,5 +68,11 @@ it('documents movie json api resource attributes in openapi', function (): void 
         ->assertJsonPath('components.schemas.MovieResource.type', 'object')
         ->assertJsonPath('components.schemas.MovieResource.properties.attributes.type', 'object')
         ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.name.type', 'string')
-        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.stream_id.type', 'string');
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.stream_id.type', 'integer')
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.rating_5based.type', 'number')
+        ->assertJsonPath('components.schemas.MovieResource.properties.attributes.properties.is_adult.type', 'boolean')
+        ->assertJsonPath('components.schemas.SeriesResource.type', 'object')
+        ->assertJsonPath('components.schemas.SeriesResource.properties.attributes.properties.series_id.type', 'integer')
+        ->assertJsonPath('components.schemas.DiscoverResource.properties.attributes.properties.movies.properties.data.items.properties.attributes.properties.name.type', 'string')
+        ->assertJsonPath('components.schemas.SearchResultResource.properties.attributes.properties.series.properties.data.items.properties.attributes.properties.name.type', 'string');
 });

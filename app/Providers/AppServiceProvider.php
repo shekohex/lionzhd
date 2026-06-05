@@ -10,7 +10,9 @@ use App\Models\Aria2Config;
 use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
+use App\OpenApi\JsonApiSchemas;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +42,10 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Scramble::afterOpenApiGenerated(static function ($openApi): void {
+            JsonApiSchemas::apply($openApi);
+        });
+
         // SQLite specific settings and optimizations
         if (DB::getDriverName() === 'sqlite') {
             try {

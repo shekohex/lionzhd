@@ -32,7 +32,7 @@ final class JsonApiErrorResponse
     {
         $fallback = Response::$statusTexts[$status] ?? 'Error';
 
-        if ($status >= 500 && ! config('app.debug')) {
+        if ($status >= 400 && ! config('app.debug')) {
             return $fallback;
         }
 

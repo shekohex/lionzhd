@@ -74,6 +74,21 @@ it('returns category details by provider id', function (): void {
         ->assertJsonPath('data.attributes.name', 'Action');
 });
 
+it('does not expose model class names for missing api resources in production', function (): void {
+    config(['app.debug' => false]);
+
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/categories/missing-category', ['Accept' => 'application/vnd.api+json'])
+        ->assertNotFound()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '404')
+        ->assertJsonPath('errors.0.detail', 'Not Found')
+        ->assertJsonMissing(['detail' => 'No query results for model [App\\Models\\Category].']);
+});
+
 it('formats search validation errors as json api errors', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;
@@ -103,6 +118,38 @@ it('returns search results as json api resource attributes', function (): void {
         ->assertJsonPath('data.type', 'search-results')
         ->assertJsonPath('data.attributes.movies.data.0.type', 'movies')
         ->assertJsonPath('data.attributes.movies.data.0.attributes.name', 'Searchable Movie')
+        ->assertJsonPath('data.attributes.series.data', []);
+});
+
+it('requires the read ability for lightweight search', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['server-download'])->plainTextToken;
+
+    $this->withToken($token)
+        ->postJson('/api/v1/search/lightweight', ['q' => 'Searchable'], ['Accept' => 'application/vnd.api+json'])
+        ->assertForbidden()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '403');
+});
+
+it('returns lightweight search results as json api resource attributes', function (): void {
+    config()->set('scout.driver', 'database');
+
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    createDiscoveryMovie(['stream_id' => 31, 'name' => 'Lightweight Movie']);
+
+    $this->withToken($token)
+        ->postJson('/api/v1/search/lightweight', [
+            'q' => 'Lightweight',
+            'media_type' => MediaType::Movie->value,
+        ], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'search-results')
+        ->assertJsonPath('data.attributes.movies.data.0.type', 'movies')
+        ->assertJsonPath('data.attributes.movies.data.0.attributes.name', 'Lightweight Movie')
         ->assertJsonPath('data.attributes.series.data', []);
 });
 

@@ -124,7 +124,7 @@ namespace {
             const paths = new Set((__PATHS__).map(normalizePath));
             const startedAt = Date.now();
 
-            while (Date.now() - startedAt < 3000) {
+            while (Date.now() - startedAt < 10000) {
                 const currentPath = window.location.pathname;
                 const normalizedPath = normalizePath(currentPath);
 

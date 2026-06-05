@@ -98,7 +98,7 @@ it('returns json api validation errors for settings mutations', function (): voi
         ->assertUnprocessable()
         ->assertHeader('Content-Type', 'application/vnd.api+json')
         ->assertJsonPath('errors.0.status', '422')
-        ->assertJsonPath('errors.0.title', 'Invalid Attribute')
+        ->assertJsonPath('errors.0.title', 'Unprocessable Content')
         ->assertJsonPath('errors.0.source.parameter', 'port');
 });
 

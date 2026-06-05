@@ -192,7 +192,7 @@ export default function Search() {
                         </div>
                     </div>
 
-                    <Tabs value={activeMode} onValueChange={handleModeChange} className="mt-4 w-full">
+                    <Tabs key={activeMode} value={activeMode} onValueChange={handleModeChange} className="mt-4 w-full">
                         <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl p-1">
                             <TabsTrigger value="all" className="py-2">
                                 All

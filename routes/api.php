@@ -39,7 +39,7 @@ use App\Http\Controllers\Api\WatchlistController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')
-    ->middleware(['AcceptJsonApi', 'auth:sanctum', 'throttle:api'])
+    ->middleware(['auth:sanctum', 'throttle:api'])
     ->group(function (): void {
         Route::get('movies', [MoviesController::class, 'index'])
             ->middleware('abilities:read')

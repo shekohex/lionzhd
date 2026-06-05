@@ -12,10 +12,6 @@ trait ConvertsValidationExceptionToJsonApi
 {
     private function validationError(ValidationException $exception, int $status = 422): JsonResponse
     {
-        $errors = $exception->errors();
-        $parameter = array_key_first($errors) ?? 'series';
-        $detail = (string) ($errors[$parameter][0] ?? $exception->getMessage());
-
-        return JsonApiErrorResponse::make($status, $detail, sourceParameter: (string) $parameter);
+        return JsonApiErrorResponse::fromValidationException($exception, $status);
     }
 }

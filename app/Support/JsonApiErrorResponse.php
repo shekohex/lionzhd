@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
@@ -44,26 +45,14 @@ final class JsonApiErrorResponse
         return true;
     }
 
-    public static function fromValidationException(ValidationException $exception): JsonResponse
+    public static function fromValidationException(ValidationException $exception, int $status = 422): JsonResponse
     {
-        $errors = collect($exception->errors())
-            ->flatMap(fn (array $messages, string $field): array => array_map(
-                static fn (string $message): array => [
-                    'status' => '422',
-                    'title' => Response::$statusTexts[422],
-                    'detail' => $message,
-                    'source' => ['parameter' => $field],
-                ],
-                $messages,
-            ))
-            ->values()
-            ->all();
+        return self::fromValidationErrors($exception->errors(), $status, $exception->getMessage());
+    }
 
-        if ($errors === []) {
-            return self::make(422, $exception->getMessage());
-        }
-
-        return response()->json(['errors' => $errors], 422)->header('Content-Type', 'application/vnd.api+json');
+    public static function fromValidator(Validator $validator, int $status = 422): JsonResponse
+    {
+        return self::fromValidationErrors($validator->errors()->toArray(), $status);
     }
 
     public static function safeDetail(int $status, Throwable $exception): string
@@ -79,6 +68,30 @@ final class JsonApiErrorResponse
         }
 
         return $exception->getMessage() !== '' ? $exception->getMessage() : $fallback;
+    }
+
+    /** @param array<string, array<int, string>> $validationErrors */
+    private static function fromValidationErrors(array $validationErrors, int $status = 422, string $fallbackDetail = ''): JsonResponse
+    {
+        $title = Response::$statusTexts[$status] ?? 'Error';
+        $errors = collect($validationErrors)
+            ->flatMap(fn (array $messages, string $field): array => array_map(
+                static fn (string $message): array => [
+                    'status' => (string) $status,
+                    'title' => $title,
+                    'detail' => $message,
+                    'source' => ['parameter' => $field],
+                ],
+                $messages,
+            ))
+            ->values()
+            ->all();
+
+        if ($errors === []) {
+            return self::make($status, $fallbackDetail !== '' ? $fallbackDetail : $title);
+        }
+
+        return response()->json(['errors' => $errors], $status)->header('Content-Type', 'application/vnd.api+json');
     }
 
     private static function isUnsafeNotFoundDetail(Throwable $exception): bool

@@ -216,17 +216,19 @@ it('returns direct links for series episodes including direct txt batches', func
         ->assertJsonPath('data.attributes.episode_id', '921')
         ->assertJsonStructure(['data' => ['attributes' => ['url']]]);
 
-    $response = $this->withToken($token)
+    $this->withToken($token)
         ->postJson('/api/v1/series/92/direct.txt', [
             'episodes' => [
                 ['season' => 1, 'episode' => 0],
                 ['season' => 1, 'episode' => 1],
             ],
-        ], ['Accept' => 'text/plain'])
+        ], ['Accept' => 'application/vnd.api+json'])
         ->assertOk()
-        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
-
-    expect(mb_substr_count((string) $response->getContent(), '/dl/'))->toBe(2);
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('data.type', 'direct-links')
+        ->assertJsonPath('data.attributes.count', 2)
+        ->assertJsonPath('data.attributes.urls', fn (array $urls): bool => count($urls) === 2 && str_contains($urls[0], '/dl/'))
+        ->assertJsonPath('data.attributes.text', fn (string $text): bool => mb_substr_count($text, '/dl/') === 2);
 });
 
 it('clears series cache only for users passing both admin token ability and admin gate', function (): void {

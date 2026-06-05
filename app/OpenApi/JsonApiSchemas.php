@@ -71,6 +71,8 @@ final class JsonApiSchemas
             'url' => (new StringType)->nullable(true),
             'expires_in_seconds' => (new IntegerType)->nullable(true),
             'status' => (new StringType)->nullable(true),
+            'urls' => (new ArrayType)->setItems(new StringType),
+            'text' => (new StringType)->nullable(true),
             'gids' => (new ArrayType)->setItems(new StringType),
             'count' => (new IntegerType)->nullable(true),
             'series_id' => (new IntegerType)->nullable(true),

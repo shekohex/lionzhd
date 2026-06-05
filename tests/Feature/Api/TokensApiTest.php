@@ -9,8 +9,8 @@ use Laravel\Sanctum\PersonalAccessToken;
 uses(RefreshDatabase::class);
 
 it('creates lists and revokes api tokens without exposing stored secrets', function (): void {
-    $user = User::factory()->create();
-    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['read', 'download-operations'])->plainTextToken;
 
     $createResponse = $this->withToken($token)
         ->postJson('/api/v1/tokens', [
@@ -67,6 +67,22 @@ it('validates token abilities and immediately invalidates revoked tokens', funct
     $this->withToken($token)
         ->getJson('/api/v1/me', ['Accept' => 'application/vnd.api+json'])
         ->assertUnauthorized();
+});
+
+it('prevents read only tokens from minting broader scoped tokens', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    $this->withToken($token)
+        ->postJson('/api/v1/tokens', [
+            'name' => 'Escalation',
+            'abilities' => ['read', 'download-operations'],
+        ], ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.0.source.parameter', 'abilities')
+        ->assertJsonPath('errors.0.detail', 'Requested token abilities cannot exceed the current token or account permissions.');
+
+    expect($user->tokens()->where('name', 'Escalation')->exists())->toBeFalse();
 });
 
 it('does not allow revoking another users token', function (): void {

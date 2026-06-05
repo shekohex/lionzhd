@@ -38,7 +38,7 @@ final class SeriesMonitoringController extends Controller
 
         $removeFromWatchlist = (bool) ($validated['remove_from_watchlist'] ?? false);
 
-        ManageSeriesMonitoring::make()->disable($user, $model, $removeFromWatchlist);
+        ManageSeriesMonitoring::make()->disable($user, $model, $removeFromWatchlist, requireExisting: false);
 
         return back()->with('success', 'Series monitoring disabled.');
     }

@@ -67,12 +67,20 @@ final class ManageSeriesMonitoring
         return $monitor;
     }
 
-    public function disable(User $user, Series $series, bool $removeFromWatchlist): SeriesMonitor
+    public function disable(User $user, Series $series, bool $removeFromWatchlist, bool $requireExisting = true): ?SeriesMonitor
     {
         $monitor = $this->monitorForSeries($user, $series);
 
         if (! $monitor instanceof SeriesMonitor) {
-            throw ValidationException::withMessages(['series' => 'Monitoring has not been enabled for this series.']);
+            if ($removeFromWatchlist) {
+                $this->watchlistQuery($user, $series)->delete();
+            }
+
+            if ($requireExisting) {
+                throw ValidationException::withMessages(['series' => 'Monitoring has not been enabled for this series.']);
+            }
+
+            return null;
         }
 
         $monitor->forceFill(['enabled' => false, 'next_run_at' => null])->save();

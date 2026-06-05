@@ -37,7 +37,7 @@ final class ApplyDownloadAction
         $data = MediaDownloadStatusData::from($result->first());
 
         if (! $data->status->canTakeAction($action)) {
-            return DownloadActionResult::failed("You cannot {$action->value} a download in {$data->status->value} status.");
+            return DownloadActionResult::conflict("You cannot {$action->value} a download in {$data->status->value} status.");
         }
 
         $req = match ($action) {

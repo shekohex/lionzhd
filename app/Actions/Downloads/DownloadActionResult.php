@@ -12,6 +12,7 @@ final readonly class DownloadActionResult
         public bool $ok,
         public bool $removed = false,
         public ?string $error = null,
+        public int $status = 422,
         public ?JsonRpcException $unavailable = null,
     ) {}
 
@@ -30,8 +31,13 @@ final readonly class DownloadActionResult
         return new self(false, error: $error);
     }
 
+    public static function conflict(string $error): self
+    {
+        return new self(false, error: $error, status: 409);
+    }
+
     public static function unavailable(JsonRpcException $exception): self
     {
-        return new self(false, error: $exception->getMessage(), unavailable: $exception);
+        return new self(false, error: $exception->getMessage(), status: 503, unavailable: $exception);
     }
 }

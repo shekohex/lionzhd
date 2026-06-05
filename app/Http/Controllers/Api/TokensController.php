@@ -8,9 +8,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreTokenRequest;
 use App\Http\Resources\Api\TokenResource;
 use App\Models\User;
+use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 
 final class TokensController extends Controller
@@ -29,7 +31,15 @@ final class TokensController extends Controller
 
     public function store(StoreTokenRequest $request, #[CurrentUser] User $user): TokenResource
     {
-        $newAccessToken = $user->createToken((string) $request->input('name'), $request->abilities());
+        try {
+            $abilities = $request->authorizedAbilities($user);
+        } catch (ValidationException $exception) {
+            $detail = (string) (($exception->errors()['abilities'][0] ?? null) ?: $exception->getMessage());
+
+            throw new HttpResponseException(JsonApiErrorResponse::make(422, $detail, sourceParameter: 'abilities'));
+        }
+
+        $newAccessToken = $user->createToken((string) $request->input('name'), $abilities);
         $token = $newAccessToken->accessToken;
         $token->setAttribute('plain_text_token', $newAccessToken->plainTextToken);
 

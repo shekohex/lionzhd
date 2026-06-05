@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\AutoEpisodes\ManageSeriesMonitoring;
+use App\Http\Controllers\Api\Concerns\ConvertsValidationExceptionToJsonApi;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\DeleteSeriesMonitoringRequest;
 use App\Http\Requests\Api\StoreSeriesMonitoringRequest;
@@ -16,12 +17,13 @@ use App\Models\User;
 use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 final class SeriesMonitoringController extends Controller
 {
+    use ConvertsValidationExceptionToJsonApi;
+
     public function show(#[CurrentUser] User $user, Series $series): SeriesMonitorResource
     {
         $monitor = ManageSeriesMonitoring::make()->monitorForSeries($user, $series);
@@ -69,15 +71,10 @@ final class SeriesMonitoringController extends Controller
             throw new HttpResponseException($this->validationError($exception, 404));
         }
 
+        if (! $monitor instanceof SeriesMonitor) {
+            throw new HttpResponseException(JsonApiErrorResponse::make(404, 'Monitoring has not been enabled for this series.'));
+        }
+
         return new SeriesMonitorResource($monitor);
-    }
-
-    private function validationError(ValidationException $exception, int $status = 422): JsonResponse
-    {
-        $errors = $exception->errors();
-        $parameter = array_key_first($errors) ?? 'series';
-        $detail = (string) ($errors[$parameter][0] ?? $exception->getMessage());
-
-        return JsonApiErrorResponse::make($status, $detail, sourceParameter: (string) $parameter);
     }
 }

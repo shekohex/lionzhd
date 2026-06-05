@@ -149,6 +149,25 @@ it('returns structured json api errors when aria2 is unavailable for patch actio
         ->assertJsonPath('errors.0.detail', 'The aria2 backend is unavailable: backend down');
 });
 
+it('returns conflict when download action is not valid for the current aria2 state', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 60, 'name' => 'Conflict Movie']);
+    $download = MediaDownloadRef::fromVodStream('gid-conflict', $movie, $user);
+    $download->save();
+    apiDownloadsBindAria2(new MockClient([
+        JsonRpcBatchRequest::class => MockResponse::make([
+            ['jsonrpc' => '2.0', 'id' => 'gid-conflict', 'result' => apiDownloadsStatus('gid-conflict', 'paused')],
+        ]),
+    ]));
+
+    $this->withToken($token)
+        ->patchJson("/api/v1/downloads/{$download->id}", ['action' => 'pause'], ['Accept' => 'application/vnd.api+json'])
+        ->assertConflict()
+        ->assertJsonPath('errors.0.status', '409')
+        ->assertJsonPath('errors.0.detail', 'You cannot pause a download in paused status.');
+});
+
 /**
  * @param  array<string, mixed>  $attributes
  */

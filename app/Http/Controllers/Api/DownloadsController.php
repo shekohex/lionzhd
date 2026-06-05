@@ -113,7 +113,7 @@ final class DownloadsController extends Controller
         }
 
         if (! $result->ok) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(422, (string) $result->error));
+            throw new HttpResponseException(JsonApiErrorResponse::make($result->status, (string) $result->error));
         }
 
         if ($result->removed) {

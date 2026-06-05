@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Actions\AutoEpisodes\ManageSeriesMonitoring;
+use App\Http\Controllers\Api\Concerns\ConvertsValidationExceptionToJsonApi;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\SeriesMonitorResource;
 use App\Models\Series;
 use App\Models\User;
-use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 final class SeriesMonitoringRunNowController extends Controller
 {
+    use ConvertsValidationExceptionToJsonApi;
+
     public function __invoke(#[CurrentUser] User $user, Series $series): SeriesMonitorResource
     {
         Gate::authorize('auto-download-schedules');
@@ -29,14 +30,5 @@ final class SeriesMonitoringRunNowController extends Controller
         }
 
         return new SeriesMonitorResource($monitor->refresh()->load('series'));
-    }
-
-    private function validationError(ValidationException $exception): JsonResponse
-    {
-        $errors = $exception->errors();
-        $parameter = array_key_first($errors) ?? 'series';
-        $detail = (string) ($errors[$parameter][0] ?? $exception->getMessage());
-
-        return JsonApiErrorResponse::make(422, $detail, sourceParameter: (string) $parameter);
     }
 }

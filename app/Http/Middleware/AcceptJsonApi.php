@@ -15,7 +15,13 @@ final class AcceptJsonApi
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->header('Accept') === null) {
+        if (! $request->is('api/v1') && ! $request->is('api/v1/*')) {
+            return $next($request);
+        }
+
+        $accept = $request->header('Accept');
+
+        if ($accept === null || mb_trim($accept) === '*/*') {
             $request->headers->set('Accept', 'application/vnd.api+json');
         }
 

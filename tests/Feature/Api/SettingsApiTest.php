@@ -181,6 +181,17 @@ it('lists users with pagination and enforces super admin role updates', function
         ->assertJsonPath('data.attributes.role', 'admin');
 });
 
+it('validates settings users pagination as json api errors', function (): void {
+    $admin = User::factory()->admin()->create();
+    $token = $admin->createToken('external-api', ['admin'])->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/settings/users?page[size]=1000000', ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.0.status', '422')
+        ->assertJsonPath('errors.0.source.parameter', 'page.size');
+});
+
 it('protects super admin and last admin role invariants through settings api', function (): void {
     $superAdmin = User::factory()->admin()->create(['is_super_admin' => true]);
     $token = $superAdmin->createToken('external-api', ['admin', 'super-admin'])->plainTextToken;
@@ -214,7 +225,10 @@ it('updates member subtype and rejects subtype updates for admins', function ():
 
     $this->withToken($token)
         ->patchJson("/api/v1/settings/users/{$admin->id}/subtype", ['subtype' => 'external'], ['Accept' => 'application/vnd.api+json'])
-        ->assertUnprocessable();
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.0.status', '422')
+        ->assertJsonPath('errors.0.title', 'Unprocessable Content')
+        ->assertJsonPath('errors.0.source.parameter', 'subtype');
 });
 
 it('returns and updates monitoring schedule settings for monitoring admins', function (): void {

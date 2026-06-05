@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\IndexSettingsUsersRequest;
 use App\Http\Resources\Api\AdminUserResource;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
 final class SettingsUsersController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(IndexSettingsUsersRequest $request): AnonymousResourceCollection
     {
         Gate::authorize('admin');
 

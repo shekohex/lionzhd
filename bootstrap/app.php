@@ -7,11 +7,13 @@ use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Support\JsonApiErrorResponse;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Sentry\Laravel\Integration;
@@ -26,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(AcceptJsonApi::class);
         $middleware->encryptCookies(except: ['appearance']);
         $middleware->statefulApi();
         $middleware->web(append: [
@@ -53,6 +56,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->respond(function (SymfonyResponse $response, Throwable $exception, Request $request): SymfonyResponse {
             if ($request->is('api/v1') || $request->is('api/v1/*')) {
+                if ($exception instanceof AuthenticationException) {
+                    return JsonApiErrorResponse::make(401, 'Unauthenticated.');
+                }
+
+                if ($exception instanceof ValidationException) {
+                    return JsonApiErrorResponse::fromValidationException($exception);
+                }
+
                 if (JsonApiErrorResponse::alreadyJsonApi($response)) {
                     $response->headers->set('Content-Type', 'application/vnd.api+json');
 

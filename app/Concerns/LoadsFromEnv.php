@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Concerns;
 
-use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
 /*
@@ -21,10 +20,7 @@ trait LoadsFromEnv
     public static function firstOrFromEnv(): self
     {
         try {
-            /** @var Model $model */
-            $model = static::class;
-
-            return $model::query()->sole();
+            return static::query()->sole();
         } catch (Throwable) {
             return static::fromEnv();
         }

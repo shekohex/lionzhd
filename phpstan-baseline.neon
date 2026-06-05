@@ -127,40 +127,10 @@ parameters:
 			path: app/Http/Controllers/Settings/CategorySyncRunsController.php
 
 		-
-			message: '#^Using nullsafe property access "\?\-\>is_super_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Settings/UsersController.php
-
-		-
 			message: '#^Property App\\Http\\Integrations\\Aria2\\Requests\\JsonRpcRequest\:\:\$params on left side of \?\? is not nullable nor uninitialized\.$#'
 			identifier: nullCoalesce.initializedProperty
 			count: 1
 			path: app/Http/Integrations/Aria2/Requests/JsonRpcRequest.php
-
-		-
-			message: '#^Method App\\Models\\Aria2Config\:\:firstOrFromEnv\(\) should return App\\Models\\Aria2Config but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Aria2Config.php
-
-		-
-			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type ''App\\\\Models\\\\Aria2Config''\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: app/Models/Aria2Config.php
-
-		-
-			message: '#^Method App\\Models\\XtreamCodesConfig\:\:firstOrFromEnv\(\) should return App\\Models\\XtreamCodesConfig but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/XtreamCodesConfig.php
-
-		-
-			message: '#^PHPDoc tag @var with type Illuminate\\Database\\Eloquent\\Model is not subtype of native type ''App\\\\Models\\\\XtreamCodesConfig''\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: app/Models/XtreamCodesConfig.php
 
 		-
 			message: '#^Return type \(array\<string, mixed\>\) of method Database\\Factories\\UserFactory\:\:definition\(\) should be compatible with return type \(array\<model property of App\\Models\\User, mixed\>\) of method Illuminate\\Database\\Eloquent\\Factories\\Factory\<App\\Models\\User\>\:\:definition\(\)$#'

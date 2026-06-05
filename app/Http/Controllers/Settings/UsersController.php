@@ -41,7 +41,7 @@ final class UsersController extends Controller
 
         return Inertia::render('settings/users', [
             'users' => $users,
-            'can_manage_admin_roles' => $request->user()?->is_super_admin ?? false,
+            'can_manage_admin_roles' => $request->user()->is_super_admin,
         ]);
     }
 

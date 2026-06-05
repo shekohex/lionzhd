@@ -15,6 +15,18 @@ it('requires sanctum authentication for api v1 routes', function (): void {
         ->assertJsonPath('errors.0.status', '401');
 });
 
+it('returns json api unauthorized errors for curl style api requests', function (): void {
+    $this->get('/api/v1/me')
+        ->assertUnauthorized()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '401');
+
+    $this->get('/api/v1/me', ['Accept' => '*/*'])
+        ->assertUnauthorized()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '401');
+});
+
 it('returns json api content for authenticated api v1 routes', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

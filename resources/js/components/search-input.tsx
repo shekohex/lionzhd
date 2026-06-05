@@ -48,6 +48,7 @@ export function SearchInput({
         q: autocompleteData.filters?.q ?? '',
         page: 1,
         per_page: autocompleteData.filters?.per_page ?? defaultPerPage,
+        media_type: null,
         sort_by: 'latest',
     });
     const query = isControlled ? (value ?? '') : (data.q ?? '');

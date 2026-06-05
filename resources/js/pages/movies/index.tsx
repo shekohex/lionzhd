@@ -71,7 +71,7 @@ interface MoviesResultsProps {
     isSwitchingCategory: boolean;
     selectedCategory: string | null;
     selectedCategoryIsIgnored: boolean;
-    selectedCategoryName?: string;
+    selectedCategoryName?: string | null;
     recovery: MoviesPageProps['filters']['recovery'];
     onResetToAllCategories: () => void;
     onManageCategories: () => void;

@@ -29,7 +29,7 @@ export interface MonitoringCardProps {
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 
-const formatDateTime = (value?: string): string => {
+const formatDateTime = (value?: string | null): string => {
     if (!value) {
         return '—';
     }

@@ -39,8 +39,8 @@ function buildEditableGroups(categories: CategorySidebarData | null | undefined)
                 isPinned: false,
                 isHidden: false,
                 isIgnored: false,
-                pinRank: undefined,
-                sortOrder: undefined,
+                pinRank: null,
+                sortOrder: null,
                 isUncategorized: false,
             } satisfies CategorySidebarItem),
         uncategorizedItem: visibleItems.find((item) => item.isUncategorized) ?? null,
@@ -191,10 +191,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
 
         if (item.isPinned) {
             const nextPinnedItems = pinnedItems.filter((entry) => entry.id !== item.id);
-            const nextVisibleItems = orderBySortOrder([
-                ...visibleItems,
-                { ...item, isPinned: false, pinRank: undefined },
-            ]);
+            const nextVisibleItems = orderBySortOrder([...visibleItems, { ...item, isPinned: false, pinRank: null }]);
             runSave(nextPinnedItems, nextVisibleItems, ignoredVisibleItems, hiddenItems);
             return;
         }
@@ -217,7 +214,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         const nextIgnoredVisibleItems = ignoredVisibleItems.filter((entry) => entry.id !== item.id);
         const nextHiddenItems = orderBySortOrder([
             ...hiddenItems,
-            { ...item, isPinned: false, isHidden: true, isIgnored: false, pinRank: undefined },
+            { ...item, isPinned: false, isHidden: true, isIgnored: false, pinRank: null },
         ]);
 
         runSave(nextPinnedItems, nextVisibleItems, nextIgnoredVisibleItems, nextHiddenItems);
@@ -229,7 +226,7 @@ export default function CategorySidebar(props: CategorySidebarProps) {
         const nextHiddenItems = hiddenItems.filter((entry) => entry.id !== item.id);
         const nextVisibleItems = orderBySortOrder([
             ...visibleItems,
-            { ...item, isHidden: false, isPinned: false, pinRank: undefined },
+            { ...item, isHidden: false, isPinned: false, pinRank: null },
         ]);
 
         runSave(pinnedItems, nextVisibleItems, ignoredVisibleItems, nextHiddenItems);

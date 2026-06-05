@@ -166,7 +166,7 @@ export default function SchedulesSettings() {
         { value: 'error', label: 'Error' },
     ];
 
-    const formatDateTime = (value?: string): string => {
+    const formatDateTime = (value?: string | null): string => {
         if (!value) {
             return '—';
         }

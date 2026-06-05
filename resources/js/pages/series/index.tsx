@@ -71,7 +71,7 @@ interface SeriesResultsProps {
     isSwitchingCategory: boolean;
     selectedCategory: string | null;
     selectedCategoryIsIgnored: boolean;
-    selectedCategoryName?: string;
+    selectedCategoryName?: string | null;
     recovery: SeriesPageProps['filters']['recovery'];
     onResetToAllCategories: () => void;
     onManageCategories: () => void;

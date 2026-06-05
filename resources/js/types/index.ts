@@ -28,6 +28,7 @@ export interface SharedData {
     flash: {
         success?: string;
         warning?: string;
+        api_token?: string;
     };
     ziggy: Config & { location: string };
     [key: string]: unknown;

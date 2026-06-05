@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api;
 
-use App\Enums\UserRole;
-use App\Enums\UserSubtype;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -76,7 +74,7 @@ final class StoreTokenRequest extends ApiRequest
         return match ($ability) {
             'read' => true,
             'server-download' => Gate::forUser($user)->allows('server-download'),
-            'download-operations' => $user->role === UserRole::Admin || ($user->role === UserRole::Member && $user->subtype === UserSubtype::Internal),
+            'download-operations' => $user->canPerformDownloadOperations(),
             'monitoring:admin' => Gate::forUser($user)->allows('auto-download-schedules'),
             'admin' => Gate::forUser($user)->allows('admin'),
             'super-admin' => Gate::forUser($user)->allows('super-admin'),

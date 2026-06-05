@@ -24,6 +24,10 @@ use App\Http\Controllers\Api\SeriesMonitoringBackfillController;
 use App\Http\Controllers\Api\SeriesMonitoringController;
 use App\Http\Controllers\Api\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Api\SeriesWatchlistController;
+use App\Http\Controllers\Api\SettingsConfigController;
+use App\Http\Controllers\Api\SettingsSchedulesController;
+use App\Http\Controllers\Api\SettingsSyncController;
+use App\Http\Controllers\Api\SettingsUsersController;
 use App\Http\Controllers\Api\TokensController;
 use App\Http\Controllers\Api\WatchlistController;
 use Illuminate\Support\Facades\Route;
@@ -190,4 +194,76 @@ Route::prefix('v1')
         Route::delete('tokens/{token}', [TokensController::class, 'destroy'])
             ->middleware('abilities:read')
             ->name('api.v1.tokens.destroy');
+
+        Route::get('settings/aria2', [SettingsConfigController::class, 'show'])
+            ->defaults('section', 'aria2')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.aria2.show');
+
+        Route::patch('settings/aria2', [SettingsConfigController::class, 'update'])
+            ->defaults('section', 'aria2')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.aria2.update');
+
+        Route::get('settings/xtreamcodes', [SettingsConfigController::class, 'show'])
+            ->defaults('section', 'xtreamcodes')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.xtreamcodes.show');
+
+        Route::patch('settings/xtreamcodes', [SettingsConfigController::class, 'update'])
+            ->defaults('section', 'xtreamcodes')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.xtreamcodes.update');
+
+        Route::get('settings/sync-media', [SettingsSyncController::class, 'show'])
+            ->defaults('section', 'sync-media')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.sync-media.show');
+
+        Route::patch('settings/sync-media', [SettingsSyncController::class, 'update'])
+            ->defaults('section', 'sync-media')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.sync-media.update');
+
+        Route::get('settings/sync-categories', [SettingsSyncController::class, 'show'])
+            ->defaults('section', 'sync-categories')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.sync-categories.show');
+
+        Route::patch('settings/sync-categories', [SettingsSyncController::class, 'update'])
+            ->defaults('section', 'sync-categories')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.sync-categories.update');
+
+        Route::get('settings/sync-categories/history', [SettingsSyncController::class, 'index'])
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.sync-categories.history');
+
+        Route::get('settings/users', [SettingsUsersController::class, 'index'])
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.users.index');
+
+        Route::patch('settings/users/{user}/subtype', [SettingsUsersController::class, 'update'])
+            ->defaults('operation', 'subtype')
+            ->middleware('abilities:admin')
+            ->name('api.v1.settings.users.subtype');
+
+        Route::patch('settings/users/{user}/role', [SettingsUsersController::class, 'update'])
+            ->defaults('operation', 'role')
+            ->middleware('abilities:super-admin')
+            ->name('api.v1.settings.users.role');
+
+        Route::get('settings/schedules', [SettingsSchedulesController::class, 'index'])
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.settings.schedules.index');
+
+        Route::patch('settings/schedules/bulk-apply', [SettingsSchedulesController::class, 'update'])
+            ->defaults('operation', 'bulk-apply')
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.settings.schedules.bulk-apply');
+
+        Route::patch('settings/schedules/pause', [SettingsSchedulesController::class, 'update'])
+            ->defaults('operation', 'pause')
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.settings.schedules.pause');
     });

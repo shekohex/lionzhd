@@ -71,10 +71,6 @@ final class SeriesMonitoringController extends Controller
             throw new HttpResponseException($this->validationError($exception, 404));
         }
 
-        if (! $monitor instanceof SeriesMonitor) {
-            throw new HttpResponseException(JsonApiErrorResponse::make(404, 'Monitoring has not been enabled for this series.'));
-        }
-
         return new SeriesMonitorResource($monitor);
     }
 }

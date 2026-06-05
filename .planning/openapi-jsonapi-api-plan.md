@@ -352,11 +352,11 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 | PATCH | `/api/v1/settings/schedules/pause` | Pause/resume all auto-episodes | `monitoring:admin` |
 
 **Acceptance Criteria**
-- [ ] All endpoints gated by existing `can:admin` / `can:super-admin` policies
-- [ ] Config endpoints return typed data via existing Config models
-- [ ] Users list supports pagination
-- [ ] Sync endpoints trigger existing console commands / jobs
-- [ ] Pest tests
+- [x] All endpoints gated by existing `can:admin` / `can:super-admin` policies
+- [x] Config endpoints return typed data via existing Config models
+- [x] Users list supports pagination
+- [x] Sync endpoints trigger existing console commands / jobs
+- [x] Pest tests
 
 ---
 
@@ -429,12 +429,12 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 - **Usage Help**: Collapsible section showing `Authorization: Bearer <token>` example
 
 **Acceptance Criteria**
-- [ ] Page accessible at `/settings/tokens`
-- [ ] Only authenticated users can access
-- [ ] Create form validates name is required
-- [ ] Copy-to-clipboard works for generated token
-- [ ] Revoke asks for confirmation
-- [ ] Mobile responsive
+- [x] Page accessible at `/settings/tokens`
+- [x] Only authenticated users can access
+- [x] Create form validates name is required
+- [x] Copy-to-clipboard works for generated token
+- [x] Revoke asks for confirmation
+- [x] Mobile responsive
 
 ---
 

@@ -77,6 +77,15 @@ final class User extends Authenticatable
             ->exists();
     }
 
+    public function canPerformDownloadOperations(): bool
+    {
+        if ($this->role === UserRole::Admin) {
+            return true;
+        }
+
+        return $this->role === UserRole::Member && $this->subtype === UserSubtype::Internal;
+    }
+
     /**
      * Get the attributes that should be cast.
      *

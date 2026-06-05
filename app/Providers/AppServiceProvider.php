@@ -142,7 +142,7 @@ final class AppServiceProvider extends ServiceProvider
                 return Response::deny('External accounts cannot perform download operations. Use Direct Download instead.');
             }
 
-            if ($user->subtype !== UserSubtype::Internal) {
+            if (! $user->canPerformDownloadOperations()) {
                 return Response::deny('Download operations are restricted to internal members.');
             }
 

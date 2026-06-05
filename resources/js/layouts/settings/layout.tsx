@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Clock3, FolderSync, HardDriveDownload, Key, MonitorPlay, SunMoon, Tags, UserPen, Users } from 'lucide-react';
+import { Clock3, FolderSync, HardDriveDownload, Key, KeyRound, MonitorPlay, SunMoon, Tags, UserPen, Users } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
 type SettingsNavItem = NavItem & {
@@ -21,6 +21,11 @@ const sidebarNavItems: SettingsNavItem[] = [
         title: 'Password',
         url: '/settings/password',
         icon: Key,
+    },
+    {
+        title: 'API Tokens',
+        url: '/settings/tokens',
+        icon: KeyRound,
     },
     {
         title: 'Users',

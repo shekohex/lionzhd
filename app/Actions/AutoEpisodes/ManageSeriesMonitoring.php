@@ -72,12 +72,12 @@ final class ManageSeriesMonitoring
         $monitor = $this->monitorForSeries($user, $series);
 
         if (! $monitor instanceof SeriesMonitor) {
-            if ($removeFromWatchlist) {
-                $this->watchlistQuery($user, $series)->delete();
-            }
-
             if ($requireExisting) {
                 throw ValidationException::withMessages(['series' => 'Monitoring has not been enabled for this series.']);
+            }
+
+            if ($removeFromWatchlist) {
+                $this->watchlistQuery($user, $series)->delete();
             }
 
             return null;

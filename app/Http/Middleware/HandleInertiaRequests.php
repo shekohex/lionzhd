@@ -60,6 +60,7 @@ final class HandleInertiaRequests extends Middleware
             'flash' => [
                 'success' => fn () => FacadesRequest::session()->get('success'),
                 'warning' => fn () => FacadesRequest::session()->get('warning'),
+                'api_token' => fn () => FacadesRequest::session()->get('api_token'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

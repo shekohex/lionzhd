@@ -11,6 +11,7 @@ use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SyncCategoriesController;
 use App\Http\Controllers\Settings\SyncMediaController;
+use App\Http\Controllers\Settings\TokensController;
 use App\Http\Controllers\Settings\UsersController;
 use App\Http\Controllers\Settings\XtreamCodeConfigController;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +26,10 @@ Route::middleware('auth')->group(static function (): void {
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
     Route::put('settings/password', [PasswordController::class, 'update'])->name('password.update');
+
+    Route::get('settings/tokens', [TokensController::class, 'index'])->name('tokens.index');
+    Route::post('settings/tokens', [TokensController::class, 'store'])->name('tokens.store');
+    Route::delete('settings/tokens/{token}', [TokensController::class, 'destroy'])->name('tokens.destroy');
 
     Route::middleware('can:admin')->group(static function (): void {
         Route::get('settings/users', [UsersController::class, 'index'])->name('users.index');

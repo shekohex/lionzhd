@@ -90,6 +90,20 @@ it('queues run now and backfill monitoring scans', function (): void {
     Queue::assertPushed(RunMonitorScan::class, fn (RunMonitorScan $job): bool => $job->monitorId === $monitor->id && $job->trigger === SeriesMonitorRunTrigger::Backfill && $job->options === ['backfill_count' => 3]);
 });
 
+it('does not remove watchlist when strict api monitoring delete fails for missing monitor', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['monitoring:admin'])->plainTextToken;
+    $series = apiMonitoringCreateSeries(['series_id' => 25, 'name' => 'No Monitor Series']);
+    $watchlist = $user->watchlists()->create(['watchable_type' => Series::class, 'watchable_id' => $series->series_id]);
+
+    $this->withToken($token)
+        ->deleteJson('/api/v1/series/25/monitoring', ['remove_from_watchlist' => true], ['Accept' => 'application/vnd.api+json'])
+        ->assertNotFound()
+        ->assertJsonPath('errors.0.source.parameter', 'series');
+
+    expect($watchlist->fresh())->not->toBeNull();
+});
+
 it('enforces monitoring ability gate and json api validation', function (): void {
     $internal = User::factory()->memberInternal()->create();
     $external = User::factory()->memberExternal()->create();

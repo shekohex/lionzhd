@@ -72,6 +72,29 @@ it('supports sparse fieldsets for movie list resources', function (): void {
         ->assertJsonMissingPath('data.0.attributes.container_extension');
 });
 
+it('preserves movie filters sparse fieldsets and page size in pagination links', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    apiCreateMovieCategory('action');
+    createMovie(['stream_id' => 11, 'num' => 1, 'name' => 'Action One', 'category_id' => 'action']);
+    createMovie(['stream_id' => 12, 'num' => 2, 'name' => 'Action Two', 'category_id' => 'action']);
+    createMovie(['stream_id' => 13, 'num' => 3, 'name' => 'Action Three', 'category_id' => 'action']);
+
+    $response = $this->withToken($token)
+        ->getJson('/api/v1/movies?category=action&fields[movies]=name,rating&page[number]=2&page[size]=1', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    foreach (['first', 'last', 'prev', 'next'] as $link) {
+        $query = moviesApiLinkQuery((string) $response->json("links.{$link}"));
+
+        expect($query['category'] ?? null)->toBe('action');
+        expect($query['fields']['movies'] ?? null)->toBe('name,rating');
+        expect($query['page']['size'] ?? null)->toBe('1');
+        expect($query['page']['number'] ?? null)->toBeString();
+    }
+});
+
 it('requires the read ability for movie list routes', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['server-download'])->plainTextToken;
@@ -370,6 +393,16 @@ function createMovie(array $attributes = []): VodStream
     });
 
     return $movie;
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function moviesApiLinkQuery(string $link): array
+{
+    parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+
+    return $query;
 }
 
 function apiCreateMovieCategory(string $providerId, ?string $name = null): Category

@@ -110,33 +110,42 @@ namespace {
     function browserWaitForPaths(object $page, array $paths): ?string
     {
         $pathsJson = json_encode($paths, JSON_THROW_ON_ERROR);
+        $startedAt = microtime(true);
 
-        return $page->script(str_replace('__PATHS__', $pathsJson, <<<'JS'
-        async () => {
-            const normalizePath = (path) => {
-                if (path.length > 1 && path.endsWith('/')) {
-                    return path.slice(0, -1);
+        while ((microtime(true) - $startedAt) < 12.0) {
+            $resolvedPath = $page->script(str_replace('__PATHS__', $pathsJson, <<<'JS'
+                async () => {
+                    const normalizePath = (path) => {
+                        if (path.length > 1 && path.endsWith('/')) {
+                            return path.slice(0, -1);
+                        }
+
+                        return path;
+                    };
+
+                    const paths = new Set((__PATHS__).map(normalizePath));
+                    const startedAt = Date.now();
+
+                    while (Date.now() - startedAt < 1000) {
+                        const currentPath = window.location.pathname;
+                        const normalizedPath = normalizePath(currentPath);
+
+                        if (paths.has(normalizedPath)) {
+                            return currentPath;
+                        }
+
+                        await new Promise((resolve) => window.setTimeout(resolve, 50));
+                    }
+
+                    return null;
                 }
+            JS));
 
-                return path;
-            };
-
-            const paths = new Set((__PATHS__).map(normalizePath));
-            const startedAt = Date.now();
-
-            while (Date.now() - startedAt < 10000) {
-                const currentPath = window.location.pathname;
-                const normalizedPath = normalizePath(currentPath);
-
-                if (paths.has(normalizedPath)) {
-                    return currentPath;
-                }
-
-                    await new Promise((resolve) => window.setTimeout(resolve, 50));
-                }
-
-                return null;
+            if (is_string($resolvedPath)) {
+                return $resolvedPath;
             }
-        JS));
+        }
+
+        return null;
     }
 }

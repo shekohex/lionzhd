@@ -79,6 +79,28 @@ it('lists series as paginated json api resources with category filtering', funct
         ->assertJsonPath('data.*.id', ['40', '50', '60']);
 });
 
+it('preserves series category filters and page size in pagination links', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+
+    apiCreateSeriesCategory('drama');
+    apiCreateSeries(['series_id' => 11, 'name' => 'Drama One', 'category_id' => 'drama']);
+    apiCreateSeries(['series_id' => 12, 'name' => 'Drama Two', 'category_id' => 'drama']);
+    apiCreateSeries(['series_id' => 13, 'name' => 'Drama Three', 'category_id' => 'drama']);
+
+    $response = $this->withToken($token)
+        ->getJson('/api/v1/series?category=drama&page[number]=2&page[size]=1', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    foreach (['first', 'last', 'prev', 'next'] as $link) {
+        $query = seriesApiLinkQuery((string) $response->json("links.{$link}"));
+
+        expect($query['category'] ?? null)->toBe('drama');
+        expect($query['page']['size'] ?? null)->toBe('1');
+        expect($query['page']['number'] ?? null)->toBeString();
+    }
+});
+
 it('shows series details and includes episodes when requested', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;
@@ -289,6 +311,16 @@ function apiCreateSeries(array $attributes = []): Series
     });
 
     return $series;
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function seriesApiLinkQuery(string $link): array
+{
+    parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+
+    return $query;
 }
 
 function apiCreateSeriesCategory(string $providerId, ?string $name = null): Category

@@ -12,7 +12,7 @@ final class ListDownloadsRequest extends ApiRequest
     public function rules(): array
     {
         return [
-            'owners' => ['sometimes', 'string'],
+            'owners' => ['sometimes', 'string', 'regex:/^[1-9]\d*(,[1-9]\d*)*$/'],
             'page' => ['sometimes', 'array'],
             'page.number' => ['sometimes', 'integer', 'min:1'],
             'page.size' => ['sometimes', 'integer', 'min:1', 'max:100'],
@@ -31,10 +31,7 @@ final class ListDownloadsRequest extends ApiRequest
         }
 
         $ownerIds = collect(explode(',', $owners))
-            ->map(static fn (string $id): string => mb_trim($id))
-            ->filter(static fn (string $id): bool => $id !== '' && ctype_digit($id))
             ->map(static fn (string $id): int => (int) $id)
-            ->filter(static fn (int $id): bool => $id > 0)
             ->unique()
             ->sort()
             ->values()

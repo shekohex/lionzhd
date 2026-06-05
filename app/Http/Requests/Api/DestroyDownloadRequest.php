@@ -27,8 +27,28 @@ final class DestroyDownloadRequest extends ApiRequest
             return;
         }
 
+        $value = $this->input('delete_partial');
+
+        if (is_bool($value)) {
+            return;
+        }
+
+        if (! is_string($value) && ! is_int($value)) {
+            return;
+        }
+
+        $normalized = match (mb_strtolower((string) $value)) {
+            '1', 'true' => true,
+            '0', 'false' => false,
+            default => null,
+        };
+
+        if ($normalized === null) {
+            return;
+        }
+
         $this->merge([
-            'delete_partial' => $this->boolean('delete_partial'),
+            'delete_partial' => $normalized,
         ]);
     }
 }

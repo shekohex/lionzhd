@@ -13,6 +13,7 @@ use App\Http\Requests\Api\ShowMovieRequest;
 use App\Http\Resources\Api\MovieResource;
 use App\Models\User;
 use App\Models\VodStream;
+use App\Support\ApiPaginationQuery;
 use App\Support\MediaCategoryPreferenceFilter;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
@@ -30,11 +31,7 @@ final class MoviesController extends Controller
                     pageName: 'page[number]',
                     page: $request->pageNumber(),
                 )
-        )->withQuery([
-            'page' => [
-                'size' => $request->pageSize(),
-            ],
-        ]);
+        )->withQuery(ApiPaginationQuery::withoutPageNumber($request));
 
         return $collection;
     }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\IndexSettingsUsersRequest;
 use App\Http\Resources\Api\AdminUserResource;
 use App\Models\User;
+use App\Support\ApiPaginationQuery;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
@@ -22,7 +23,7 @@ final class SettingsUsersController extends Controller
             perPage: (int) $request->integer('page.size', 15),
             pageName: 'page[number]',
             page: (int) $request->integer('page.number', 1),
-        ));
+        ))->withQuery(ApiPaginationQuery::withoutPageNumber($request));
 
         return $collection;
     }

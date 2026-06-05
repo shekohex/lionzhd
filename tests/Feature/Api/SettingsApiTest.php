@@ -166,6 +166,17 @@ it('lists users with pagination and enforces super admin role updates', function
         ->assertJsonPath('data.0.type', 'users')
         ->assertJsonPath('meta.per_page', 1);
 
+    $linksResponse = $this->withToken($adminToken)
+        ->getJson('/api/v1/settings/users?page[number]=2&page[size]=1', ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    foreach (['first', 'last', 'prev', 'next'] as $link) {
+        $query = settingsApiLinkQuery((string) $linksResponse->json("links.{$link}"));
+
+        expect($query['page']['size'] ?? null)->toBe('1');
+        expect($query['page']['number'] ?? null)->toBeString();
+    }
+
     Sanctum::actingAs($admin, ['admin', 'super-admin']);
 
     $this->flushHeaders()
@@ -180,6 +191,16 @@ it('lists users with pagination and enforces super admin role updates', function
         ->assertOk()
         ->assertJsonPath('data.attributes.role', 'admin');
 });
+
+/**
+ * @return array<string, mixed>
+ */
+function settingsApiLinkQuery(string $link): array
+{
+    parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+
+    return $query;
+}
 
 it('validates settings users pagination as json api errors', function (): void {
     $admin = User::factory()->admin()->create();

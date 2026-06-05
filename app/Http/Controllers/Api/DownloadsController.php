@@ -19,6 +19,7 @@ use App\Http\Requests\Api\UpdateDownloadRequest;
 use App\Http\Resources\Api\MediaDownloadResource;
 use App\Models\MediaDownloadRef;
 use App\Models\User;
+use App\Support\ApiPaginationQuery;
 use App\Support\JsonApiErrorResponse;
 use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -68,7 +69,8 @@ final class DownloadsController extends Controller
         });
 
         /** @var AnonymousResourceCollection $collection */
-        $collection = MediaDownloadResource::collection($downloads);
+        $collection = MediaDownloadResource::collection($downloads)
+            ->withQuery(ApiPaginationQuery::withoutPageNumber($request));
 
         return $collection->additional([
             'meta' => [

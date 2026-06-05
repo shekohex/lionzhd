@@ -171,6 +171,61 @@ it('cancels downloads through delete and removes partial files when requested', 
     File::deleteDirectory($root);
 });
 
+it('validates delete partial query values before canceling downloads', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 33, 'name' => 'Invalid Delete Partial Movie']);
+    $download = MediaDownloadRef::fromVodStream('gid-invalid-delete-partial', $movie, $user);
+    $download->save();
+
+    $this->withToken($token)
+        ->deleteJson("/api/v1/downloads/{$download->id}?delete_partial=definitely", [], ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '422')
+        ->assertJsonPath('errors.0.source.parameter', 'delete_partial');
+
+    expect($download->fresh()?->canceled_at)->toBeNull();
+});
+
+it('validates malformed owners filters instead of broadening downloads', function (string $owners): void {
+    $admin = User::factory()->admin()->create();
+    $token = $admin->createToken('external-api', ['read'])->plainTextToken;
+
+    $this->withToken($token)
+        ->getJson("/api/v1/downloads?owners={$owners}", ['Accept' => 'application/vnd.api+json'])
+        ->assertUnprocessable()
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '422')
+        ->assertJsonPath('errors.0.source.parameter', 'owners');
+})->with(['abc', '1,abc', '0', '1,0']);
+
+it('preserves owner filters and page size in download pagination links', function (): void {
+    $admin = User::factory()->admin()->create();
+    $owner = User::factory()->memberInternal()->create();
+    $movie = apiDownloadsCreateMovie(['stream_id' => 34, 'name' => 'Paginated Download Movie']);
+
+    MediaDownloadRef::fromVodStream('gid-link-1', $movie, $owner)->save();
+    MediaDownloadRef::fromVodStream('gid-link-2', $movie, $owner)->save();
+    MediaDownloadRef::fromVodStream('gid-link-3', $movie, $owner)->save();
+
+    apiDownloadsBindAria2(new MockClient([
+        JsonRpcBatchRequest::class => MockResponse::make([]),
+    ]));
+
+    $response = $this->withToken($admin->createToken('external-api', ['read'])->plainTextToken)
+        ->getJson("/api/v1/downloads?owners={$owner->id}&page[number]=2&page[size]=1", ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    foreach (['first', 'last', 'prev', 'next'] as $link) {
+        $query = apiDownloadsLinkQuery((string) $response->json("links.{$link}"));
+
+        expect($query['owners'] ?? null)->toBe((string) $owner->id);
+        expect($query['page']['size'] ?? null)->toBe('1');
+        expect($query['page']['number'] ?? null)->toBeString();
+    }
+});
+
 it('supports resume and remove download patch actions', function (): void {
     $user = User::factory()->memberInternal()->create();
     $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
@@ -276,6 +331,16 @@ function apiDownloadsBindAria2(MockClient $mockClient): MockClient
     });
 
     return $mockClient;
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function apiDownloadsLinkQuery(string $link): array
+{
+    parse_str((string) parse_url($link, PHP_URL_QUERY), $query);
+
+    return $query;
 }
 
 function apiDownloadsCreateTempDir(string $prefix): string

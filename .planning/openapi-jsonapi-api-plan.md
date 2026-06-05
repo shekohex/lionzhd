@@ -317,10 +317,10 @@ Establish the patterns for native `JsonApiResource` classes and API `FormRequest
 | POST | `/api/v1/series/{id}/monitoring/backfill` | Backfill past episodes | `monitoring:admin` |
 
 **Acceptance Criteria**
-- [ ] All endpoints reuse existing monitoring Actions/Controllers
-- [ ] `monitoring:admin` ability enforced via Sanctum scopes
-- [ ] Config response includes next run time, preset, paused state, etc.
-- [ ] Pest tests
+- [x] All endpoints reuse existing monitoring Actions/Controllers
+- [x] `monitoring:admin` ability enforced via Sanctum scopes
+- [x] Config response includes next run time, preset, paused state, etc.
+- [x] Pest tests
 
 ---
 

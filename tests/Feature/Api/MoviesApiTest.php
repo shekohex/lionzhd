@@ -206,6 +206,31 @@ it('adds and removes a movie from the authenticated users watchlist', function (
     expect($user->fresh()->inMyWatchlist(50, VodStream::class))->toBeFalse();
 });
 
+it('keeps nested movie watchlist operations idempotent and scoped to the authenticated user', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    createMovie(['stream_id' => 51, 'name' => 'Scoped Watchlist Movie']);
+    $otherUser->watchlists()->create(['watchable_type' => VodStream::class, 'watchable_id' => 51]);
+
+    $this->withToken($token)
+        ->deleteJson('/api/v1/movies/51/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.id', '51');
+
+    expect($otherUser->fresh()->inMyWatchlist(51, VodStream::class))->toBeTrue();
+
+    $this->withToken($token)
+        ->postJson('/api/v1/movies/51/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    $this->withToken($token)
+        ->postJson('/api/v1/movies/51/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    expect($user->fresh()->watchlists()->where('watchable_type', VodStream::class)->where('watchable_id', 51)->count())->toBe(1);
+});
+
 it('formats movie list validation errors as json api errors', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

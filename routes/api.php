@@ -19,6 +19,9 @@ use App\Http\Controllers\Api\SeriesDirectLinksTextController;
 use App\Http\Controllers\Api\SeriesDownloadController;
 use App\Http\Controllers\Api\SeriesEpisodeDirectLinkController;
 use App\Http\Controllers\Api\SeriesEpisodeDownloadController;
+use App\Http\Controllers\Api\SeriesMonitoringBackfillController;
+use App\Http\Controllers\Api\SeriesMonitoringController;
+use App\Http\Controllers\Api\SeriesMonitoringRunNowController;
 use App\Http\Controllers\Api\SeriesWatchlistController;
 use App\Http\Controllers\Api\WatchlistController;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +72,30 @@ Route::prefix('v1')
         Route::delete('series/{series:series_id}/watchlist', [SeriesWatchlistController::class, 'destroy'])
             ->middleware('abilities:read')
             ->name('api.v1.series.watchlist.destroy');
+
+        Route::get('series/{series:series_id}/monitoring', [SeriesMonitoringController::class, 'show'])
+            ->middleware('abilities:read')
+            ->name('api.v1.series.monitoring.show');
+
+        Route::post('series/{series:series_id}/monitoring', [SeriesMonitoringController::class, 'store'])
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.series.monitoring.store');
+
+        Route::patch('series/{series:series_id}/monitoring', [SeriesMonitoringController::class, 'update'])
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.series.monitoring.update');
+
+        Route::delete('series/{series:series_id}/monitoring', [SeriesMonitoringController::class, 'destroy'])
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.series.monitoring.destroy');
+
+        Route::post('series/{series:series_id}/monitoring/run-now', SeriesMonitoringRunNowController::class)
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.series.monitoring.run-now');
+
+        Route::post('series/{series:series_id}/monitoring/backfill', SeriesMonitoringBackfillController::class)
+            ->middleware('abilities:monitoring:admin')
+            ->name('api.v1.series.monitoring.backfill');
 
         Route::post('series/{series:series_id}/seasons/{season}/episodes/{episode}/download', [SeriesEpisodeDownloadController::class, 'store'])
             ->whereNumber(['season', 'episode'])

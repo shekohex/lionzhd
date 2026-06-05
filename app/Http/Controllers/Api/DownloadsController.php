@@ -130,7 +130,12 @@ final class DownloadsController extends Controller
 
     private function applyAria2Action(JsonRpcConnector $connector, MediaDownloadRef $download, MediaDownloadAction $action): bool
     {
-        $result = GetDownloadStatus::run([$download->gid]);
+        try {
+            $result = GetDownloadStatus::run([$download->gid]);
+        } catch (JsonRpcException $exception) {
+            throw new HttpResponseException(JsonApiErrorResponse::make(503, $this->aria2UnavailableDetail($exception)));
+        }
+
         $errors = $result->filter(fn (mixed $response): bool => isset($response['error']))->map(fn (array $response): mixed => $response['error']);
 
         if ($errors->isNotEmpty()) {
@@ -154,8 +159,12 @@ final class DownloadsController extends Controller
             throw new HttpResponseException(JsonApiErrorResponse::make(422, 'Unsupported download action.'));
         }
 
-        /** @var JsonRpcResponse $response */
-        $response = $connector->send($req)->dtoOrFail();
+        try {
+            /** @var JsonRpcResponse $response */
+            $response = $connector->send($req)->dtoOrFail();
+        } catch (JsonRpcException $exception) {
+            throw new HttpResponseException(JsonApiErrorResponse::make(503, $this->aria2UnavailableDetail($exception)));
+        }
 
         if ($response->hasError()) {
             throw new HttpResponseException(JsonApiErrorResponse::make(422, $response->errorMessage()));
@@ -176,6 +185,15 @@ final class DownloadsController extends Controller
         }
 
         return false;
+    }
+
+    private function aria2UnavailableDetail(JsonRpcException $exception): string
+    {
+        $message = mb_trim($exception->getMessage());
+
+        return $message === ''
+            ? 'The aria2 backend is unavailable. Try again later.'
+            : "The aria2 backend is unavailable: {$message}";
     }
 
     private function cancel(MediaDownloadRef $download, bool $deletePartial): void

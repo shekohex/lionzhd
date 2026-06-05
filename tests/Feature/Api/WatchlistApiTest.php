@@ -68,6 +68,25 @@ it('adds and removes watchlist entries through collection endpoints', function (
     expect(Watchlist::query()->whereKey($watchlistId)->exists())->toBeFalse();
 });
 
+it('treats repeated collection watchlist additions as idempotent', function (): void {
+    $user = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    apiWatchlistCreateSeries(['series_id' => 31, 'name' => 'Duplicate Series']);
+
+    $first = $this->withToken($token)
+        ->postJson('/api/v1/watchlist', ['media_type' => 'series', 'media_id' => 31], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.type', 'watchlist-items');
+
+    $second = $this->withToken($token)
+        ->postJson('/api/v1/watchlist', ['media_type' => 'series', 'media_id' => 31], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.type', 'watchlist-items');
+
+    expect($second->json('data.id'))->toBe($first->json('data.id'));
+    expect($user->fresh()->watchlists()->where('watchable_type', Series::class)->where('watchable_id', 31)->count())->toBe(1);
+});
+
 it('validates watchlist store payloads and scopes deletion to the owner', function (): void {
     $user = User::factory()->create();
     $token = $user->createToken('external-api', ['read'])->plainTextToken;

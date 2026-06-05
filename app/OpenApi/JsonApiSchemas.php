@@ -21,14 +21,20 @@ final class JsonApiSchemas
     {
         $movie = self::resource('movies', self::movieAttributes());
         $series = self::resource('series', self::seriesAttributes());
+        $download = self::resource('downloads', self::downloadAttributes());
+        $seriesMonitor = self::resource('series-monitors', self::seriesMonitorAttributes());
 
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\MovieResource', Schema::fromType($movie));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\SeriesResource', Schema::fromType($series));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\MediaDownloadResource', Schema::fromType($download));
+        $openApi->components->addSchema('App\\Http\\Resources\\Api\\SeriesMonitorResource', Schema::fromType($seriesMonitor));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
         $openApi->components->addSchema('App\\Http\\Resources\\Api\\ApiActionResource', Schema::fromType(self::apiActionResource()));
         $openApi->components->addSchema('MovieResource', Schema::fromType($movie));
         $openApi->components->addSchema('SeriesResource', Schema::fromType($series));
+        $openApi->components->addSchema('MediaDownloadResource', Schema::fromType($download));
+        $openApi->components->addSchema('SeriesMonitorResource', Schema::fromType($seriesMonitor));
         $openApi->components->addSchema('DiscoverResource', Schema::fromType(self::groupedResource('discover', $movie, $series)));
         $openApi->components->addSchema('SearchResultResource', Schema::fromType(self::groupedResource('search-results', $movie, $series, paginated: true)));
         $openApi->components->addSchema('ApiActionResource', Schema::fromType(self::apiActionResource()));
@@ -235,6 +241,76 @@ final class JsonApiSchemas
             'updated_at' => (new StringType)->format('date-time'),
             'seasons' => (new ArrayType)->setItems(new StringType)->nullable(true),
             'episodes' => (new ObjectType)->nullable(true),
+        ];
+    }
+
+    /**
+     * @return array<string, Type>
+     */
+    private static function downloadAttributes(): array
+    {
+        return [
+            'id' => new IntegerType,
+            'gid' => new StringType,
+            'media_id' => new IntegerType,
+            'media_type' => new StringType,
+            'downloadable_id' => new IntegerType,
+            'user_id' => (new IntegerType)->nullable(true),
+            'desired_paused' => new BooleanType,
+            'canceled_at' => (new StringType)->format('date-time')->nullable(true),
+            'cancel_delete_partial' => new BooleanType,
+            'last_error_code' => (new IntegerType)->nullable(true),
+            'last_error_message' => (new StringType)->nullable(true),
+            'retry_attempt' => new IntegerType,
+            'retry_next_at' => (new StringType)->format('date-time')->nullable(true),
+            'download_files' => (new ArrayType)->setItems(new StringType)->nullable(true),
+            'created_at' => (new StringType)->format('date-time'),
+            'updated_at' => (new StringType)->format('date-time'),
+            'media' => new ObjectType,
+            'owner' => (new ObjectType)->nullable(true),
+            'downloadStatus' => self::downloadStatusAttributes()->nullable(true),
+            'season' => (new IntegerType)->nullable(true),
+            'episode' => (new IntegerType)->nullable(true),
+        ];
+    }
+
+    private static function downloadStatusAttributes(): ObjectType
+    {
+        return (new ObjectType)
+            ->addProperty('gid', new StringType)
+            ->addProperty('status', new StringType)
+            ->addProperty('totalLength', new StringType)
+            ->addProperty('completedLength', new StringType)
+            ->addProperty('downloadSpeed', new StringType)
+            ->addProperty('errorCode', (new StringType)->nullable(true))
+            ->addProperty('errorMessage', (new StringType)->nullable(true))
+            ->addProperty('dir', (new StringType)->nullable(true))
+            ->addProperty('files', (new ArrayType)->setItems(new ObjectType));
+    }
+
+    /**
+     * @return array<string, Type>
+     */
+    private static function seriesMonitorAttributes(): array
+    {
+        return [
+            'id' => new IntegerType,
+            'series_id' => new IntegerType,
+            'series_name' => (new StringType)->nullable(true),
+            'series_cover' => (new StringType)->nullable(true),
+            'enabled' => new BooleanType,
+            'timezone' => new StringType,
+            'schedule_type' => new StringType,
+            'schedule_daily_time' => (new StringType)->nullable(true),
+            'schedule_weekly_days' => (new ArrayType)->setItems(new IntegerType),
+            'schedule_weekly_time' => (new StringType)->nullable(true),
+            'monitored_seasons' => (new ArrayType)->setItems(new IntegerType),
+            'per_run_cap' => new IntegerType,
+            'next_run_at' => (new StringType)->format('date-time')->nullable(true),
+            'last_attempt_at' => (new StringType)->format('date-time')->nullable(true),
+            'last_attempt_status' => (new StringType)->nullable(true),
+            'last_successful_check_at' => (new StringType)->format('date-time')->nullable(true),
+            'run_now_available_at' => (new StringType)->format('date-time')->nullable(true),
         ];
     }
 }

@@ -25,7 +25,7 @@ final class AddToWatchlist
         string $watchableType
     ): bool {
         $watchlist = $user->watchlists()
-            ->create([
+            ->firstOrCreate([
                 'watchable_id' => $watchableId,
                 'watchable_type' => $watchableType,
             ]);

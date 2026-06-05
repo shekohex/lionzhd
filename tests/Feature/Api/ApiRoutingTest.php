@@ -126,6 +126,14 @@ it('documents action resources and json api error media types in openapi', funct
         ->and($document['components']['responses']['ModelNotFoundException']['content']['application/vnd.api+json']['schema']['properties']['errors']['type'])->toBe('array');
 });
 
+it('documents download json api resource attributes in openapi', function (): void {
+    $this->getJson('/docs/api.json')
+        ->assertOk()
+        ->assertJsonPath('components.schemas.MediaDownloadResource.properties.attributes.properties.gid.type', 'string')
+        ->assertJsonPath('components.schemas.MediaDownloadResource.properties.attributes.properties.desired_paused.type', 'boolean')
+        ->assertJsonPath('components.schemas.MediaDownloadResource.properties.attributes.properties.downloadStatus.type', ['object', 'null']);
+});
+
 it('documents movie detail include contract and vod info response schema', function (): void {
     $document = $this->getJson('/docs/api.json')
         ->assertOk()

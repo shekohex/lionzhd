@@ -8,7 +8,6 @@ use App\Concerns\AsAction;
 use App\Models\Series;
 use App\Models\User;
 use App\Models\VodStream;
-use App\Models\Watchlist;
 
 final class RemoveFromWatchlist
 {
@@ -25,12 +24,11 @@ final class RemoveFromWatchlist
         int $watchableId,
         string $watchableType
     ): bool {
-        $deleted = Watchlist::query()
+        $deleted = $user->watchlists()
             ->where('watchable_id', $watchableId)
             ->where('watchable_type', $watchableType)
-            ->firstOrFail()
             ->delete();
 
-        return (bool) $deleted;
+        return $deleted > 0;
     }
 }

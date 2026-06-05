@@ -43,7 +43,7 @@ final class WatchlistController extends Controller
     {
         [$modelClass, $model] = $this->resolveWatchable($request->mediaType(), $request->mediaId());
 
-        abort_unless(AddToWatchlist::run($user, $request->mediaId(), $modelClass), 500, 'Failed to add item to watchlist.');
+        AddToWatchlist::run($user, $request->mediaId(), $modelClass);
 
         $watchlist = $user->watchlists()
             ->where('watchable_type', $modelClass)

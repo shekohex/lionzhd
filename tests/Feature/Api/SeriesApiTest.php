@@ -127,6 +127,31 @@ it('adds and removes a series from the authenticated users watchlist', function 
     expect($user->fresh()->inMyWatchlist(80, Series::class))->toBeFalse();
 });
 
+it('keeps nested series watchlist operations idempotent and scoped to the authenticated user', function (): void {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $token = $user->createToken('external-api', ['read'])->plainTextToken;
+    apiCreateSeries(['series_id' => 81, 'name' => 'Scoped Watchlist Series']);
+    $otherUser->watchlists()->create(['watchable_type' => Series::class, 'watchable_id' => 81]);
+
+    $this->withToken($token)
+        ->deleteJson('/api/v1/series/81/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.id', '81');
+
+    expect($otherUser->fresh()->inMyWatchlist(81, Series::class))->toBeTrue();
+
+    $this->withToken($token)
+        ->postJson('/api/v1/series/81/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    $this->withToken($token)
+        ->postJson('/api/v1/series/81/watchlist', [], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk();
+
+    expect($user->fresh()->watchlists()->where('watchable_type', Series::class)->where('watchable_id', 81)->count())->toBe(1);
+});
+
 it('queues a single series episode download with token ability and gate enforcement', function (): void {
     $user = User::factory()->memberInternal()->create();
     $token = $user->createToken('external-api', ['server-download'])->plainTextToken;

@@ -16,14 +16,14 @@ final class SeriesWatchlistController extends Controller
 {
     public function store(#[CurrentUser] User $user, Series $series): SeriesResource
     {
-        abort_unless(AddToWatchlist::run($user, $series->series_id, Series::class), 500, 'Failed to add series to watchlist.');
+        AddToWatchlist::run($user, $series->series_id, Series::class);
 
         return new SeriesResource($series);
     }
 
     public function destroy(#[CurrentUser] User $user, Series $series): SeriesResource
     {
-        abort_unless(RemoveFromWatchlist::run($user, $series->series_id, Series::class), 500, 'Failed to remove series from watchlist.');
+        RemoveFromWatchlist::run($user, $series->series_id, Series::class);
 
         return new SeriesResource($series);
     }

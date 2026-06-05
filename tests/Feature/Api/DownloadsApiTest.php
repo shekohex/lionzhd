@@ -6,7 +6,9 @@ use App\Http\Integrations\Aria2\JsonRpcConnector;
 use App\Http\Integrations\Aria2\Requests\ForceRemoveRequest;
 use App\Http\Integrations\Aria2\Requests\JsonRpcBatchRequest;
 use App\Http\Integrations\Aria2\Requests\PauseRequest;
+use App\Http\Integrations\Aria2\Requests\RemoveDownloadResultRequest;
 use App\Http\Integrations\Aria2\Requests\TellStatusRequest;
+use App\Http\Integrations\Aria2\Requests\UnPauseRequest;
 use App\Models\Aria2Config;
 use App\Models\MediaDownloadRef;
 use App\Models\User;
@@ -97,6 +99,54 @@ it('cancels downloads through delete and validates update actions', function ():
     expect($response->json('data.attributes.canceled_at'))->toBeString();
 
     expect($download->fresh()?->canceled_at)->not->toBeNull();
+});
+
+it('supports resume and remove download patch actions', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 40, 'name' => 'Resume Remove Movie']);
+    $paused = MediaDownloadRef::fromVodStream('gid-resume', $movie, $user);
+    $paused->forceFill(['desired_paused' => true])->save();
+    $complete = MediaDownloadRef::fromVodStream('gid-remove', $movie, $user);
+    $complete->save();
+    apiDownloadsBindAria2(new MockClient([
+        JsonRpcBatchRequest::class => MockResponse::make([
+            ['jsonrpc' => '2.0', 'id' => 'gid-resume', 'result' => apiDownloadsStatus('gid-resume', 'paused')],
+            ['jsonrpc' => '2.0', 'id' => 'gid-remove', 'result' => apiDownloadsStatus('gid-remove', 'complete')],
+        ]),
+        UnPauseRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-resume', 'result' => 'OK']),
+        RemoveDownloadResultRequest::class => MockResponse::make(['jsonrpc' => '2.0', 'id' => 'gid-remove', 'result' => 'OK']),
+    ]));
+
+    $this->withToken($token)
+        ->patchJson("/api/v1/downloads/{$paused->id}", ['action' => 'resume'], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.attributes.desired_paused', false);
+
+    $this->withToken($token)
+        ->patchJson("/api/v1/downloads/{$complete->id}", ['action' => 'remove'], ['Accept' => 'application/vnd.api+json'])
+        ->assertOk()
+        ->assertJsonPath('data.id', (string) $complete->id);
+
+    expect($complete->fresh())->toBeNull();
+});
+
+it('returns structured json api errors when aria2 is unavailable for patch actions', function (): void {
+    $user = User::factory()->memberInternal()->create();
+    $token = $user->createToken('external-api', ['download-operations'])->plainTextToken;
+    $movie = apiDownloadsCreateMovie(['stream_id' => 50, 'name' => 'Unavailable Movie']);
+    $download = MediaDownloadRef::fromVodStream('gid-unavailable', $movie, $user);
+    $download->save();
+    apiDownloadsBindAria2(new MockClient([
+        JsonRpcBatchRequest::class => MockResponse::make(['error' => ['code' => 1, 'message' => 'backend down']], 500),
+    ]));
+
+    $this->withToken($token)
+        ->patchJson("/api/v1/downloads/{$download->id}", ['action' => 'pause'], ['Accept' => 'application/vnd.api+json'])
+        ->assertStatus(503)
+        ->assertHeader('Content-Type', 'application/vnd.api+json')
+        ->assertJsonPath('errors.0.status', '503')
+        ->assertJsonPath('errors.0.detail', 'The aria2 backend is unavailable: backend down');
 });
 
 /**

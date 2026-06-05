@@ -11,44 +11,19 @@ use App\Http\Integrations\LionzTv\XtreamCodesConnector;
 use App\Http\Requests\Api\ListMoviesRequest;
 use App\Http\Requests\Api\ShowMovieRequest;
 use App\Http\Resources\Api\MovieResource;
-use App\Models\Category;
 use App\Models\User;
-use App\Models\UserCategoryPreference;
 use App\Models\VodStream;
+use App\Support\MediaCategoryPreferenceFilter;
 use Illuminate\Container\Attributes\CurrentUser;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\JsonApi\AnonymousResourceCollection;
 
 final class MoviesController extends Controller
 {
     public function index(ListMoviesRequest $request, #[CurrentUser] User $user): AnonymousResourceCollection
     {
-        $categoryId = $request->categoryId();
-        $preferenceCategoryIds = $this->moviePreferenceCategoryIds($user);
-
         /** @var AnonymousResourceCollection $collection */
         $collection = MovieResource::collection(
-            VodStream::query()
-                ->when($categoryId === null && $preferenceCategoryIds['hidden'] !== [], static function (Builder $query) use ($preferenceCategoryIds): void {
-                    self::whereCategoryNotInPreservingUncategorized($query, $preferenceCategoryIds['hidden']);
-                })
-                ->when($preferenceCategoryIds['ignored'] !== [], static function (Builder $query) use ($preferenceCategoryIds): void {
-                    self::whereCategoryNotInPreservingUncategorized($query, $preferenceCategoryIds['ignored']);
-                })
-                ->when($categoryId !== null, static function (Builder $query) use ($categoryId): void {
-                    if ($categoryId === Category::UNCATEGORIZED_VOD_PROVIDER_ID) {
-                        $query->where(static function (Builder $innerQuery) use ($categoryId): void {
-                            $innerQuery
-                                ->whereNull('category_id')
-                                ->orWhere('category_id', '')
-                                ->orWhere('category_id', $categoryId);
-                        });
-
-                        return;
-                    }
-
-                    $query->where('category_id', $categoryId);
-                })
+            MediaCategoryPreferenceFilter::apply(VodStream::query(), $user, MediaType::Movie, $request->categoryId())
                 ->orderBy('stream_id')
                 ->paginate(
                     perPage: $request->pageSize(),
@@ -77,41 +52,5 @@ final class MoviesController extends Controller
         }
 
         return new MovieResource($movie);
-    }
-
-    /**
-     * @param  list<string>  $categoryIds
-     */
-    private static function whereCategoryNotInPreservingUncategorized(Builder $query, array $categoryIds): void
-    {
-        $query->where(static function (Builder $innerQuery) use ($categoryIds): void {
-            $innerQuery
-                ->whereNull('category_id')
-                ->orWhere('category_id', '')
-                ->orWhereNotIn('category_id', $categoryIds);
-        });
-    }
-
-    /**
-     * @return array{hidden: list<string>, ignored: list<string>}
-     */
-    private function moviePreferenceCategoryIds(User $user): array
-    {
-        $preferences = UserCategoryPreference::query()
-            ->where('user_id', $user->getKey())
-            ->where('media_type', MediaType::Movie->value)
-            ->get(['category_provider_id', 'is_hidden', 'is_ignored']);
-
-        $resolveIds = static fn (string $column): array => $preferences
-            ->where($column, true)
-            ->pluck('category_provider_id')
-            ->filter(static fn (mixed $value): bool => is_string($value) && $value !== '')
-            ->values()
-            ->all();
-
-        return [
-            'hidden' => $resolveIds('is_hidden'),
-            'ignored' => $resolveIds('is_ignored'),
-        ];
     }
 }

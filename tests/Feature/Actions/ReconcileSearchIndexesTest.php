@@ -7,6 +7,7 @@ use App\Contracts\SearchIndexBackend;
 use App\Data\SearchIndexState;
 use App\Models\Series;
 use App\Models\VodStream;
+use App\Services\SearchIndexFingerprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -22,8 +23,8 @@ it('rebuilds missing and empty indexes then becomes idempotent', function (): vo
     seedSearchReconciliationMedia();
 
     $backend = new ReconciliationFakeBackend([
-        (new Series)->indexableAs() => new SearchIndexState(false, 0, [], null),
-        (new VodStream)->indexableAs() => new SearchIndexState(true, 0, [], null),
+        (new Series)->indexableAs() => new SearchIndexState(false, 0, null),
+        (new VodStream)->indexableAs() => new SearchIndexState(true, 0, null),
     ]);
     app()->instance(SearchIndexBackend::class, $backend);
 
@@ -39,23 +40,21 @@ it('rebuilds missing and empty indexes then becomes idempotent', function (): vo
     expect($backend->replacedIndexes)->toHaveCount(2);
 });
 
-it('rebuilds indexes with stale documents or mismatched counts', function (): void {
+it('rebuilds indexes with stale non-latest documents or mismatched counts', function (): void {
     seedSearchReconciliationMedia();
 
-    $series = Series::query()->latest('updated_at')->latest('series_id')->firstOrFail();
-    $movie = VodStream::query()->latest('updated_at')->latest('stream_id')->firstOrFail();
+    $series = new Series;
+    $movie = new VodStream;
     $backend = new ReconciliationFakeBackend([
         $series->indexableAs() => new SearchIndexState(
             true,
             Series::query()->count(),
-            array_keys(searchReconciliationDocument($series)),
-            [...searchReconciliationDocument($series), 'name' => 'Stale Series'],
+            'stale-non-latest-document',
         ),
         $movie->indexableAs() => new SearchIndexState(
             true,
             VodStream::query()->count() - 1,
-            array_keys(searchReconciliationDocument($movie)),
-            searchReconciliationDocument($movie),
+            searchReconciliationFingerprint(VodStream::class),
         ),
     ]);
     app()->instance(SearchIndexBackend::class, $backend);
@@ -74,13 +73,11 @@ it('does not rebuild healthy indexes', function (): void {
     $states = [];
 
     foreach ([Series::class, VodStream::class] as $modelClass) {
-        $model = $modelClass::query()->latest('updated_at')->latest((new $modelClass)->getKeyName())->firstOrFail();
-        $document = searchReconciliationDocument($model);
+        $model = new $modelClass;
         $states[$model->indexableAs()] = new SearchIndexState(
             true,
             $modelClass::query()->count(),
-            array_keys($document),
-            $document,
+            searchReconciliationFingerprint($modelClass),
             config('scout.meilisearch.index-settings.'.$modelClass, []),
         );
     }
@@ -96,25 +93,49 @@ it('does not rebuild healthy indexes', function (): void {
 function seedSearchReconciliationMedia(): void
 {
     DB::table('series')->insert([
-        'series_id' => 50_001,
-        'num' => 1,
-        'name' => 'Reconciled Series',
-        'last_modified' => now(),
-        'created_at' => now()->subMinute(),
-        'updated_at' => now(),
+        [
+            'series_id' => 50_001,
+            'num' => 1,
+            'name' => 'Older Reconciled Series',
+            'last_modified' => now()->subMinute(),
+            'created_at' => now()->subMinutes(2),
+            'updated_at' => now()->subMinute(),
+        ],
+        [
+            'series_id' => 50_002,
+            'num' => 2,
+            'name' => 'Latest Reconciled Series',
+            'last_modified' => now(),
+            'created_at' => now()->subMinute(),
+            'updated_at' => now(),
+        ],
     ]);
 
     DB::table('vod_streams')->insert([
-        'stream_id' => 60_001,
-        'num' => 1,
-        'name' => 'Reconciled Movie',
-        'stream_type' => 'movie',
-        'rating_5based' => 4.0,
-        'added' => now()->toDateTimeString(),
-        'is_adult' => false,
-        'container_extension' => 'mp4',
-        'created_at' => now()->subMinute(),
-        'updated_at' => now(),
+        [
+            'stream_id' => 60_001,
+            'num' => 1,
+            'name' => 'Older Reconciled Movie',
+            'stream_type' => 'movie',
+            'rating_5based' => 4.0,
+            'added' => now()->subMinute()->toDateTimeString(),
+            'is_adult' => false,
+            'container_extension' => 'mp4',
+            'created_at' => now()->subMinutes(2),
+            'updated_at' => now()->subMinute(),
+        ],
+        [
+            'stream_id' => 60_002,
+            'num' => 2,
+            'name' => 'Latest Reconciled Movie',
+            'stream_type' => 'movie',
+            'rating_5based' => 4.5,
+            'added' => now()->toDateTimeString(),
+            'is_adult' => false,
+            'container_extension' => 'mp4',
+            'created_at' => now()->subMinute(),
+            'updated_at' => now(),
+        ],
     ]);
 }
 
@@ -129,6 +150,19 @@ function searchReconciliationDocument(Series|VodStream $model): array
     ];
 }
 
+/**
+ * @param  class-string<Series|VodStream>  $modelClass
+ */
+function searchReconciliationFingerprint(string $modelClass): string
+{
+    $documents = $modelClass::query()
+        ->orderBy((new $modelClass)->getKeyName())
+        ->get()
+        ->map(fn (Series|VodStream $model): array => searchReconciliationDocument($model));
+
+    return app(SearchIndexFingerprint::class)->forDocuments($documents);
+}
+
 final class ReconciliationFakeBackend implements SearchIndexBackend
 {
     /** @var list<string> */
@@ -139,9 +173,9 @@ final class ReconciliationFakeBackend implements SearchIndexBackend
      */
     public function __construct(public array $states) {}
 
-    public function inspect(string $indexName, int|string|null $sampleId = null): SearchIndexState
+    public function inspect(string $indexName): SearchIndexState
     {
-        return $this->states[$indexName] ?? new SearchIndexState(false, 0, [], null);
+        return $this->states[$indexName] ?? new SearchIndexState(false, 0, null);
     }
 
     public function replaceAtomically(
@@ -158,12 +192,10 @@ final class ReconciliationFakeBackend implements SearchIndexBackend
         }
 
         $this->replacedIndexes[] = $indexName;
-        $sample = collect($documents)->sortByDesc('updated_at')->sortByDesc($primaryKey)->first();
         $this->states[$indexName] = new SearchIndexState(
             true,
             count($documents),
-            array_keys($sample ?? []),
-            $sample,
+            app(SearchIndexFingerprint::class)->forDocuments($documents),
             $settings,
         );
 

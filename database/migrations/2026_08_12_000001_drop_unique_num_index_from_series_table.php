@@ -21,8 +21,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('series', static function (Blueprint $table): void {
-            $table->unique('num');
-        });
+        // Provider ordering is not unique and cannot be restored without deleting valid rows.
     }
 };

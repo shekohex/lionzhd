@@ -67,9 +67,9 @@ test('it does not replace live indexes when catalog sync fails', function (): vo
     {
         public int $replacements = 0;
 
-        public function inspect(string $indexName, int|string|null $sampleId = null): SearchIndexState
+        public function inspect(string $indexName): SearchIndexState
         {
-            return new SearchIndexState(true, 10, ['name'], ['name' => 'Live Search Data']);
+            return new SearchIndexState(true, 10, 'live-search-data');
         }
 
         public function replaceAtomically(

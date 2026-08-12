@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Services\MeilisearchIndexBackend;
+use App\Services\SearchIndexFingerprint;
 use Illuminate\Support\Str;
 use Meilisearch\Client;
 
@@ -12,6 +13,8 @@ $meilisearchTestKey = getenv('MEILISEARCH_TEST_KEY') ?: null;
 it('atomically replaces a live index after validating the replacement', function () use ($meilisearchTestHost, $meilisearchTestKey): void {
     $client = new Client($meilisearchTestHost, $meilisearchTestKey);
     $indexName = 'test_'.Str::lower(Str::random(12));
+    $fingerprint = new SearchIndexFingerprint;
+    $backend = new MeilisearchIndexBackend($client, $fingerprint);
 
     try {
         $createTask = $client->createIndex($indexName, ['primaryKey' => 'id']);
@@ -19,7 +22,7 @@ it('atomically replaces a live index after validating the replacement', function
         $addTask = $client->index($indexName)->addDocuments([['id' => 1, 'name' => 'stale']], 'id');
         $client->waitForTask($addTask['taskUid']);
 
-        (new MeilisearchIndexBackend($client))->replaceAtomically(
+        $backend->replaceAtomically(
             indexName: $indexName,
             primaryKey: 'id',
             settings: ['sortableAttributes' => ['updated_at']],
@@ -29,7 +32,10 @@ it('atomically replaces a live index after validating the replacement', function
 
         expect($client->index($indexName)->getDocument(2)['name'])->toBe('fresh')
             ->and($client->index($indexName)->stats()['numberOfDocuments'])->toBe(1)
-            ->and($client->index($indexName)->getSettings()['sortableAttributes'])->toBe(['updated_at']);
+            ->and($client->index($indexName)->getSettings()['sortableAttributes'])->toBe(['updated_at'])
+            ->and($backend->inspect($indexName)->fingerprint)->toBe($fingerprint->forDocuments([
+                ['id' => 2, 'name' => 'fresh', 'updated_at' => 100],
+            ]));
     } finally {
         deleteMeilisearchTestIndex($client, $indexName);
     }
@@ -45,7 +51,7 @@ it('keeps the live index untouched when replacement validation fails', function 
         $addTask = $client->index($indexName)->addDocuments([['id' => 1, 'name' => 'live']], 'id');
         $client->waitForTask($addTask['taskUid']);
 
-        expect(fn () => (new MeilisearchIndexBackend($client))->replaceAtomically(
+        expect(fn () => (new MeilisearchIndexBackend($client, new SearchIndexFingerprint))->replaceAtomically(
             indexName: $indexName,
             primaryKey: 'id',
             settings: [],

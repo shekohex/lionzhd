@@ -8,15 +8,19 @@ use App\Contracts\SearchIndexBackend;
 use App\Data\SearchIndexState;
 use Illuminate\Support\Str;
 use Meilisearch\Client;
+use Meilisearch\Contracts\DocumentsQuery;
 use Meilisearch\Exceptions\ApiException;
 use RuntimeException;
 use Throwable;
 
 final readonly class MeilisearchIndexBackend implements SearchIndexBackend
 {
-    public function __construct(private Client $client) {}
+    public function __construct(
+        private Client $client,
+        private SearchIndexFingerprint $fingerprint,
+    ) {}
 
-    public function inspect(string $indexName, int|string|null $sampleId = null): SearchIndexState
+    public function inspect(string $indexName): SearchIndexState
     {
         try {
             $index = $this->client->getIndex($indexName);
@@ -25,27 +29,15 @@ final readonly class MeilisearchIndexBackend implements SearchIndexBackend
                 throw $exception;
             }
 
-            return new SearchIndexState(false, 0, [], null);
+            return new SearchIndexState(false, 0, null);
         }
 
         $stats = $index->stats();
-        $sample = null;
-
-        if ($sampleId !== null) {
-            try {
-                $sample = $index->getDocument($sampleId);
-            } catch (ApiException $exception) {
-                if ($exception->httpStatus !== 404) {
-                    throw $exception;
-                }
-            }
-        }
 
         return new SearchIndexState(
             exists: true,
             documents: (int) ($stats['numberOfDocuments'] ?? 0),
-            fields: array_values(array_map('strval', array_keys($stats['fieldDistribution'] ?? []))),
-            sample: $sample,
+            fingerprint: $this->fingerprint->forDocuments($this->documents($indexName)),
             settings: $index->getSettings(),
         );
     }
@@ -117,6 +109,25 @@ final readonly class MeilisearchIndexBackend implements SearchIndexBackend
 
             throw $exception;
         }
+    }
+
+    /**
+     * @return iterable<int, array<string, mixed>>
+     */
+    private function documents(string $indexName): iterable
+    {
+        $offset = 0;
+        $limit = max(1, (int) config('scout.reconcile.chunk', 1000));
+
+        do {
+            $query = (new DocumentsQuery)
+                ->setOffset($offset)
+                ->setLimit($limit);
+            $documents = $this->client->index($indexName)->getDocuments($query)->getResults();
+
+            yield from $documents;
+            $offset += count($documents);
+        } while (count($documents) === $limit);
     }
 
     /**

@@ -8,7 +8,7 @@ use App\Data\SearchIndexState;
 
 interface SearchIndexBackend
 {
-    public function inspect(string $indexName, int|string|null $sampleId = null): SearchIndexState;
+    public function inspect(string $indexName): SearchIndexState;
 
     /**
      * @param  array<string, mixed>  $settings

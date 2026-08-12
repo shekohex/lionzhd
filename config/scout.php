@@ -110,6 +110,7 @@ return [
         'enabled' => env('SCOUT_RECONCILE_ENABLED', true),
         'chunk' => env('SCOUT_RECONCILE_CHUNK', 1000),
         'lock_seconds' => env('SCOUT_RECONCILE_LOCK_SECONDS', 3600),
+        'lock_wait_seconds' => env('SCOUT_RECONCILE_LOCK_WAIT_SECONDS', 3600),
         'task_timeout_ms' => env('SCOUT_RECONCILE_TASK_TIMEOUT_MS', 600000),
     ],
 

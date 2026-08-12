@@ -8,7 +8,9 @@ use App\Data\SearchIndexState;
 use App\Models\Series;
 use App\Models\VodStream;
 use App\Services\SearchIndexFingerprint;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
@@ -90,6 +92,48 @@ it('does not rebuild healthy indexes', function (): void {
     expect($backend->replacedIndexes)->toBe([]);
 });
 
+it('skips health scans during forced rebuilds', function (): void {
+    seedSearchReconciliationMedia();
+
+    $backend = new ReconciliationFakeBackend([]);
+    app()->instance(SearchIndexBackend::class, $backend);
+
+    app(ReconcileSearchIndexes::class)(force: true);
+
+    expect($backend->inspectedIndexes)->toBe([])
+        ->and($backend->replacedIndexes)->toBe([
+            (new Series)->indexableAs(),
+            (new VodStream)->indexableAs(),
+        ]);
+});
+
+it('waits for the active lock during forced rebuilds', function (): void {
+    config()->set('scout.reconcile.lock_wait_seconds', 0);
+    $lock = Cache::lock('search-index-reconciliation', 60);
+    expect($lock->get())->toBeTrue();
+
+    try {
+        expect(fn () => app(ReconcileSearchIndexes::class)(force: true))
+            ->toThrow(LockTimeoutException::class);
+    } finally {
+        $lock->release();
+    }
+});
+
+it('attempts the second index before rethrowing the first index failure', function (): void {
+    seedSearchReconciliationMedia();
+
+    $seriesIndex = (new Series)->indexableAs();
+    $movieIndex = (new VodStream)->indexableAs();
+    $backend = new ReconciliationFakeBackend([]);
+    $backend->failedIndexes[$seriesIndex] = new RuntimeException('Series index unavailable');
+    app()->instance(SearchIndexBackend::class, $backend);
+
+    expect(fn () => app(ReconcileSearchIndexes::class)(force: true))
+        ->toThrow(RuntimeException::class, 'Series index unavailable')
+        ->and($backend->replacedIndexes)->toBe([$movieIndex]);
+});
+
 function seedSearchReconciliationMedia(): void
 {
     DB::table('series')->insert([
@@ -166,7 +210,13 @@ function searchReconciliationFingerprint(string $modelClass): string
 final class ReconciliationFakeBackend implements SearchIndexBackend
 {
     /** @var list<string> */
+    public array $inspectedIndexes = [];
+
+    /** @var list<string> */
     public array $replacedIndexes = [];
+
+    /** @var array<string, RuntimeException> */
+    public array $failedIndexes = [];
 
     /**
      * @param  array<string, SearchIndexState>  $states
@@ -175,6 +225,8 @@ final class ReconciliationFakeBackend implements SearchIndexBackend
 
     public function inspect(string $indexName): SearchIndexState
     {
+        $this->inspectedIndexes[] = $indexName;
+
         return $this->states[$indexName] ?? new SearchIndexState(false, 0, null);
     }
 
@@ -185,6 +237,10 @@ final class ReconciliationFakeBackend implements SearchIndexBackend
         iterable $documentChunks,
         int $expectedDocuments,
     ): void {
+        if (isset($this->failedIndexes[$indexName])) {
+            throw $this->failedIndexes[$indexName];
+        }
+
         $documents = [];
 
         foreach ($documentChunks as $chunk) {

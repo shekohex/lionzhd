@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Jobs\AutoEpisodes\DispatchDueMonitors;
 use App\Jobs\MonitorDownloads;
+use App\Jobs\ReconcileSearchIndexes;
 use App\Jobs\RefreshMediaContents;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
@@ -17,6 +18,13 @@ Schedule::job(RefreshMediaContents::class)
     ->withoutOverlapping()
     ->onFailure(fn () => Log::error('Failed to refresh media contents'))
     ->onSuccess(fn () => Log::info('Successfully refreshed media contents'))
+    ->sentryMonitor();
+
+Schedule::job(ReconcileSearchIndexes::class)
+    ->name('reconcile-search-indexes')
+    ->description('Repair missing, stale, or incomplete search indexes')
+    ->hourly()
+    ->withoutOverlapping()
     ->sentryMonitor();
 
 Schedule::command('telescope:prune --hours=720')->dailyAt('00:00')

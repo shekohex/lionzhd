@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Jobs;
 
+use App\Contracts\SearchIndexBackend;
+use App\Data\SearchIndexState;
 use App\Enums\AutoEpisodes\MonitorScheduleType;
 use App\Http\Integrations\LionzTv\Requests\GetSeriesRequest;
 use App\Http\Integrations\LionzTv\Requests\GetVodStreamsRequest;
@@ -13,6 +15,7 @@ use App\Models\AutoEpisodes\SeriesMonitor;
 use App\Models\Category;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
+use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -56,6 +59,40 @@ test('it skips search operations when search backend is unavailable', function (
     $job = app()->make(RefreshMediaContents::class);
     $job->withFakeQueueInteractions()
         ->assertNotFailed()->handle();
+});
+
+test('it does not replace live indexes when catalog sync fails', function (): void {
+    Config::set('scout.driver', 'meilisearch');
+    $backend = new class implements SearchIndexBackend
+    {
+        public int $replacements = 0;
+
+        public function inspect(string $indexName, int|string|null $sampleId = null): SearchIndexState
+        {
+            return new SearchIndexState(true, 10, ['name'], ['name' => 'Live Search Data']);
+        }
+
+        public function replaceAtomically(
+            string $indexName,
+            string $primaryKey,
+            array $settings,
+            iterable $documentChunks,
+            int $expectedDocuments,
+        ): void {
+            $this->replacements++;
+        }
+    };
+    app()->instance(SearchIndexBackend::class, $backend);
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([], 500),
+        ]));
+    });
+
+    expect(fn () => app()->make(RefreshMediaContents::class)->handle())->toThrow(Exception::class)
+        ->and($backend->replacements)->toBe(0);
 });
 
 test('it bumps xtream dto cache namespace after sync', function (): void {
@@ -259,6 +296,40 @@ test('it tolerates duplicate vod nums within the same upstream payload', functio
         ->toBe([
             40_001 => 'First Duplicate',
             40_002 => 'Second Duplicate',
+        ]);
+});
+
+test('it tolerates duplicate series nums within the same upstream payload', function (): void {
+    app()->bind(XtreamCodesConnector::class, function (): XtreamCodesConnector {
+        $connector = new XtreamCodesConnector(app(XtreamCodesConfig::class));
+
+        return $connector->withMockClient(new MockClient([
+            GetSeriesRequest::class => MockResponse::make([
+                [
+                    'series_id' => 41_001,
+                    'num' => 999,
+                    'name' => 'First Series Duplicate',
+                    'backdrop_path' => [],
+                ],
+                [
+                    'series_id' => 41_002,
+                    'num' => 999,
+                    'name' => 'Second Series Duplicate',
+                    'backdrop_path' => [],
+                ],
+            ], 200),
+            GetVodStreamsRequest::class => MockResponse::make([], 200),
+        ]));
+    });
+
+    $job = app()->make(RefreshMediaContents::class);
+    $job->withFakeQueueInteractions()
+        ->assertNotFailed()->handle();
+
+    expect(DB::table('series')->pluck('name', 'series_id')->all())
+        ->toBe([
+            41_001 => 'First Series Duplicate',
+            41_002 => 'Second Series Duplicate',
         ]);
 });
 

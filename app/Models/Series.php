@@ -79,6 +79,13 @@ final class Series extends Model
             'cast' => $this->cast,
             'director' => $this->director,
             'genre' => $this->genre,
+            'category_id' => $this->category_id,
+            'releaseDate' => $this->releaseDate,
+            'last_modified' => $this->last_modified?->getTimestamp(),
+            'rating' => $this->rating === null ? null : (float) $this->rating,
+            'rating_5based' => $this->rating_5based === null ? null : (float) $this->rating_5based,
+            'created_at' => $this->created_at?->getTimestamp(),
+            'updated_at' => $this->updated_at?->getTimestamp(),
         ];
     }
 

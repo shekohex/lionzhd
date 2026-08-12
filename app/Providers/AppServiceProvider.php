@@ -4,22 +4,27 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\SearchIndexBackend;
 use App\Enums\UserRole;
 use App\Enums\UserSubtype;
+use App\Listeners\PreventDestructiveScoutCommands;
 use App\Models\Aria2Config;
 use App\Models\MediaDownloadRef;
 use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use App\OpenApi\JsonApiSchemas;
+use App\Services\MeilisearchIndexBackend;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -35,6 +40,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(XtreamCodesConfig::class, static fn () => XtreamCodesConfig::firstOrFromEnv());
         $this->app->bind(Aria2Config::class, static fn () => Aria2Config::firstOrFromEnv());
+        $this->app->bind(SearchIndexBackend::class, MeilisearchIndexBackend::class);
     }
 
     /**
@@ -42,6 +48,8 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Event::listen(CommandStarting::class, PreventDestructiveScoutCommands::class);
+
         Scramble::afterOpenApiGenerated(static function ($openApi): void {
             JsonApiSchemas::apply($openApi);
         });

@@ -49,7 +49,7 @@ php artisan storage:link --force
 # -----------------------------------------------------------
 # Ensure the Scout indexes are synced with the database.
 # -----------------------------------------------------------
-php artisan scout:sync-index-settings --no-interaction
+php artisan scout:sync-index-settings --no-interaction || echo 'Warning: Scout index settings sync failed; scheduled reconciliation will retry.' >&2
 
 # Publish Telescope assets
 # -----------------------------------------------------------

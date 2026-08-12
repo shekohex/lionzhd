@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Data\VodStreamData;
+use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Laravel\Scout\Searchable;
@@ -56,12 +57,20 @@ final class VodStream extends Model
     ];
 
     /**
-     * @return array<string,string>
+     * @return array<string, mixed>
      */
     public function toSearchableArray(): array
     {
+        $added = $this->getAttribute('added');
+
         return [
             'name' => $this->name,
+            'category_id' => $this->category_id,
+            'added' => $added instanceof DateTimeInterface ? $added->getTimestamp() : null,
+            'rating' => $this->rating === null ? null : (float) $this->rating,
+            'rating_5based' => (float) $this->rating_5based,
+            'created_at' => $this->created_at?->getTimestamp(),
+            'updated_at' => $this->updated_at?->getTimestamp(),
         ];
     }
 

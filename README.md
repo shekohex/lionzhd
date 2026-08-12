@@ -103,6 +103,14 @@ ARIA2_RPC_PORT=6800
 ARIA2_RPC_SECRET=your-secret-token
 ```
 
+### Production Search Maintenance
+
+- Keep Meilisearch data on a persistent volume.
+- Keep queue and scheduler containers supervised; hourly `reconcile-search-indexes` compares complete database/index fingerprints and repairs missing, empty, stale, or count-mismatched indexes.
+- Use `php artisan lionz:reconcile-search --force` for manual safe rebuilds. It builds replacement indexes, verifies counts, then swaps them atomically.
+- Destructive Scout commands (`scout:flush`, `scout:delete-index`, `scout:delete-all-indexes`) are blocked in production.
+- Startup does not fail when Meilisearch is temporarily unavailable; scheduled reconciliation retries after service recovery.
+
 ## Usage
 
 Start the development server and all required services:

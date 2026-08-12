@@ -26,15 +26,16 @@ final readonly class SyncMedia
 {
     use AsAction;
 
-    public function __construct(private XtreamCodesConnector $connector) {}
+    public function __construct(
+        private XtreamCodesConnector $connector,
+        private ReconcileSearchIndexes $reconcileSearchIndexes,
+    ) {}
 
     /**
      * Execute the action.
      */
     public function __invoke(): void
     {
-        $this->removeAllFromSearchSafely();
-
         Telescope::withoutRecording(function (): void {
             Log::debug('Fetching series from Xtream Codes API');
             /** @var array<int, array<string, mixed>> $series */
@@ -53,7 +54,7 @@ final readonly class SyncMedia
         });
 
         $this->bustXtreamDtoCacheNamespace();
-        $this->makeAllSearchableSafely();
+        $this->reconcileSearchSafely();
         Log::info('All media contents have been refreshed');
     }
 
@@ -68,28 +69,12 @@ final readonly class SyncMedia
         }
     }
 
-    private function removeAllFromSearchSafely(): void
+    private function reconcileSearchSafely(): void
     {
         try {
-            Log::debug('Removing items from search index');
-            VodStream::removeAllFromSearch();
-            Series::removeAllFromSearch();
+            ($this->reconcileSearchIndexes)(force: true);
         } catch (Throwable $exception) {
-            Log::warning('Skipping search index cleanup', [
-                'error' => $exception->getMessage(),
-            ]);
-        }
-    }
-
-    private function makeAllSearchableSafely(): void
-    {
-        try {
-            Log::debug('Marking series as searchable');
-            Series::makeAllSearchable(3000);
-            Log::debug('Marking VOD streams as searchable');
-            VodStream::makeAllSearchable(3000);
-        } catch (Throwable $exception) {
-            Log::warning('Skipping search indexing', [
+            Log::warning('Search index reconciliation failed after media sync', [
                 'error' => $exception->getMessage(),
             ]);
         }

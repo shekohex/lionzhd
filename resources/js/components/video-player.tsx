@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { LoaderCircle, Maximize, Play, X } from 'lucide-react';
+import { Check, Copy, Download, LoaderCircle, Maximize, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export interface VideoPlayerSource {
@@ -35,10 +35,40 @@ function playbackErrorMessage(error: MediaError | null, containerExtension: stri
     return 'Playback failed. The provider stream may be unavailable or use a format this browser does not support.';
 }
 
+function playlistFilename(title: string): string {
+    const filename = title
+        .normalize('NFKD')
+        .replace(/[^a-zA-Z0-9._-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 100);
+
+    return `${filename || 'lionzhd-video'}.m3u`;
+}
+
+async function copyToClipboard(value: string): Promise<boolean> {
+    try {
+        await navigator.clipboard.writeText(value);
+        return true;
+    } catch {
+        const textArea = document.createElement('textarea');
+        textArea.value = value;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        const copied = document.execCommand('copy');
+        textArea.remove();
+
+        return copied;
+    }
+}
+
 export default function VideoPlayer({ source, onClose, nextTitle, onPlayNext, className }: VideoPlayerProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [nextCountdown, setNextCountdown] = useState<number | null>(null);
     const isHls = useMemo(() => source?.containerExtension.toLowerCase() === 'm3u8', [source]);
 
@@ -57,6 +87,28 @@ export default function VideoPlayer({ source, onClose, nextTitle, onPlayNext, cl
         setNextCountdown(null);
         onPlayNext?.();
     }, [onPlayNext]);
+
+    const downloadExternalPlaylist = useCallback(() => {
+        if (!source) return;
+
+        const title = source.title.replace(/[\r\n]+/g, ' ').trim() || 'Lionzhd video';
+        const playlist = `#EXTM3U\n#EXTINF:-1,${title}\n${source.url}\n`;
+        const objectUrl = URL.createObjectURL(new Blob([playlist], { type: 'audio/x-mpegurl;charset=utf-8' }));
+        const link = document.createElement('a');
+
+        link.href = objectUrl;
+        link.download = playlistFilename(title);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 0);
+    }, [source]);
+
+    const copyStreamLink = useCallback(async () => {
+        if (!source) return;
+
+        setLinkCopied(await copyToClipboard(source.url));
+    }, [source]);
 
     useEffect(() => {
         if (nextCountdown === null) return;
@@ -79,6 +131,7 @@ export default function VideoPlayer({ source, onClose, nextTitle, onPlayNext, cl
 
         setLoading(true);
         setError(null);
+        setLinkCopied(false);
         setNextCountdown(null);
 
         if (!isHls || video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -172,6 +225,25 @@ export default function VideoPlayer({ source, onClose, nextTitle, onPlayNext, cl
                     <Button
                         variant="ghost"
                         size="sm"
+                        onClick={downloadExternalPlaylist}
+                        className="text-white hover:bg-white/15 hover:text-white"
+                    >
+                        <Download className="h-4 w-4" />
+                        <span className="hidden sm:inline">External player</span>
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => void copyStreamLink()}
+                        aria-label={linkCopied ? 'Stream link copied' : 'Copy stream link'}
+                        title={linkCopied ? 'Stream link copied' : 'Copy stream link'}
+                        className="text-white hover:bg-white/15 hover:text-white"
+                    >
+                        {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={enterFullscreen}
                         className="text-white hover:bg-white/15 hover:text-white"
                     >
@@ -227,9 +299,22 @@ export default function VideoPlayer({ source, onClose, nextTitle, onPlayNext, cl
                         <div className="max-w-xl space-y-4">
                             <h3 className="text-lg font-semibold">Unable to play this video</h3>
                             <p className="text-sm text-white/75">{error}</p>
-                            <Button variant="secondary" onClick={onClose}>
-                                Close player
-                            </Button>
+                            <p className="text-sm text-white/75">
+                                Use the playlist with VLC, mpv, IINA, Infuse, or another native player. The video
+                                streams directly from the provider.
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-3">
+                                <Button variant="secondary" onClick={downloadExternalPlaylist}>
+                                    <Download className="h-4 w-4" /> External player
+                                </Button>
+                                <Button variant="secondary" onClick={() => void copyStreamLink()}>
+                                    {linkCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                                    {linkCopied ? 'Link copied' : 'Copy stream link'}
+                                </Button>
+                                <Button variant="ghost" onClick={onClose} className="text-white hover:text-white">
+                                    Close player
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 )}

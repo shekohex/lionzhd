@@ -11,7 +11,9 @@ import { toast } from 'sonner';
 import CastList from '@/components/cast-list';
 import MediaHeroSection from '@/components/media-hero-section';
 import { Badge } from '@/components/ui/badge';
+import VideoPlayer, { type VideoPlayerSource } from '@/components/video-player';
 import VideoTrailerPreview from '@/components/video-trailer-preview';
+import { requestPlaybackSource } from '@/lib/request-playback-source';
 import { Film } from 'lucide-react';
 
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
@@ -41,20 +43,23 @@ export default function MovieInformation() {
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+    const [playbackSource, setPlaybackSource] = useState<VideoPlayerSource | null>(null);
 
     // Get release year from full date
     const releaseYear = info.releaseDate ? new Date(info.releaseDate).getFullYear() : null;
 
-    // Handle movie playback
     const handlePlay = useCallback(() => {
-        // For demonstration purposes, this would be connected to actual video playback
-        console.log('Playing movie:', info.movie.name);
-
-        // Without actual implementation, just open the trailer if available
-        if (info.youtubeTrailer) {
-            setIsTrailerOpen(true);
-        }
-    }, [info]);
+        void requestPlaybackSource(route('movies.playback', { model: info.vodId }), {
+            title: info.movie.name,
+            containerExtension: info.movie.containerExtension,
+        })
+            .then(setPlaybackSource)
+            .catch(() => {
+                toast.error('Unable to start playback', {
+                    description: 'LionzHD could not create a temporary playback link. Please try again.',
+                });
+            });
+    }, [info.movie.containerExtension, info.movie.name, info.vodId]);
 
     // Handle trailer button click
     const handleTrailerClick = useCallback(() => {
@@ -205,6 +210,7 @@ export default function MovieInformation() {
                         additionalBackdrops={info.backdropPath?.slice(1) || []}
                         trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}
+                        playLabel="Watch Now"
                         onTrailerPlay={handleTrailerClick}
                         onForgetCache={handleForgetCache}
                         onAddToWatchlist={addToWatchlist}
@@ -272,6 +278,8 @@ export default function MovieInformation() {
                             onClose={() => setIsTrailerOpen(false)}
                         />
                     )}
+
+                    <VideoPlayer source={playbackSource} onClose={() => setPlaybackSource(null)} />
                 </div>
             </ErrorBoundary>
         </AppLayout>

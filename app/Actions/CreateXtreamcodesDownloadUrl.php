@@ -39,7 +39,13 @@ final readonly class CreateXtreamcodesDownloadUrl
             Episode::class => $data->containerExtension,
         };
 
-        $template = "{$this->config->baseUrl()}/{model_path}/{username}/{password}/{download_id}.{container_extension}";
+        $baseUrl = $this->config->baseUrl();
+
+        if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
+            $baseUrl = "http://{$baseUrl}";
+        }
+
+        $template = "{$baseUrl}/{model_path}/{username}/{password}/{download_id}.{container_extension}";
 
         return Uri::fromTemplate($template, [
             'username' => $this->config->username,

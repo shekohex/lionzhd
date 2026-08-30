@@ -15,7 +15,9 @@ import ScheduleEditorDialog, {
 import CastList from '@/components/cast-list';
 import EpisodeList from '@/components/episode-list';
 import MediaHeroSection from '@/components/media-hero-section';
+import VideoPlayer, { type VideoPlayerSource } from '@/components/video-player';
 import VideoTrailerPreview from '@/components/video-trailer-preview';
+import { requestPlaybackSource } from '@/lib/request-playback-source';
 
 // Error fallback component
 function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
@@ -31,6 +33,13 @@ function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
             </button>
         </div>
     );
+}
+
+function episodePlaybackTitle(
+    seriesName: string,
+    episode: App.Http.Integrations.LionzTv.Responses.Episode,
+): string {
+    return `${seriesName} · S${episode.season}E${episode.episodeNum} · ${episode.title || `Episode ${episode.episodeNum}`}`;
 }
 
 export default function SeriesInformation() {
@@ -62,6 +71,26 @@ export default function SeriesInformation() {
 
     // State for trailer modal
     const [isTrailerOpen, setIsTrailerOpen] = useState(false);
+    const [playingEpisodeId, setPlayingEpisodeId] = useState<string | null>(null);
+    const [playingSource, setPlayingSource] = useState<VideoPlayerSource | null>(null);
+
+    const episodePlaylist = useMemo(
+        () =>
+            Object.keys(info.seasonsWithEpisodes)
+                .map(Number)
+                .sort((a, b) => a - b)
+                .flatMap((season) =>
+                    (info.seasonsWithEpisodes[season] || []).map((episode, episodeIndex) => ({
+                        episode,
+                        episodeIndex,
+                    })),
+                ),
+        [info.seasonsWithEpisodes],
+    );
+
+    const playingEpisodeIndex = episodePlaylist.findIndex((item) => item.episode.id === playingEpisodeId);
+    const nextEpisode = playingEpisodeIndex >= 0 ? (episodePlaylist[playingEpisodeIndex + 1] ?? null) : null;
+    const nextTitle = nextEpisode ? episodePlaybackTitle(info.name, nextEpisode.episode) : null;
 
     const availableSeasons = useMemo(
         () =>
@@ -89,28 +118,43 @@ export default function SeriesInformation() {
     // Get release year from full date
     const releaseYear = info.releaseDate ? new Date(info.releaseDate).getFullYear() : null;
 
-    // Handle play functionality
+    const playEpisode = useCallback(
+        (item: (typeof episodePlaylist)[number]) => {
+            void requestPlaybackSource(
+                route('series.playback.single', {
+                    model: info.seriesId,
+                    season: item.episode.season,
+                    episode: item.episodeIndex,
+                }),
+                {
+                    title: episodePlaybackTitle(info.name, item.episode),
+                    containerExtension: item.episode.containerExtension,
+                },
+            )
+                .then((source) => {
+                    setPlayingEpisodeId(item.episode.id);
+                    setPlayingSource(source);
+                })
+                .catch(() => {
+                    toast.error('Unable to start playback', {
+                        description: 'LionzHD could not create a temporary playback link. Please try again.',
+                    });
+                });
+        },
+        [info.name, info.seriesId],
+    );
+
     const handlePlay = useCallback(() => {
-        // Get first episode of the first season
-        const seasonNumbers = Object.keys(info.seasonsWithEpisodes)
-            .map(Number)
-            .sort((a, b) => a - b);
+        if (episodePlaylist[0]) playEpisode(episodePlaylist[0]);
+    }, [episodePlaylist, playEpisode]);
 
-        if (seasonNumbers.length > 0) {
-            const firstSeason = seasonNumbers[0];
-            const episodes = info.seasonsWithEpisodes[firstSeason];
-
-            if (episodes && episodes.length > 0) {
-                // Here you would typically trigger playback of the first episode
-                console.log('Playing first episode:', episodes[0]);
-
-                // For demonstration, let's open the trailer instead if there's no actual playback
-                if (info.youtubeTrailer) {
-                    setIsTrailerOpen(true);
-                }
-            }
-        }
-    }, [info]);
+    const handleWatchEpisode = useCallback(
+        (_episodeIndex: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => {
+            const item = episodePlaylist.find((playlistItem) => playlistItem.episode.id === episode.id);
+            if (item) playEpisode(item);
+        },
+        [episodePlaylist, playEpisode],
+    );
 
     // Handle downloading a specific episode
     const handleDownloadEpisode = useCallback(
@@ -366,6 +410,7 @@ export default function SeriesInformation() {
                         additionalBackdrops={info.backdropPath?.slice(1) || []}
                         trailerUrl={info.youtubeTrailer}
                         onPlay={handlePlay}
+                        playLabel="Watch Now"
                         onTrailerPlay={handleTrailerClick}
                         onForgetCache={handleForgetCache}
                         onAddToWatchlist={addToWatchlist}
@@ -386,6 +431,7 @@ export default function SeriesInformation() {
                                         seasonsWithEpisodes={info.seasonsWithEpisodes}
                                         onDownloadEpisode={handleDownloadEpisode}
                                         onDirectDownloadEpisode={handleDirectDownloadEpisode}
+                                        onWatchEpisode={handleWatchEpisode}
                                         onDownloadSelected={handleDownloadSelectedEpisodes}
                                         onDirectDownloadSelected={handleDirectDownloadSelectedEpisodes}
                                         serverDownloadVisibility={serverDownloadVisibility}
@@ -453,6 +499,19 @@ export default function SeriesInformation() {
                         trailerUrl={info.youtubeTrailer}
                         isOpen={isTrailerOpen}
                         onClose={() => setIsTrailerOpen(false)}
+                    />
+
+                    <VideoPlayer
+                        source={playingSource}
+                        nextTitle={nextTitle}
+                        onPlayNext={() => {
+                            const nextEpisode = episodePlaylist[playingEpisodeIndex + 1];
+                            if (nextEpisode) playEpisode(nextEpisode);
+                        }}
+                        onClose={() => {
+                            setPlayingEpisodeId(null);
+                            setPlayingSource(null);
+                        }}
                     />
                 </div>
             </ErrorBoundary>

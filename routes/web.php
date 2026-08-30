@@ -10,15 +10,18 @@ use App\Http\Controllers\DirectDownloadController;
 use App\Http\Controllers\DiscoverController;
 use App\Http\Controllers\LightweightSearchController;
 use App\Http\Controllers\MediaDownloadsController;
+use App\Http\Controllers\PlaybackController;
 use App\Http\Controllers\Preferences\CategoryPreferenceController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Series\SeriesCacheController;
 use App\Http\Controllers\Series\SeriesController;
 use App\Http\Controllers\Series\SeriesDownloadController;
+use App\Http\Controllers\Series\SeriesPlaybackController;
 use App\Http\Controllers\Series\SeriesWatchlistController;
 use App\Http\Controllers\VodStream\VodStreamCacheController;
 use App\Http\Controllers\VodStream\VodStreamController;
 use App\Http\Controllers\VodStream\VodStreamDownloadController;
+use App\Http\Controllers\VodStream\VodStreamPlaybackController;
 use App\Http\Controllers\VodStream\VodStreamWatchlistController;
 use App\Http\Controllers\WatchlistController;
 use App\Http\Controllers\WelcomeController;
@@ -56,6 +59,9 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->name('movies.download');
         Route::get('{model}/direct', 'direct')->whereNumber('model')->name('movies.direct');
     });
+    Route::get('movies/{model}/playback', [VodStreamPlaybackController::class, 'show'])
+        ->whereNumber('model')
+        ->name('movies.playback');
 
     Route::controller(SeriesController::class)->prefix('series')->group(static function (): void {
         Route::get('/', 'index')->name('series');
@@ -89,6 +95,11 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
             ->whereNumber('model')
             ->name('series.direct.batch');
     });
+    Route::get('series/{model}/{season}/{episode}/playback', [SeriesPlaybackController::class, 'show'])
+        ->whereNumber('model')
+        ->whereNumber('season')
+        ->whereNumber('episode')
+        ->name('series.playback.single');
     Route::controller(SeriesMonitoringController::class)
         ->middleware('can:auto-download-schedules')
         ->prefix('series')
@@ -134,6 +145,11 @@ Route::middleware(['auth', 'verified'])->group(static function (): void {
 Route::get('/dl/{token}', [DirectDownloadController::class, 'show'])
     ->middleware('signed')
     ->name('direct.resolve');
+
+Route::get('/watch/{mediaType}/{token}', [PlaybackController::class, 'show'])
+    ->whereIn('mediaType', ['movie', 'episode'])
+    ->middleware('signed')
+    ->name('playback.resolve');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

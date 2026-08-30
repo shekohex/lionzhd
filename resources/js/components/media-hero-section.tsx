@@ -36,6 +36,7 @@ export interface MediaHeroSectionProps {
     trailerUrl?: string;
     // Actions
     onPlay?: () => void;
+    playLabel?: string;
     onTrailerPlay?: () => void;
     onMoreInfo?: () => void;
     onAddToWatchlist?: () => void;
@@ -68,6 +69,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
     trailerUrl,
     inMyWatchlist,
     onPlay,
+    playLabel = 'Play',
     onTrailerPlay,
     onMoreInfo,
     onAddToWatchlist,
@@ -286,7 +288,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                                 className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
                                             >
                                                 <PlayIcon size={18} />
-                                                Play
+                                                {playLabel}
                                             </Button>
 
                                             {/* Trailer button - only if trailer available */}
@@ -403,7 +405,7 @@ const MediaHeroSection: React.FC<MediaHeroSectionProps> = ({
                                             className="mt-2 flex items-center gap-2 sm:hidden"
                                         >
                                             <Button
-                                                aria-label="Play"
+                                                aria-label={playLabel}
                                                 size="icon"
                                                 onClick={onPlay}
                                                 className="bg-primary text-primary-foreground hover:bg-primary/90"

@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { type SeasonsWithEpisodes } from '@/types/series';
 import { motion } from 'framer-motion';
-import { Download, DownloadIcon, ExternalLinkIcon, ListChecks, ListTodo } from 'lucide-react';
+import { Download, DownloadIcon, ExternalLinkIcon, ListChecks, ListTodo, PlayIcon } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 interface EpisodeListProps {
@@ -19,6 +19,7 @@ interface EpisodeListProps {
     className?: string;
     onDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
     onDirectDownloadEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
+    onWatchEpisode?: (index: number, episode: App.Http.Integrations.LionzTv.Responses.Episode) => void;
     onDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
     onDirectDownloadSelected?: (episodes: App.Data.SelectedEpisodeData[]) => void;
     serverDownloadVisibility?: 'enabled' | 'disabled' | 'hidden';
@@ -90,6 +91,7 @@ export default function EpisodeList({
     className,
     onDownloadEpisode,
     onDirectDownloadEpisode,
+    onWatchEpisode,
     onDownloadSelected,
     onDirectDownloadSelected,
     serverDownloadVisibility = 'enabled',
@@ -284,6 +286,7 @@ export default function EpisodeList({
                             episode={episode}
                             onDownload={() => onDownloadEpisode?.(index, episode)}
                             onDirectDownload={() => onDirectDownloadEpisode?.(index, episode)}
+                            onWatch={() => onWatchEpisode?.(index, episode)}
                             onSelected={(isSelected) => handleEpisodeSelect(episode.episodeNum, isSelected)}
                             showServerDownload={showServerDownload}
                             isServerDownloadDisabled={isServerDownloadDisabled}
@@ -312,6 +315,7 @@ interface EpisodeCardProps {
     onServerDownloadBlocked?: () => void;
     onDownload?: () => void;
     onDirectDownload?: () => void;
+    onWatch?: () => void;
     onSelected?: (isSelected: boolean) => void;
 }
 
@@ -323,6 +327,7 @@ function EpisodeCard({
     onServerDownloadBlocked,
     onDownload,
     onDirectDownload,
+    onWatch,
     onSelected,
     selected,
 }: EpisodeCardProps) {
@@ -392,6 +397,17 @@ function EpisodeCard({
                         {episode.title || `Episode ${episode.episodeNum}`}
                     </h3>
                     <div className="mb-2 flex items-center justify-between gap-3 sm:mb-0 sm:gap-4">
+                        {onWatch && (
+                            <Button
+                                size="sm"
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    onWatch();
+                                }}
+                            >
+                                <PlayIcon className="h-4 w-4" /> Watch
+                            </Button>
+                        )}
                         {/* Mobile download action (always visible) */}
                         <div className="flex sm:hidden">
                             <DropdownMenu>

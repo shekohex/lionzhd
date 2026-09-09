@@ -16,6 +16,7 @@ type OAuthClient = {
     id: string;
     name: string;
     redirect_uri: string;
+    confidential: boolean;
     created_at: string;
 };
 
@@ -91,22 +92,26 @@ function ClientCard({ client }: { client: OAuthClient }) {
                 </details>
             </CardContent>
             <CardFooter className="flex flex-wrap gap-2">
-                <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                        if (
-                            window.confirm(
-                                `Generate a new secret for "${client.name}"? The current secret will stop working.`,
-                            )
-                        ) {
-                            router.post(route('oauth-clients.secret', client.id), {}, { preserveScroll: true });
-                        }
-                    }}
-                >
-                    <RefreshCw className="mr-2 size-4" /> Rotate secret
-                </Button>
+                {client.confidential ? (
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                            if (
+                                window.confirm(
+                                    `Generate a new secret for "${client.name}"? The current secret will stop working.`,
+                                )
+                            ) {
+                                router.post(route('oauth-clients.secret', client.id), {}, { preserveScroll: true });
+                            }
+                        }}
+                    >
+                        <RefreshCw className="mr-2 size-4" /> Rotate secret
+                    </Button>
+                ) : (
+                    <Badge variant="secondary">Public PKCE client</Badge>
+                )}
                 <Button
                     type="button"
                     variant="destructive"

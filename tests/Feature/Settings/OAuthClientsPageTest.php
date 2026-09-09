@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Passport\Client;
+use Laravel\Passport\ClientRepository;
 
 uses(RefreshDatabase::class);
 
@@ -69,4 +70,50 @@ it('creates updates rotates and revokes confidential authorization code clients'
         ->assertRedirect('/settings/oauth-clients');
 
     expect($client->fresh()->revoked)->toBeTrue();
+});
+
+it('preserves additional redirect URIs when editing a client', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient(
+        name: 'Multi callback client',
+        redirectUris: [
+            'https://client.example.com/oauth/primary',
+            'https://client.example.com/oauth/secondary',
+        ],
+        user: $admin,
+    );
+
+    $this->actingAs($admin)->patch("/settings/oauth-clients/{$client->id}", [
+        'name' => 'Updated multi callback client',
+        'redirect_uri' => 'https://client.example.com/oauth/updated',
+    ])->assertRedirect('/settings/oauth-clients');
+
+    expect($client->fresh()->redirect_uris)->toBe([
+        'https://client.example.com/oauth/updated',
+        'https://client.example.com/oauth/secondary',
+    ]);
+});
+
+it('does not offer or allow secret rotation for public PKCE clients', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient(
+        name: 'Public client',
+        redirectUris: ['https://client.example.com/oauth/callback'],
+        confidential: false,
+        user: $admin,
+    );
+
+    $this->actingAs($admin)
+        ->get('/settings/oauth-clients')
+        ->assertOk()
+        ->assertInertia(fn (Assert $page): Assert => $page
+            ->where('clients.0.id', $client->id)
+            ->where('clients.0.confidential', false)
+        );
+
+    $this->actingAs($admin)
+        ->post("/settings/oauth-clients/{$client->id}/secret")
+        ->assertNotFound();
+
+    expect($client->fresh()->confidential())->toBeFalse();
 });

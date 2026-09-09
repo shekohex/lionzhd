@@ -7,6 +7,9 @@ use Laravel\Passport\Passport;
 
 beforeEach(function (): void {
     $this->originalKeyPath = dirname(Passport::keyPath('oauth-private.key'));
+    $this->originalConfiguredKeyPath = config('passport.key_path');
+    $this->originalPrivateKey = config('passport.private_key');
+    $this->originalPublicKey = config('passport.public_key');
     $this->keyPath = storage_path('framework/testing/passport-keys-'.str()->random(12));
 
     config()->set('passport.key_path', $this->keyPath);
@@ -16,6 +19,9 @@ beforeEach(function (): void {
 
 afterEach(function (): void {
     Passport::loadKeysFrom($this->originalKeyPath);
+    config()->set('passport.key_path', $this->originalConfiguredKeyPath);
+    config()->set('passport.private_key', $this->originalPrivateKey);
+    config()->set('passport.public_key', $this->originalPublicKey);
     File::deleteDirectory($this->keyPath);
 });
 

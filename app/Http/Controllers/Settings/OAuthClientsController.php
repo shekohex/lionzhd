@@ -30,6 +30,7 @@ final class OAuthClientsController extends Controller
                 'id' => $client->id,
                 'name' => $client->name,
                 'redirect_uri' => $client->redirect_uris[0] ?? '',
+                'confidential' => $client->confidential(),
                 'created_at' => $client->created_at,
             ])
             ->values();
@@ -62,10 +63,15 @@ final class OAuthClientsController extends Controller
     {
         $this->ensureAuthorizationClient($client);
         $validated = $this->validateClient($request);
+        /** @var list<string> $redirectUris */
+        $redirectUris = $client->getAttribute('redirect_uris');
 
         $client->forceFill([
             'name' => $validated['name'],
-            'redirect_uris' => [$validated['redirect_uri']],
+            'redirect_uris' => [
+                $validated['redirect_uri'],
+                ...array_slice($redirectUris, 1),
+            ],
         ])->save();
 
         return to_route('oauth-clients.index')->with('success', 'OAuth client updated.');

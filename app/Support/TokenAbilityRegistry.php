@@ -21,11 +21,27 @@ final class TokenAbilityRegistry
     /** @return list<array{value: string, label: string, description: string}> */
     public function optionsFor(User $user, bool $respectCurrentToken = true): array
     {
-        return array_values(array_filter(array_map(fn (string $ability): ?array => $this->canMintAbility($user, $ability, $respectCurrentToken) ? [
+        return array_values(array_filter($this->options(), fn (array $option): bool => $this->canMintAbility(
+            $user,
+            $option['value'],
+            $respectCurrentToken,
+        )));
+    }
+
+    /** @return list<array{value: string, label: string, description: string}> */
+    public function options(): array
+    {
+        return array_map(fn (string $ability): array => [
             'value' => $ability,
             'label' => $this->labels()[$ability],
             'description' => $this->descriptions()[$ability],
-        ] : null, self::ALLOWED_ABILITIES)));
+        ], self::ALLOWED_ABILITIES);
+    }
+
+    /** @return array<string, string> */
+    public function scopeDescriptions(): array
+    {
+        return array_column($this->options(), 'description', 'value');
     }
 
     public function canMintAbility(User $user, string $ability, bool $respectCurrentToken = true): bool

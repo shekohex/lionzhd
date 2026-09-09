@@ -30,6 +30,7 @@ RUN install-php-extensions \
     memcached \
     imagick \
     sockets \
+    sodium \
     pcntl \
     zstd \
     @composer

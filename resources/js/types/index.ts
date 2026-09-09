@@ -29,6 +29,10 @@ export interface SharedData {
         success?: string;
         warning?: string;
         api_token?: string;
+        oauth_client?: {
+            id: string;
+            secret: string;
+        };
     };
     ziggy: Config & { location: string };
     [key: string]: unknown;

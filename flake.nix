@@ -51,6 +51,7 @@
               intl
               memcached
               sockets
+              sodium
               pcntl
               zip
               zstd

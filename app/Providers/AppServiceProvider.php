@@ -46,6 +46,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         Passport::ignoreRoutes();
         Passport::$deviceCodeGrantEnabled = false;
+        Passport::loadKeysFrom((string) config('passport.key_path', storage_path()));
 
         $this->app->bind(XtreamCodesConfig::class, static fn () => XtreamCodesConfig::firstOrFromEnv());
         $this->app->bind(Aria2Config::class, static fn () => Aria2Config::firstOrFromEnv());

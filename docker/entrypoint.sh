@@ -13,6 +13,12 @@ touch /data/database/database.sqlite
 # -----------------------------------------------------------
 php artisan migrate --force --graceful --no-interaction
 
+# Ensure Passport signing keys exist
+# -----------------------------------------------------------
+# Generate one shared key pair when PEM values are not configured.
+# -----------------------------------------------------------
+php artisan passport:keys:ensure --no-interaction
+
 # Run Our Custom Commands
 # -----------------------------------------------------------
 # Ensure the database is seeded with initial data.

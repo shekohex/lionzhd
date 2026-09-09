@@ -34,6 +34,8 @@ return [
 
     'public_key' => env('PASSPORT_PUBLIC_KEY'),
 
+    'key_path' => env('PASSPORT_KEY_PATH', storage_path()),
+
     /*
     |--------------------------------------------------------------------------
     | Passport Database Connection

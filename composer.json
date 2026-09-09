@@ -82,15 +82,18 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi"
+            "@php artisan migrate --graceful --ansi",
+            "@php artisan passport:keys:ensure --ansi --no-interaction"
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
+            "@php artisan passport:keys:ensure --ansi --no-interaction",
             "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"sh -c 'php -d memory_limit=${SYNC_MEDIA_MEMORY_LIMIT:-512M} artisan queue:listen --tries=1 --timeout=0'\" \"php artisan pail --timeout=0\" \"bun run dev\" --names=server,queue,logs,vite"
         ],
         "dev:ssr": [
             "bun run build:ssr",
             "Composer\\Config::disableProcessTimeout",
+            "@php artisan passport:keys:ensure --ansi --no-interaction",
             "bunx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"sh -c 'php -d memory_limit=${SYNC_MEDIA_MEMORY_LIMIT:-512M} artisan queue:listen --tries=1 --timeout=0'\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr"
         ],
         "test:browser": [

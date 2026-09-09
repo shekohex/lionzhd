@@ -12,7 +12,7 @@ final class BearerAuthSecurityStrategy extends MiddlewareAuthSecurityStrategy
     /**
      * @param  list<string>  $middleware
      */
-    public function __construct(array $middleware = ['auth:sanctum'])
+    public function __construct(array $middleware = ['auth:sanctum', 'auth:sanctum,api'])
     {
         parent::__construct(
             middleware: $middleware,

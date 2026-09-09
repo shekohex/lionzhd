@@ -7,6 +7,8 @@ use App\Http\Controllers\AutoEpisodes\BulkApplySeriesMonitoringPresetController;
 use App\Http\Controllers\AutoEpisodes\MonitoringPageController;
 use App\Http\Controllers\Settings\Aria2ConfigController;
 use App\Http\Controllers\Settings\CategorySyncRunsController;
+use App\Http\Controllers\Settings\OAuthClientsController;
+use App\Http\Controllers\Settings\OAuthClientSecretController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SyncCategoriesController;
@@ -32,6 +34,12 @@ Route::middleware('auth')->group(static function (): void {
     Route::delete('settings/tokens/{token}', [TokensController::class, 'destroy'])->name('tokens.destroy');
 
     Route::middleware('can:admin')->group(static function (): void {
+        Route::get('settings/oauth-clients', [OAuthClientsController::class, 'index'])->name('oauth-clients.index');
+        Route::post('settings/oauth-clients', [OAuthClientsController::class, 'store'])->name('oauth-clients.store');
+        Route::patch('settings/oauth-clients/{client}', [OAuthClientsController::class, 'update'])->name('oauth-clients.update');
+        Route::post('settings/oauth-clients/{client}/secret', OAuthClientSecretController::class)->name('oauth-clients.secret');
+        Route::delete('settings/oauth-clients/{client}', [OAuthClientsController::class, 'destroy'])->name('oauth-clients.destroy');
+
         Route::get('settings/users', [UsersController::class, 'index'])->name('users.index');
         Route::patch('settings/users/{user}/subtype', [UsersController::class, 'update'])
             ->defaults('operation', 'subtype')

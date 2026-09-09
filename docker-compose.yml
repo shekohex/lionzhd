@@ -9,6 +9,7 @@ services:
     restart: always
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - PASSPORT_KEY_PATH=/data/passport
       - ARIA2_RPC_HOST=http://host.docker.internal
       - MEILISEARCH_HOST=http://host.docker.internal:7700
       - LOG_LEVEL=info
@@ -17,6 +18,7 @@ services:
       - .env
     volumes:
       - ./data/database:/data/database
+      - ./data/passport:/data/passport
 
   scheduler:
     build:
@@ -28,12 +30,14 @@ services:
     restart: always
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - PASSPORT_KEY_PATH=/data/passport
       - ARIA2_RPC_HOST=http://host.docker.internal
       - MEILISEARCH_HOST=http://host.docker.internal:7700
       - LOG_LEVEL=info
       - PULSE_ENABLED=false
     volumes:
       - ./data/database:/data/database
+      - ./data/passport:/data/passport
     env_file:
       - .env
 
@@ -51,10 +55,12 @@ services:
     #   - "443:443/udp" # HTTP/3
     volumes:
       - ./data/database:/data/database
+      - ./data/passport:/data/passport
       - caddy_data:/data
       - caddy_config:/config
     environment:
       - DB_DATABASE=/data/database/database.sqlite
+      - PASSPORT_KEY_PATH=/data/passport
       - ARIA2_RPC_HOST=http://host.docker.internal
       - MEILISEARCH_HOST=http://host.docker.internal:7700
       - LOG_LEVEL=info

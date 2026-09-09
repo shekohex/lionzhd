@@ -9,8 +9,11 @@ use App\Enums\UserRole;
 use App\Enums\UserSubtype;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Passport\Client;
+use Laravel\Passport\Passport;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -62,6 +65,12 @@ final class User extends Authenticatable
     public function watchlists(): HasMany
     {
         return $this->hasMany(Watchlist::class);
+    }
+
+    /** @return MorphMany<Client, $this> */
+    public function oauthApps(): MorphMany
+    {
+        return $this->morphMany(Passport::clientModel(), 'owner');
     }
 
     /**

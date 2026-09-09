@@ -11,6 +11,7 @@ import {
     Key,
     KeyRound,
     MonitorPlay,
+    Network,
     SunMoon,
     Tags,
     UserPen,
@@ -42,6 +43,12 @@ const sidebarNavItems: SettingsNavItem[] = [
         title: 'Users',
         url: '/settings/users',
         icon: Users,
+        adminOnly: true,
+    },
+    {
+        title: 'OAuth Clients',
+        url: '/settings/oauth-clients',
+        icon: Network,
         adminOnly: true,
     },
     {

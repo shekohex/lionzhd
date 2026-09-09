@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Models\XtreamCodesConfig;
 use App\OpenApi\JsonApiSchemas;
 use App\Services\MeilisearchIndexBackend;
+use App\Support\TokenAbilityRegistry;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Auth\Access\Response;
@@ -27,8 +28,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Laravel\Passport\Passport;
+use Laravel\Passport\Scope;
 use Override;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -38,6 +44,10 @@ final class AppServiceProvider extends ServiceProvider
     #[Override]
     public function register(): void
     {
+        Passport::ignoreRoutes();
+        Passport::$deviceCodeGrantEnabled = false;
+        Passport::loadKeysFrom((string) config('passport.key_path', storage_path()));
+
         $this->app->bind(XtreamCodesConfig::class, static fn () => XtreamCodesConfig::firstOrFromEnv());
         $this->app->bind(Aria2Config::class, static fn () => Aria2Config::firstOrFromEnv());
         $this->app->bind(SearchIndexBackend::class, MeilisearchIndexBackend::class);
@@ -48,6 +58,51 @@ final class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $abilityRegistry = app(TokenAbilityRegistry::class);
+
+        Passport::tokensCan($abilityRegistry->scopeDescriptions());
+        Passport::defaultScopes(['read']);
+        Passport::authorizationView(static function (array $parameters) use ($abilityRegistry): SymfonyResponse {
+            /** @var User $authorizationUser */
+            $authorizationUser = $parameters['user'];
+            /** @var Request $authorizationRequest */
+            $authorizationRequest = $parameters['request'];
+            /** @var list<Scope> $requestedScopes */
+            $requestedScopes = $parameters['scopes'];
+            $allOptions = collect($abilityRegistry->options())->keyBy('value');
+            $allowedScopes = collect($abilityRegistry->optionsFor($authorizationUser, respectCurrentToken: false))
+                ->pluck('value');
+
+            return Inertia::render('auth/oauth/authorize', [
+                'client' => [
+                    'id' => $parameters['client']->id,
+                    'name' => $parameters['client']->name,
+                ],
+                'user' => [
+                    'name' => $authorizationUser->name,
+                    'email' => $authorizationUser->email,
+                ],
+                'scopes' => collect($requestedScopes)->map(static function (Scope $scope) use ($allOptions, $allowedScopes): array {
+                    $option = $allOptions->get($scope->id);
+
+                    return [
+                        'id' => $scope->id,
+                        'label' => $option['label'] ?? $scope->id,
+                        'description' => $option['description'] ?? $scope->description,
+                        'allowed' => $allowedScopes->contains($scope->id),
+                    ];
+                })->values(),
+                'authToken' => $parameters['authToken'],
+                'state' => $authorizationRequest->input('state'),
+                'csrfToken' => csrf_token(),
+            ])->toResponse($authorizationRequest);
+        });
+        Route::group([
+            'as' => 'passport.',
+            'prefix' => config('passport.path', 'oauth'),
+            'middleware' => config('passport.middleware', []),
+        ], base_path('routes/oauth.php'));
+
         Event::listen(CommandStarting::class, PreventDestructiveScoutCommands::class);
 
         Scramble::afterOpenApiGenerated(static function ($openApi): void {

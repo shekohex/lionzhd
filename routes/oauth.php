@@ -13,7 +13,7 @@ Route::post('token', [AccessTokenController::class, 'issueToken'])
     ->name('token');
 
 Route::get('authorize', [AuthorizationController::class, 'authorize'])
-    ->middleware('web')
+    ->middleware(['web', 'auth:web'])
     ->name('authorizations.authorize');
 
 Route::middleware(['web', 'auth:web'])->group(static function (): void {

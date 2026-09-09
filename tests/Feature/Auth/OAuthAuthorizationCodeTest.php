@@ -17,6 +17,28 @@ beforeEach(function (): void {
     }
 });
 
+it('redirects logged-out authorization requests to login', function (): void {
+    $admin = User::factory()->admin()->create();
+    $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient(
+        name: 'External service',
+        redirectUris: ['https://client.example.com/callback'],
+        confidential: true,
+        user: $admin,
+    );
+    $query = http_build_query([
+        'client_id' => $client->id,
+        'redirect_uri' => 'https://client.example.com/callback',
+        'response_type' => 'code',
+        'scope' => 'read',
+        'state' => 'expected-state',
+    ]);
+    $authorizationUrl = '/oauth/authorize?'.$query;
+
+    $this->get($authorizationUrl)
+        ->assertRedirect('/login')
+        ->assertSessionHas('url.intended', url($authorizationUrl));
+});
+
 it('lets a user reduce requested scopes and use the resulting OAuth access token', function (): void {
     $admin = User::factory()->admin()->create();
     $user = User::factory()->memberInternal()->create();
